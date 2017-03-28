@@ -1,36 +1,31 @@
 "use strict";
-var __assign = (this && this.__assign) || Object.assign || function(t) {
-    for (var s, i = 1, n = arguments.length; i < n; i++) {
-        s = arguments[i];
-        for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
-            t[p] = s[p];
-    }
-    return t;
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 var ini_extended_1 = require("ini-extended");
 var fs_1 = require("fs");
-var confPath = "/etc/asterisk/manager.conf";
+var path = require("path");
+exports.asteriskConfDirPath = path.join("etc", "asterisk");
+var defaultConfFilePath = path.join(exports.asteriskConfDirPath, "manager.conf");
 ;
+var credential = undefined;
 var AmiCredential;
 (function (AmiCredential) {
-    function retrieve() {
+    function retrieve(confFilePath) {
         if (credential)
             return credential;
-        return credential = init();
+        return credential = init(confFilePath || defaultConfFilePath);
     }
     AmiCredential.retrieve = retrieve;
 })(AmiCredential = exports.AmiCredential || (exports.AmiCredential = {}));
-var credential = undefined;
-function init() {
-    var config = ini_extended_1.ini.parseStripWhitespace(fs_1.readFileSync(confPath, "utf8"));
+function init(path) {
+    if (!fs_1.existsSync(path))
+        throw new Error("NO_FILE");
+    var config = ini_extended_1.ini.parseStripWhitespace(fs_1.readFileSync(path, "utf8"));
     var general = config.general || {};
     if (general.enabled !== "yes")
-        throw new Error("Asterisk manager is not enabled");
+        throw new Error("NOT_ENABLED");
     var port = general.port ? parseInt(general.port) : 5038;
     var host = (general.bindaddr && general.bindaddr !== "0.0.0.0") ? general.bindaddr : "127.0.0.1";
     delete config.general;
-    var credential = undefined;
     for (var _i = 0, _a = Object.keys(config); _i < _a.length; _i++) {
         var userName = _a[_i];
         var userConfig = config[userName];
@@ -40,11 +35,15 @@ function init() {
             continue;
         if (isGranted(getListAuthority(userConfig.read)) &&
             isGranted(getListAuthority(userConfig.write))) {
-            credential = { "user": userName, "secret": userConfig.secret };
-            break;
+            return {
+                port: port,
+                host: host,
+                "user": userName,
+                "secret": userConfig.secret
+            };
         }
     }
-    return __assign({}, credential, { port: port, host: host });
+    throw Error("NO_USER");
 }
 function getListAuthority(strList) {
     strList = strList.replace(/\ /g, "");

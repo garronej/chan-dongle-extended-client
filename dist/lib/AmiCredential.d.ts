@@ -1,3 +1,4 @@
+export declare const asteriskConfDirPath: string;
 export interface Credential {
     port: number;
     host: string;
@@ -5,5 +6,5 @@ export interface Credential {
     secret: string;
 }
 export declare namespace AmiCredential {
-    function retrieve(): Credential;
+    function retrieve(confFilePath?: string): Credential;
 }

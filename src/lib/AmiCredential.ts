@@ -1,7 +1,9 @@
 import { ini } from "ini-extended";
-import { readFileSync } from "fs";
+import { readFileSync, existsSync } from "fs";
+import * as path from "path";
 
-const confPath = "/etc/asterisk/manager.conf";
+export const asteriskConfDirPath= path.join("etc", "asterisk");
+const defaultConfFilePath = path.join(asteriskConfDirPath, "manager.conf");
 
 export interface Credential {
     port: number;
@@ -10,24 +12,26 @@ export interface Credential {
     secret: string;
 };
 
+let credential: Credential | undefined= undefined;
+
 export namespace AmiCredential {
 
-    export function retrieve(): Credential {
+    export function retrieve(confFilePath?: string): Credential {
 
         if (credential) return credential;
 
-        return credential = init();
+        return credential = init(confFilePath || defaultConfFilePath);
 
     }
 
-
 }
 
-let credential: Credential | undefined = undefined;
+function init(path: string): Credential {
 
-function init(): Credential {
+    if( !existsSync(path) )
+        throw new Error("NO_FILE");
 
-    let config = ini.parseStripWhitespace(readFileSync(confPath, "utf8"))
+    let config = ini.parseStripWhitespace(readFileSync(path, "utf8"))
 
     let general: {
         enabled?: "yes" | "no";
@@ -36,18 +40,13 @@ function init(): Credential {
     } = config.general || {};
 
     if (general.enabled !== "yes")
-        throw new Error("Asterisk manager is not enabled");
+        throw new Error("NOT_ENABLED");
 
     let port: number = general.port ? parseInt(general.port) : 5038;
     let host: string =
         (general.bindaddr && general.bindaddr !== "0.0.0.0") ? general.bindaddr : "127.0.0.1";
 
     delete config.general;
-
-    let credential: {
-        user: string;
-        secret: string
-    } | undefined = undefined;
 
     for (let userName of Object.keys(config)) {
 
@@ -68,14 +67,18 @@ function init(): Credential {
             isGranted(getListAuthority(userConfig.write!))
         ) {
 
-            credential = { "user": userName, "secret": userConfig.secret };
-            break;
+            return {
+                port,
+                host,
+                "user": userName,
+                "secret": userConfig.secret
+            };
 
         }
 
     }
 
-    return { ...credential, port, host };
+    throw Error("NO_USER");
 
 }
 

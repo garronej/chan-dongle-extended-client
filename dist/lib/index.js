@@ -5,4 +5,5 @@ function __export(m) {
 Object.defineProperty(exports, "__esModule", { value: true });
 __export(require("./AmiClient"));
 __export(require("./AmiUserEvent"));
+__export(require("./AmiCredential"));
 //# sourceMappingURL=index.js.map

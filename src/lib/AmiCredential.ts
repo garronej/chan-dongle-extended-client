@@ -39,8 +39,6 @@ function init(path: string): Credential {
         bindaddr?: string;
     } = config.general || {};
 
-    if (general.enabled !== "yes")
-        throw new Error("NOT_ENABLED");
 
     let port: number = general.port ? parseInt(general.port) : 5038;
     let host: string =
@@ -66,6 +64,9 @@ function init(path: string): Credential {
             isGranted(getListAuthority(userConfig.read!)) &&
             isGranted(getListAuthority(userConfig.write!))
         ) {
+
+            if (general.enabled !== "yes")
+                throw new Error("NOT_ENABLED");
 
             return {
                 port,

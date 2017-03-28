@@ -21,8 +21,6 @@ function init(path) {
         throw new Error("NO_FILE");
     var config = ini_extended_1.ini.parseStripWhitespace(fs_1.readFileSync(path, "utf8"));
     var general = config.general || {};
-    if (general.enabled !== "yes")
-        throw new Error("NOT_ENABLED");
     var port = general.port ? parseInt(general.port) : 5038;
     var host = (general.bindaddr && general.bindaddr !== "0.0.0.0") ? general.bindaddr : "127.0.0.1";
     delete config.general;
@@ -35,6 +33,8 @@ function init(path) {
             continue;
         if (isGranted(getListAuthority(userConfig.read)) &&
             isGranted(getListAuthority(userConfig.write))) {
+            if (general.enabled !== "yes")
+                throw new Error("NOT_ENABLED");
             return {
                 port: port,
                 host: host,

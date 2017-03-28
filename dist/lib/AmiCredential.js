@@ -17,7 +17,6 @@ var AmiCredential;
     AmiCredential.retrieve = retrieve;
 })(AmiCredential = exports.AmiCredential || (exports.AmiCredential = {}));
 function init(path) {
-    console.log("======>run init");
     if (!fs_1.existsSync(path))
         throw new Error("NO_FILE");
     var config = ini_extended_1.ini.parseStripWhitespace(fs_1.readFileSync(path, "utf8"));

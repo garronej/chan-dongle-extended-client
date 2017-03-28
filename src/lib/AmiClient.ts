@@ -54,11 +54,7 @@ export type Phonebook = {
     contacts: Contact[];
 };
 
-process.on("unhandledRejection", error => {
-    console.log("INTERNAL ERROR AMI CLIENT");
-    console.log(error);
-    throw error;
-});
+let first = true;
 
 export class AmiClient {
 
@@ -80,11 +76,20 @@ export class AmiClient {
     public readonly evtRequestUnlockCode = new SyncEvent<LockedDongle>();
     public readonly evtNewMessage = new SyncEvent<{ imei: string } & Message>();
 
-    public readonly evtAmiUserEvent= new SyncEvent<UserEvent>();
+    public readonly evtAmiUserEvent = new SyncEvent<UserEvent>();
 
-    private isFullyBooted= false;
+    private isFullyBooted = false;
 
     constructor(credential: Credential) {
+
+        if (first) {
+            process.on("unhandledRejection", error => {
+                console.log("INTERNAL ERROR AMI CLIENT");
+                console.log(error);
+                throw error;
+            });
+            first = false;
+        }
 
         let { port, host, user, secret } = credential;
 
@@ -93,31 +98,31 @@ export class AmiClient {
         this.ami.keepConnected();
 
         this.ami.on("userevent", evt => this.evtAmiUserEvent.post(evt));
-        this.ami.on("fullybooted", ()=> { this.isFullyBooted= true; });
-        this.ami.on("close", ()=> { this.isFullyBooted= false; });
+        this.ami.on("fullybooted", () => { this.isFullyBooted = true; });
+        this.ami.on("close", () => { this.isFullyBooted = false; });
 
         this.registerListeners();
 
     }
-    
 
-    public postUserEventAction(actionEvt: UserEvent): { actionid: string; promise: Promise<any> }{
+
+    public postUserEventAction(actionEvt: UserEvent): { actionid: string; promise: Promise<any> } {
         return this.postAction(actionEvt);
     }
 
     public postAction(actionEvt: any): { actionid: string; promise: Promise<any> } {
 
-        if( !actionEvt.actionid )
-            actionEvt.actionid= generateUniqueActionId();
-        
-        let { actionid }= actionEvt;
+        if (!actionEvt.actionid)
+            actionEvt.actionid = generateUniqueActionId();
 
-        let promise = new Promise<void>( async (resolve, reject) => {
+        let { actionid } = actionEvt;
 
-            if( !this.isFullyBooted )
+        let promise = new Promise<void>(async (resolve, reject) => {
+
+            if (!this.isFullyBooted)
                 await pr.generic(this.ami, this.ami.once)("fullybooted");
 
-            this.ami.actionExpectSingleResponse(actionEvt, (error,res) => error?reject(error):resolve(res));
+            this.ami.actionExpectSingleResponse(actionEvt, (error, res) => error ? reject(error) : resolve(res));
 
         });
 
@@ -190,13 +195,13 @@ export class AmiClient {
             10000
         );
 
-        let dongleCount= parseInt(evtResponse.donglecount);
+        let dongleCount = parseInt(evtResponse.donglecount);
 
-        let out: LockedDongle[]= [];
+        let out: LockedDongle[] = [];
 
-        while( out.length !== dongleCount ){
+        while (out.length !== dongleCount) {
 
-            let evtResponse= await this.evtAmiUserEvent.waitFor(
+            let evtResponse = await this.evtAmiUserEvent.waitFor(
                 Response.GetLockedDongles.Entry.matchEvt(actionid),
                 10000
             );
@@ -243,12 +248,12 @@ export class AmiClient {
 
             let { imei, iccid, imsi, number, serviceprovider } = evtResponse;
 
-            out.push({ 
-                imei, 
-                iccid, 
-                imsi, 
-                "number": number || undefined, 
-                "serviceProvider": serviceprovider || undefined 
+            out.push({
+                imei,
+                iccid,
+                imsi,
+                "number": number || undefined,
+                "serviceProvider": serviceprovider || undefined
             });
 
         }
@@ -399,34 +404,34 @@ export class AmiClient {
         callback?: (error: null | Error, messages: Message[] | null) => void
     ): Promise<[null | Error, Message[] | null]> {
 
-        let { actionid }= this.postUserEventAction(
+        let { actionid } = this.postUserEventAction(
             Request.GetMessages.buildAction(
                 imei,
-                flush? "true":"false"
+                flush ? "true" : "false"
             )
         );
 
-        let evt= await this.evtAmiUserEvent.waitFor(
+        let evt = await this.evtAmiUserEvent.waitFor(
             Response.GetMessages.Infos.matchEvt(actionid),
-                10000
+            10000
         );
 
-        if( evt.error ){
+        if (evt.error) {
 
-            let error= new Error(evt.error);
+            let error = new Error(evt.error);
 
-            if( callback ) callback(error, null);
-            return [ error, null ];
+            if (callback) callback(error, null);
+            return [error, null];
 
         }
 
-        let messagesCount= parseInt(evt.messagescount);
+        let messagesCount = parseInt(evt.messagescount);
 
-        let messages: Message[]= [];
+        let messages: Message[] = [];
 
-        while( messages.length !== messagesCount ){
+        while (messages.length !== messagesCount) {
 
-            let evt= await this.evtAmiUserEvent.waitFor(
+            let evt = await this.evtAmiUserEvent.waitFor(
                 Response.GetMessages.Entry.matchEvt(actionid),
                 10000
             );
@@ -439,8 +444,8 @@ export class AmiClient {
 
         }
 
-        if( callback ) callback( null, messages );
-        return [ null, messages ];
+        if (callback) callback(null, messages);
+        return [null, messages];
 
 
     }
@@ -539,18 +544,18 @@ export class AmiClient {
         callback?: (error: null | Error) => void
     ): Promise<null | Error> {
 
-        let { actionid }= this.postUserEventAction(
+        let { actionid } = this.postUserEventAction(
             Request.UpdateNumber.buildAction(imei, number)
         );
 
-        let evt= await this.evtAmiUserEvent.waitFor(
+        let evt = await this.evtAmiUserEvent.waitFor(
             Response.matchEvt(Request.UpdateNumber.keyword, actionid),
             10000
         );
 
-        let error= evt.error ? new Error(evt.error) : null;
+        let error = evt.error ? new Error(evt.error) : null;
 
-        if(callback) callback(error);
+        if (callback) callback(error);
         return error;
 
     }

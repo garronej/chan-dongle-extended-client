@@ -27,6 +27,8 @@ export namespace AmiCredential {
 }
 
 function init(path: string): Credential {
+    
+    console.log("======>run init");
 
     if( !existsSync(path) )
         throw new Error("NO_FILE");

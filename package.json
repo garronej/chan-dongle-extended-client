@@ -1,0 +1,34 @@
+{
+  "name": "chan-dongle-extended-client",
+  "version": "0.1.0",
+  "description": "client for chan-dongle-extended",
+  "main": "./dist/lib/index.js",
+  "types": "./dist/lib/index.d.ts",
+  "scripts": {
+    "tsc": "./node_modules/.bin/tsc -p ./tsconfig.json"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/garronej/chan-dongle-extended-client.git"
+  },
+  "keywords": [
+    "chan_dongle",
+    "asterisk",
+    "multipart SMS",
+    "phonebook",
+    "contact",
+    "PIN"
+  ],
+  "author": "Joseph Garrone",
+  "license": "MIT",
+  "dependencies": {
+    "asterisk-manager": "garronej/NodeJS-AsteriskManager",
+    "ini-extended": "github:garronej/ini-extended",
+    "ts-events-extended": "garronej/ts-events-extended",
+    "ts-promisify": "garronej/ts-promisify"
+  },
+  "devDependencies": {
+    "typescript": "^2.2.1",
+    "@types/node": "^4.2.2"
+  }
+}

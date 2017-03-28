@@ -4,7 +4,7 @@ var ini_extended_1 = require("ini-extended");
 var fs_1 = require("fs");
 var path = require("path");
 exports.asteriskConfDirPath = path.join("etc", "asterisk");
-var defaultConfFilePath = path.join(exports.asteriskConfDirPath, "manager.conf");
+exports.managerConfPath = path.join(exports.asteriskConfDirPath, "manager.conf");
 ;
 var credential = undefined;
 var AmiCredential;
@@ -12,7 +12,7 @@ var AmiCredential;
     function retrieve(confFilePath) {
         if (credential)
             return credential;
-        return credential = init(confFilePath || defaultConfFilePath);
+        return credential = init(confFilePath || exports.managerConfPath);
     }
     AmiCredential.retrieve = retrieve;
 })(AmiCredential = exports.AmiCredential || (exports.AmiCredential = {}));

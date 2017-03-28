@@ -3,7 +3,7 @@ import { readFileSync, existsSync } from "fs";
 import * as path from "path";
 
 export const asteriskConfDirPath= path.join("etc", "asterisk");
-const defaultConfFilePath = path.join(asteriskConfDirPath, "manager.conf");
+export const managerConfPath = path.join(asteriskConfDirPath, "manager.conf");
 
 export interface Credential {
     port: number;
@@ -20,7 +20,7 @@ export namespace AmiCredential {
 
         if (credential) return credential;
 
-        return credential = init(confFilePath || defaultConfFilePath);
+        return credential = init(confFilePath || managerConfPath);
 
     }
 

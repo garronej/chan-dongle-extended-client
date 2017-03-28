@@ -2,7 +2,7 @@ import { ini } from "ini-extended";
 import { readFileSync, existsSync } from "fs";
 import * as path from "path";
 
-export const asteriskConfDirPath= path.join("etc", "asterisk");
+export const asteriskConfDirPath= path.join("/etc", "asterisk");
 export const managerConfPath = path.join(asteriskConfDirPath, "manager.conf");
 
 export interface Credential {

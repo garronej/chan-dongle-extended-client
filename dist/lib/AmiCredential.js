@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var ini_extended_1 = require("ini-extended");
 var fs_1 = require("fs");
 var path = require("path");
-exports.asteriskConfDirPath = path.join("etc", "asterisk");
+exports.asteriskConfDirPath = path.join("/etc", "asterisk");
 exports.managerConfPath = path.join(exports.asteriskConfDirPath, "manager.conf");
 ;
 var credential = undefined;

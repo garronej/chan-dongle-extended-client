@@ -2,8 +2,7 @@ import { ini } from "ini-extended";
 import { readFileSync, existsSync } from "fs";
 import * as path from "path";
 
-export const asteriskConfDirPath= path.join("/etc", "asterisk");
-export const managerConfPath = path.join(asteriskConfDirPath, "manager.conf");
+const managerConfPath = path.join("/etc", "asterisk" , "manager.conf");
 
 export interface Credential {
     port: number;
@@ -46,7 +45,12 @@ function init(path: string): Credential {
 
     delete config.general;
 
-    for (let userName of Object.keys(config)) {
+    let dongle_ext_user: [ "dongle_ext_user" ] | null = [ "dongle_ext_user" ];
+
+    if( !config["dongle_ext_user"] ) 
+        dongle_ext_user = null;
+
+    for (let userName of ( dongle_ext_user || Object.keys(config))) {
 
         let userConfig: {
             secret?: string;

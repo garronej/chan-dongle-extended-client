@@ -54,8 +54,6 @@ export type Phonebook = {
     contacts: Contact[];
 };
 
-let first = true;
-
 export class AmiClient {
 
     private static localClient: AmiClient | undefined = undefined;
@@ -81,15 +79,6 @@ export class AmiClient {
     private isFullyBooted = false;
 
     constructor(credential: Credential) {
-
-        if (first) {
-            process.on("unhandledRejection", error => {
-                console.log("INTERNAL ERROR AMI CLIENT");
-                console.log(error);
-                throw error;
-            });
-            first = false;
-        }
 
         let { port, host, user, secret } = credential;
 

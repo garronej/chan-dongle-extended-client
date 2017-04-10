@@ -1,6 +1,6 @@
 {
   "name": "chan-dongle-extended-client",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "client for chan-dongle-extended",
   "main": "./dist/lib/index.js",
   "types": "./dist/lib/index.d.ts",
@@ -25,6 +25,7 @@
   "dependencies": {
     "asterisk-manager": "garronej/NodeJS-AsteriskManager",
     "ini-extended": "github:garronej/ini-extended",
+    "rejection-tracker": "garronej/rejection-tracker",
     "ts-events-extended": "garronej/ts-events-extended",
     "ts-promisify": "garronej/ts-promisify"
   },

@@ -43,7 +43,6 @@ var AmiCredential_1 = require("./AmiCredential");
 var AstMan = require("asterisk-manager");
 var ts_events_extended_1 = require("ts-events-extended");
 var pr = require("ts-promisify");
-var first = true;
 var AmiClient = (function () {
     function AmiClient(credential) {
         var _this = this;
@@ -54,14 +53,6 @@ var AmiClient = (function () {
         this.evtNewMessage = new ts_events_extended_1.SyncEvent();
         this.evtAmiUserEvent = new ts_events_extended_1.SyncEvent();
         this.isFullyBooted = false;
-        if (first) {
-            process.on("unhandledRejection", function (error) {
-                console.log("INTERNAL ERROR AMI CLIENT");
-                console.log(error);
-                throw error;
-            });
-            first = false;
-        }
         var port = credential.port, host = credential.host, user = credential.user, secret = credential.secret;
         this.ami = new AstMan(port, host, user, secret, true);
         this.ami.keepConnected();

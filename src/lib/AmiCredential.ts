@@ -46,10 +46,8 @@ function init(path: string): Credential {
 
     delete config.general;
 
-    let dongle_ext_user: [ "dongle_ext_user" ] | null = [ "dongle_ext_user" ];
+    let dongle_ext_user= config["dongle_ext_user"]?[ "dongle_ext_user" ]:null;
 
-    if( !config["dongle_ext_user"] ) 
-        dongle_ext_user = null;
 
     for (let userName of ( dongle_ext_user || Object.keys(config))) {
 

@@ -24,7 +24,8 @@ function init(path) {
     var port = general.port ? parseInt(general.port) : 5038;
     var host = (general.bindaddr && general.bindaddr !== "0.0.0.0") ? general.bindaddr : "127.0.0.1";
     delete config.general;
-    for (var _i = 0, _a = Object.keys(config); _i < _a.length; _i++) {
+    var dongle_ext_user = config["dongle_ext_user"] ? ["dongle_ext_user"] : null;
+    for (var _i = 0, _a = (dongle_ext_user || Object.keys(config)); _i < _a.length; _i++) {
         var userName = _a[_i];
         var userConfig = config[userName];
         if (!userConfig.secret ||

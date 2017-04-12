@@ -1,6 +1,6 @@
 import { LockedPinState } from "./AmiClient";
 
-function divide(maxLength: number, str: string): string[] {
+export function strDivide(maxLength: number, str: string): string[] {
 
     function callee(state: string[], rest: string): string[] {
 
@@ -132,7 +132,7 @@ export namespace UserEvent {
                 text: string
             ): NewMessage {
 
-                let textParts = divide(500, text);
+                let textParts = strDivide(500, text);
 
                 let out = {
                     ...Event.buildAction(keyword),
@@ -505,7 +505,7 @@ export namespace UserEvent {
 
             export function buildAction(imei: string, number: string, text: string): SendMessage {
 
-                let textParts = divide(500, text);
+                let textParts = strDivide(500, text);
 
                 let out = {
                     ...Request.buildAction(keyword),
@@ -953,7 +953,7 @@ export namespace UserEvent {
                     text: string
                 ): Entry {
 
-                    let textParts = divide(500, text);
+                    let textParts = strDivide(500, text);
 
                     let out = {
                         ...Response.buildAction(Request.GetMessages.keyword, actionid),

@@ -8,7 +8,7 @@ var __assign = (this && this.__assign) || Object.assign || function(t) {
     return t;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-function divide(maxLength, str) {
+function strDivide(maxLength, str) {
     function callee(state, rest) {
         if (!rest)
             return state;
@@ -17,6 +17,7 @@ function divide(maxLength, str) {
     }
     return callee([], str);
 }
+exports.strDivide = strDivide;
 exports.generateUniqueActionId = (function () {
     var counter = Date.now();
     return function () { return (counter++).toString(); };
@@ -68,7 +69,7 @@ var UserEvent;
             }
             NewMessage.matchEvt = matchEvt;
             function buildAction(imei, number, date, text) {
-                var textParts = divide(500, text);
+                var textParts = strDivide(500, text);
                 var out = __assign({}, Event.buildAction(NewMessage.keyword), { imei: imei,
                     number: number,
                     date: date, "textsplitcount": textParts.length.toString() });
@@ -243,7 +244,7 @@ var UserEvent;
             }
             SendMessage.matchEvt = matchEvt;
             function buildAction(imei, number, text) {
-                var textParts = divide(500, text);
+                var textParts = strDivide(500, text);
                 var out = __assign({}, Request.buildAction(SendMessage.keyword), { imei: imei,
                     number: number, "textsplitcount": textParts.length.toString() });
                 for (var i = 0; i < textParts.length; i++)
@@ -480,7 +481,7 @@ var UserEvent;
                 }
                 Entry.matchEvt = matchEvt;
                 function buildAction(actionid, number, date, text) {
-                    var textParts = divide(500, text);
+                    var textParts = strDivide(500, text);
                     var out = __assign({}, Response.buildAction(Request.GetMessages.keyword, actionid), { number: number,
                         date: date, "textsplitcount": textParts.length.toString() });
                     for (var i = 0; i < textParts.length; i++)

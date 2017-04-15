@@ -214,7 +214,7 @@ var AmiClient = (function () {
                 switch (_a.label) {
                     case 0:
                         actionid = this.postUserEventAction(Request.SendMessage.buildAction(imei, number, text)).actionid;
-                        return [4 /*yield*/, this.evtAmiUserEvent.waitFor(Response.SendMessage.matchEvt(actionid), 10000)];
+                        return [4 /*yield*/, this.evtAmiUserEvent.waitFor(Response.SendMessage.matchEvt(actionid), 30000)];
                     case 1:
                         evtResponse = _a.sent();
                         if (evtResponse.error) {

@@ -267,7 +267,7 @@ export class AmiClient {
 
         let evtResponse = await this.evtAmiUserEvent.waitFor(
             Response.SendMessage.matchEvt(actionid),
-            10000
+            30000
         );
 
         let error: null | Error;

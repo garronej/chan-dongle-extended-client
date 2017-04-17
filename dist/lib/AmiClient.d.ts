@@ -47,7 +47,7 @@ export interface ManagerEvent {
 export declare class AmiClient {
     private static localClient;
     static localhost(): AmiClient;
-    private readonly ami;
+    readonly ami: any;
     readonly evtMessageStatusReport: SyncEvent<{
         imei: string;
     } & StatusReport>;

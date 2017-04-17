@@ -74,7 +74,7 @@ export class AmiClient {
 
     };
 
-    private readonly ami: any;
+    public readonly ami: any;
 
     public readonly evtMessageStatusReport = new SyncEvent<{ imei: string } & StatusReport>();
     public readonly evtDongleDisconnect = new SyncEvent<DongleActive>();

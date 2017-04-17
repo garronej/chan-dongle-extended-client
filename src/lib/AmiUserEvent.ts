@@ -24,6 +24,7 @@ export const generateUniqueActionId = (() => {
 
 })();
 
+
 export interface UserEvent {
     userevent: string;
     actionid: string;

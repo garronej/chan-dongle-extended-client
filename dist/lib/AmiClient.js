@@ -52,10 +52,12 @@ var AmiClient = (function () {
         this.evtRequestUnlockCode = new ts_events_extended_1.SyncEvent();
         this.evtNewMessage = new ts_events_extended_1.SyncEvent();
         this.evtAmiUserEvent = new ts_events_extended_1.SyncEvent();
+        this.evtAmi = new ts_events_extended_1.SyncEvent();
         this.isFullyBooted = false;
         var port = credential.port, host = credential.host, user = credential.user, secret = credential.secret;
         this.ami = new AstMan(port, host, user, secret, true);
         this.ami.keepConnected();
+        this.ami.on("managerevent", function (evt) { return _this.evtAmi.post(evt); });
         this.ami.on("userevent", function (evt) { return _this.evtAmiUserEvent.post(evt); });
         this.ami.on("fullybooted", function () { _this.isFullyBooted = true; });
         this.ami.on("close", function () { _this.isFullyBooted = false; });

@@ -54,6 +54,14 @@ export type Phonebook = {
     contacts: Contact[];
 };
 
+export interface ManagerEvent {
+        event: string;
+        privilege: string;
+        [ header: string ]: string;
+}
+
+
+
 export class AmiClient {
 
     private static localClient: AmiClient | undefined = undefined;
@@ -75,6 +83,7 @@ export class AmiClient {
     public readonly evtNewMessage = new SyncEvent<{ imei: string } & Message>();
 
     public readonly evtAmiUserEvent = new SyncEvent<UserEvent>();
+    public readonly evtAmi= new SyncEvent<ManagerEvent>();
 
     private isFullyBooted = false;
 
@@ -86,6 +95,7 @@ export class AmiClient {
 
         this.ami.keepConnected();
 
+        this.ami.on("managerevent", evt => this.evtAmi.post(evt));
         this.ami.on("userevent", evt => this.evtAmiUserEvent.post(evt));
         this.ami.on("fullybooted", () => { this.isFullyBooted = true; });
         this.ami.on("close", () => { this.isFullyBooted = false; });

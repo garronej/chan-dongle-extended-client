@@ -39,6 +39,11 @@ export declare type Phonebook = {
     };
     contacts: Contact[];
 };
+export interface ManagerEvent {
+    event: string;
+    privilege: string;
+    [header: string]: string;
+}
 export declare class AmiClient {
     private static localClient;
     static localhost(): AmiClient;
@@ -53,6 +58,7 @@ export declare class AmiClient {
         imei: string;
     } & Message>;
     readonly evtAmiUserEvent: SyncEvent<UserEvent>;
+    readonly evtAmi: SyncEvent<ManagerEvent>;
     private isFullyBooted;
     constructor(credential: Credential);
     postUserEventAction(actionEvt: UserEvent): {

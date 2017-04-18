@@ -83,7 +83,7 @@ export class DongleExtendedClient {
     public readonly evtNewMessage = new SyncEvent<{ imei: string } & Message>();
 
 
-    private readonly evtUserEvent= new SyncEvent<UserEvent>();
+    public readonly evtUserEvent= new SyncEvent<UserEvent>();
 
     private postUserEventAction( userEvent: UserEvent ): string {
 

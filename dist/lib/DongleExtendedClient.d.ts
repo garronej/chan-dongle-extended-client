@@ -1,4 +1,5 @@
 import { Ami, Credential } from "ts-ami";
+import { UserEvent } from "./AmiUserEvent";
 import { SyncEvent } from "ts-events-extended";
 export interface StatusReport {
     messageId: number;
@@ -51,7 +52,7 @@ export declare class DongleExtendedClient {
     readonly evtNewMessage: SyncEvent<{
         imei: string;
     } & Message>;
-    private readonly evtUserEvent;
+    readonly evtUserEvent: SyncEvent<UserEvent>;
     private postUserEventAction(userEvent);
     constructor(credential: Credential);
     disconnect(): void;

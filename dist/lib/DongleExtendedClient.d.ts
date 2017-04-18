@@ -53,7 +53,8 @@ export declare class DongleExtendedClient {
         imei: string;
     } & Message>;
     readonly evtUserEvent: SyncEvent<UserEvent>;
-    private postUserEventAction(userEvent);
+    lastActionId: string;
+    postUserEventAction(userEvent: UserEvent): Promise<any>;
     constructor(credential: Credential);
     disconnect(): void;
     getLockedDongles(): Promise<LockedDongle[]>;

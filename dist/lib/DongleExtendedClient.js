@@ -50,6 +50,7 @@ var DongleExtendedClient = (function () {
         this.evtRequestUnlockCode = new ts_events_extended_1.SyncEvent();
         this.evtNewMessage = new ts_events_extended_1.SyncEvent();
         this.evtUserEvent = new ts_events_extended_1.SyncEvent();
+        this.lastActionId = "";
         this.ami = new ts_ami_1.Ami(credential);
         this.ami.evt.attach(function (_a) {
             var event = _a.event;
@@ -103,8 +104,9 @@ var DongleExtendedClient = (function () {
     };
     ;
     DongleExtendedClient.prototype.postUserEventAction = function (userEvent) {
-        this.ami.postAction(userEvent);
-        return this.ami.lastActionId;
+        var p = this.ami.postAction(userEvent);
+        this.lastActionId = this.ami.lastActionId;
+        return p;
     };
     DongleExtendedClient.prototype.disconnect = function () {
         this.ami.disconnect();
@@ -115,7 +117,8 @@ var DongleExtendedClient = (function () {
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        actionid = this.postUserEventAction(Request.GetLockedDongles.buildAction());
+                        this.postUserEventAction(Request.GetLockedDongles.buildAction());
+                        actionid = this.lastActionId;
                         return [4 /*yield*/, this.evtUserEvent.waitFor(Response.GetLockedDongles.Infos.matchEvt(actionid), 10000)];
                     case 1:
                         evtResponse = _a.sent();
@@ -146,7 +149,8 @@ var DongleExtendedClient = (function () {
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        actionid = this.postUserEventAction(Request.GetActiveDongles.buildAction());
+                        this.postUserEventAction(Request.GetActiveDongles.buildAction());
+                        actionid = this.lastActionId;
                         return [4 /*yield*/, this.evtUserEvent.waitFor(Response.GetActiveDongles.Infos.matchEvt(actionid), 10000)];
                     case 1:
                         evtResponse = _a.sent();
@@ -179,7 +183,8 @@ var DongleExtendedClient = (function () {
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        actionid = this.postUserEventAction(Request.SendMessage.buildAction(imei, number, text));
+                        this.postUserEventAction(Request.SendMessage.buildAction(imei, number, text));
+                        actionid = this.lastActionId;
                         return [4 /*yield*/, this.evtUserEvent.waitFor(Response.SendMessage.matchEvt(actionid), 30000)];
                     case 1:
                         evtResponse = _a.sent();
@@ -196,7 +201,8 @@ var DongleExtendedClient = (function () {
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        actionid = this.postUserEventAction(Request.GetSimPhonebook.buildAction(imei));
+                        this.postUserEventAction(Request.GetSimPhonebook.buildAction(imei));
+                        actionid = this.lastActionId;
                         return [4 /*yield*/, this.evtUserEvent.waitFor(Response.GetSimPhonebook.Infos.matchEvt(actionid), 10000)];
                     case 1:
                         evt = _a.sent();
@@ -232,7 +238,8 @@ var DongleExtendedClient = (function () {
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        actionid = this.postUserEventAction(Request.CreateContact.buildAction(imei, name, number));
+                        this.postUserEventAction(Request.CreateContact.buildAction(imei, name, number));
+                        actionid = this.lastActionId;
                         return [4 /*yield*/, this.evtUserEvent.waitFor(Response.CreateContact.matchEvt(actionid), 10000)];
                     case 1:
                         evt = _a.sent();
@@ -254,7 +261,8 @@ var DongleExtendedClient = (function () {
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        actionid = this.postUserEventAction(Request.GetMessages.buildAction(imei, flush ? "true" : "false"));
+                        this.postUserEventAction(Request.GetMessages.buildAction(imei, flush ? "true" : "false"));
+                        actionid = this.lastActionId;
                         return [4 /*yield*/, this.evtUserEvent.waitFor(Response.GetMessages.Infos.matchEvt(actionid), 10000)];
                     case 1:
                         evt = _a.sent();
@@ -285,7 +293,8 @@ var DongleExtendedClient = (function () {
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        actionid = this.postUserEventAction(Request.DeleteContact.buildAction(imei, index.toString()));
+                        this.postUserEventAction(Request.DeleteContact.buildAction(imei, index.toString()));
+                        actionid = this.lastActionId;
                         return [4 /*yield*/, this.evtUserEvent.waitFor(Response.matchEvt(Request.DeleteContact.keyword, actionid), 10000)];
                     case 1:
                         evt = _a.sent();
@@ -302,20 +311,21 @@ var DongleExtendedClient = (function () {
             inputs[_i] = arguments[_i];
         }
         return __awaiter(this, void 0, void 0, function () {
-            var imei, actionid, pin, puk, newPin, evt;
+            var imei, pin, puk, newPin, actionid, evt;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         imei = inputs[0];
                         if (inputs.length === 2) {
                             pin = inputs[1];
-                            actionid = this.postUserEventAction(Request.UnlockDongle.buildAction(imei, pin));
+                            this.postUserEventAction(Request.UnlockDongle.buildAction(imei, pin));
                         }
                         else {
                             puk = inputs[1];
                             newPin = inputs[2];
-                            actionid = this.postUserEventAction(Request.UnlockDongle.buildAction(imei, puk, newPin));
+                            this.postUserEventAction(Request.UnlockDongle.buildAction(imei, puk, newPin));
                         }
+                        actionid = this.lastActionId;
                         return [4 /*yield*/, this.evtUserEvent.waitFor(Response.matchEvt(Request.UnlockDongle.keyword, actionid), 10000)];
                     case 1:
                         evt = _a.sent();
@@ -332,7 +342,8 @@ var DongleExtendedClient = (function () {
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        actionid = this.postUserEventAction(Request.UpdateNumber.buildAction(imei, number));
+                        this.postUserEventAction(Request.UpdateNumber.buildAction(imei, number));
+                        actionid = this.lastActionId;
                         return [4 /*yield*/, this.evtUserEvent.waitFor(Response.matchEvt(Request.UpdateNumber.keyword, actionid), 10000)];
                     case 1:
                         evt = _a.sent();

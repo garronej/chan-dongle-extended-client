@@ -85,11 +85,15 @@ export class DongleExtendedClient {
 
     public readonly evtUserEvent= new SyncEvent<UserEvent>();
 
-    private postUserEventAction( userEvent: UserEvent ): string {
+    public lastActionId= "";
 
-        this.ami.postAction(userEvent as any);
+    public postUserEventAction( userEvent: UserEvent ): Promise<any> {
 
-        return this.ami.lastActionId;
+        let p= this.ami.postAction(userEvent as any);
+
+        this.lastActionId= this.ami.lastActionId;
+
+        return p;
 
     }
 
@@ -155,9 +159,11 @@ export class DongleExtendedClient {
 
     public async getLockedDongles(): Promise<LockedDongle[]> {
 
-        let actionid= this.postUserEventAction(
+        this.postUserEventAction(
             Request.GetLockedDongles.buildAction()
         );
+
+        let actionid= this.lastActionId;
 
         let evtResponse = await this.evtUserEvent.waitFor(
             Response.GetLockedDongles.Infos.matchEvt(actionid),
@@ -192,9 +198,11 @@ export class DongleExtendedClient {
 
     public async getActiveDongles(): Promise<DongleActive[]> {
 
-        let actionid = this.postUserEventAction(
+        this.postUserEventAction(
             Request.GetActiveDongles.buildAction()
         );
+
+        let actionid= this.lastActionId;
 
         let evtResponse = await this.evtUserEvent.waitFor(
             Response.GetActiveDongles.Infos.matchEvt(actionid),
@@ -236,11 +244,13 @@ export class DongleExtendedClient {
         text: string,
     ): Promise<number> {
 
-        let actionid = this.postUserEventAction(
+        this.postUserEventAction(
             Request.SendMessage.buildAction(
                 imei, number, text
             )
         );
+
+        let actionid= this.lastActionId;
 
         let evtResponse = await this.evtUserEvent.waitFor(
             Response.SendMessage.matchEvt(actionid),
@@ -259,9 +269,11 @@ export class DongleExtendedClient {
         imei: string
     ): Promise<Phonebook> {
 
-        let actionid = this.postUserEventAction(
+        this.postUserEventAction(
             Request.GetSimPhonebook.buildAction(imei)
         );
+
+        let actionid= this.lastActionId;
 
         let evt = await this.evtUserEvent.waitFor(
             Response.GetSimPhonebook.Infos.matchEvt(actionid),
@@ -307,13 +319,15 @@ export class DongleExtendedClient {
         number: string,
     ): Promise<Contact> {
 
-        let actionid = this.postUserEventAction(
+        this.postUserEventAction(
             Request.CreateContact.buildAction(
                 imei,
                 name,
                 number
             )
         );
+
+        let actionid= this.lastActionId;
 
         let evt = await this.evtUserEvent.waitFor(
             Response.CreateContact.matchEvt(actionid),
@@ -338,12 +352,14 @@ export class DongleExtendedClient {
         flush: boolean,
     ): Promise<Message[]> {
 
-        let actionid = this.postUserEventAction(
+        this.postUserEventAction(
             Request.GetMessages.buildAction(
                 imei,
                 flush ? "true" : "false"
             )
         );
+
+        let actionid= this.lastActionId;
 
         let evt = await this.evtUserEvent.waitFor(
             Response.GetMessages.Infos.matchEvt(actionid),
@@ -381,12 +397,14 @@ export class DongleExtendedClient {
         index: number
     ) {
 
-        let actionid = this.postUserEventAction(
+        this.postUserEventAction(
             Request.DeleteContact.buildAction(
                 imei,
                 index.toString()
             )
         );
+
+        let actionid= this.lastActionId;
 
         let evt = await this.evtUserEvent.waitFor(
             Response.matchEvt(Request.DeleteContact.keyword, actionid),
@@ -405,13 +423,11 @@ export class DongleExtendedClient {
 
         let imei= inputs[0] as string;
 
-        let actionid: string;
-
         if (inputs.length === 2){
 
             let pin= inputs[1] as string;
 
-            actionid= this.postUserEventAction(
+            this.postUserEventAction(
                 Request.UnlockDongle.buildAction(imei, pin)
             );
 
@@ -420,10 +436,12 @@ export class DongleExtendedClient {
             let puk= inputs[1] as string;
             let newPin= inputs[2] as string;
 
-            actionid= this.postUserEventAction(
+            this.postUserEventAction(
                 Request.UnlockDongle.buildAction(imei, puk, newPin)
             );
         }
+
+        let actionid= this.lastActionId;
 
         let evt = await this.evtUserEvent.waitFor(
             Response.matchEvt(Request.UnlockDongle.keyword, actionid),
@@ -440,9 +458,11 @@ export class DongleExtendedClient {
         number: string
     ) {
 
-        let actionid= this.postUserEventAction(
+        this.postUserEventAction(
             Request.UpdateNumber.buildAction(imei, number)
         );
+
+        let actionid= this.lastActionId;
 
         let evt = await this.evtUserEvent.waitFor(
             Response.matchEvt(Request.UpdateNumber.keyword, actionid),

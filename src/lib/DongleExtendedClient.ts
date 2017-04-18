@@ -1,6 +1,11 @@
-import { Ami, retrieveCredential, Credential } from "ts-ami";
+import { 
+    Ami, 
+    retrieveCredential, 
+    Credential, 
+    generateUniqueActionId 
+} from "ts-ami";
 
-import { UserEvent, generateUniqueActionId } from "./AmiUserEvent";
+import { UserEvent } from "./AmiUserEvent";
 import Response = UserEvent.Response;
 import Request = UserEvent.Request;
 import Event = UserEvent.Event;

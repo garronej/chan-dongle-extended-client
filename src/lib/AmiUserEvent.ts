@@ -1,4 +1,5 @@
 import { LockedPinState } from "./DongleExtendedClient";
+import { generateUniqueActionId } from "ts-ami";
 
 export function strDivide(maxLength: number, str: string): string[] {
 
@@ -16,14 +17,6 @@ export function strDivide(maxLength: number, str: string): string[] {
 
 }
 
-//TODO replace
-export const generateUniqueActionId = (() => {
-
-    let counter = Date.now();
-
-    return (): string => (counter++).toString();
-
-})();
 
 
 export interface UserEvent {

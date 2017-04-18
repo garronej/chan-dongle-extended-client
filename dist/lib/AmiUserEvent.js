@@ -8,6 +8,7 @@ var __assign = (this && this.__assign) || Object.assign || function(t) {
     return t;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+var ts_ami_1 = require("ts-ami");
 function strDivide(maxLength, str) {
     function callee(state, rest) {
         if (!rest)
@@ -18,15 +19,10 @@ function strDivide(maxLength, str) {
     return callee([], str);
 }
 exports.strDivide = strDivide;
-//TODO replace
-exports.generateUniqueActionId = (function () {
-    var counter = Date.now();
-    return function () { return (counter++).toString(); };
-})();
 var UserEvent;
 (function (UserEvent) {
     function buildAction(userevent, actionid) {
-        actionid = actionid || exports.generateUniqueActionId();
+        actionid = actionid || ts_ami_1.generateUniqueActionId();
         return {
             "action": "UserEvent",
             userevent: userevent,

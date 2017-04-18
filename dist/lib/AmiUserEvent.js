@@ -18,6 +18,7 @@ function strDivide(maxLength, str) {
     return callee([], str);
 }
 exports.strDivide = strDivide;
+//TODO replace
 exports.generateUniqueActionId = (function () {
     var counter = Date.now();
     return function () { return (counter++).toString(); };

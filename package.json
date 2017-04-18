@@ -1,6 +1,6 @@
 {
   "name": "chan-dongle-extended-client",
-  "version": "0.1.11",
+  "version": "0.2.0",
   "description": "client for chan-dongle-extended",
   "main": "./dist/lib/index.js",
   "types": "./dist/lib/index.d.ts",
@@ -23,11 +23,9 @@
   "author": "Joseph Garrone",
   "license": "MIT",
   "dependencies": {
-    "asterisk-manager": "garronej/NodeJS-AsteriskManager",
-    "ini-extended": "github:garronej/ini-extended",
     "rejection-tracker": "garronej/rejection-tracker",
-    "ts-events-extended": "garronej/ts-events-extended",
-    "ts-promisify": "garronej/ts-promisify"
+    "ts-ami": "github:garronej/ts-ami",
+    "ts-events-extended": "garronej/ts-events-extended"
   },
   "devDependencies": {
     "typescript": "^2.2.1",

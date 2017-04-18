@@ -1,4 +1,4 @@
-import { LockedPinState } from "./AmiClient";
+import { LockedPinState } from "./DongleExtendedClient";
 export declare function strDivide(maxLength: number, str: string): string[];
 export declare const generateUniqueActionId: () => string;
 export interface UserEvent {

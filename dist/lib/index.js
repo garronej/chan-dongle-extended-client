@@ -4,7 +4,6 @@ function __export(m) {
 }
 Object.defineProperty(exports, "__esModule", { value: true });
 require("rejection-tracker")(__dirname, "..", "..");
-__export(require("./AmiClient"));
+__export(require("./DongleExtendedClient"));
 __export(require("./AmiUserEvent"));
-__export(require("./AmiCredential"));
 //# sourceMappingURL=index.js.map

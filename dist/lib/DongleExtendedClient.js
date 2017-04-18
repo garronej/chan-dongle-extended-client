@@ -35,71 +35,27 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+var ts_ami_1 = require("ts-ami");
 var AmiUserEvent_1 = require("./AmiUserEvent");
 var Response = AmiUserEvent_1.UserEvent.Response;
 var Request = AmiUserEvent_1.UserEvent.Request;
 var Event = AmiUserEvent_1.UserEvent.Event;
-var AmiCredential_1 = require("./AmiCredential");
-var AstMan = require("asterisk-manager");
 var ts_events_extended_1 = require("ts-events-extended");
-var pr = require("ts-promisify");
-var AmiClient = (function () {
-    function AmiClient(credential) {
+var DongleExtendedClient = (function () {
+    function DongleExtendedClient(credential) {
         var _this = this;
         this.evtMessageStatusReport = new ts_events_extended_1.SyncEvent();
         this.evtDongleDisconnect = new ts_events_extended_1.SyncEvent();
         this.evtNewActiveDongle = new ts_events_extended_1.SyncEvent();
         this.evtRequestUnlockCode = new ts_events_extended_1.SyncEvent();
         this.evtNewMessage = new ts_events_extended_1.SyncEvent();
-        this.evtAmiUserEvent = new ts_events_extended_1.SyncEvent();
-        this.evtAmi = new ts_events_extended_1.SyncEvent();
-        this.isFullyBooted = false;
-        var port = credential.port, host = credential.host, user = credential.user, secret = credential.secret;
-        this.ami = new AstMan(port, host, user, secret, true);
-        this.ami.keepConnected();
-        this.ami.on("managerevent", function (evt) { return _this.evtAmi.post(evt); });
-        this.ami.on("userevent", function (evt) { return _this.evtAmiUserEvent.post(evt); });
-        this.ami.on("fullybooted", function () { _this.isFullyBooted = true; });
-        this.ami.on("close", function () { _this.isFullyBooted = false; });
-        this.registerListeners();
-    }
-    AmiClient.localhost = function () {
-        if (this.localClient)
-            return this.localClient;
-        return this.localClient = new this(AmiCredential_1.AmiCredential.retrieve());
-    };
-    ;
-    AmiClient.prototype.postUserEventAction = function (actionEvt) {
-        return this.postAction(actionEvt);
-    };
-    AmiClient.prototype.postAction = function (actionEvt) {
-        var _this = this;
-        if (!actionEvt.actionid)
-            actionEvt.actionid = AmiUserEvent_1.generateUniqueActionId();
-        var actionid = actionEvt.actionid;
-        var promise = new Promise(function (resolve, reject) { return __awaiter(_this, void 0, void 0, function () {
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        if (!!this.isFullyBooted) return [3 /*break*/, 2];
-                        return [4 /*yield*/, pr.generic(this.ami, this.ami.once)("fullybooted")];
-                    case 1:
-                        _a.sent();
-                        _a.label = 2;
-                    case 2:
-                        this.ami.actionExpectSingleResponse(actionEvt, function (error, res) { return error ? reject(error) : resolve(res); });
-                        return [2 /*return*/];
-                }
-            });
-        }); });
-        return { actionid: actionid, promise: promise };
-    };
-    AmiClient.prototype.disconnect = function () {
-        this.ami.disconnect();
-    };
-    AmiClient.prototype.registerListeners = function () {
-        var _this = this;
-        this.evtAmiUserEvent.attach(Event.matchEvt, function (evt) {
+        this.evtUserEvent = new ts_events_extended_1.SyncEvent();
+        this.ami = new ts_ami_1.Ami(credential);
+        this.ami.evt.attach(function (_a) {
+            var event = _a.event;
+            return event === "UserEvent";
+        }, function (userEvent) { return _this.evtUserEvent.post(userEvent); });
+        this.evtUserEvent.attach(Event.matchEvt, function (evt) {
             if (Event.MessageStatusReport.matchEvt(evt))
                 _this.evtMessageStatusReport.post({
                     "imei": evt.imei,
@@ -139,15 +95,28 @@ var AmiClient = (function () {
                     "text": AmiUserEvent_1.UserEvent.Event.NewMessage.reassembleText(evt)
                 });
         });
+    }
+    DongleExtendedClient.localhost = function () {
+        if (this.localClient)
+            return this.localClient;
+        return this.localClient = new this(ts_ami_1.retrieveCredential({ "user": "dongle-ext-user" }));
     };
-    AmiClient.prototype.getLockedDongles = function (callback) {
+    ;
+    DongleExtendedClient.prototype.postUserEventAction = function (userEvent) {
+        this.ami.postAction(userEvent);
+        return this.ami.lastActionId;
+    };
+    DongleExtendedClient.prototype.disconnect = function () {
+        this.ami.disconnect();
+    };
+    DongleExtendedClient.prototype.getLockedDongles = function () {
         return __awaiter(this, void 0, void 0, function () {
             var actionid, evtResponse, dongleCount, out, evtResponse_1, imei, iccid, pinstate, tryleft;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        actionid = this.postUserEventAction(Request.GetLockedDongles.buildAction()).actionid;
-                        return [4 /*yield*/, this.evtAmiUserEvent.waitFor(Response.GetLockedDongles.Infos.matchEvt(actionid), 10000)];
+                        actionid = this.postUserEventAction(Request.GetLockedDongles.buildAction());
+                        return [4 /*yield*/, this.evtUserEvent.waitFor(Response.GetLockedDongles.Infos.matchEvt(actionid), 10000)];
                     case 1:
                         evtResponse = _a.sent();
                         dongleCount = parseInt(evtResponse.donglecount);
@@ -155,7 +124,7 @@ var AmiClient = (function () {
                         _a.label = 2;
                     case 2:
                         if (!(out.length !== dongleCount)) return [3 /*break*/, 4];
-                        return [4 /*yield*/, this.evtAmiUserEvent.waitFor(Response.GetLockedDongles.Entry.matchEvt(actionid), 10000)];
+                        return [4 /*yield*/, this.evtUserEvent.waitFor(Response.GetLockedDongles.Entry.matchEvt(actionid), 10000)];
                     case 3:
                         evtResponse_1 = _a.sent();
                         imei = evtResponse_1.imei, iccid = evtResponse_1.iccid, pinstate = evtResponse_1.pinstate, tryleft = evtResponse_1.tryleft;
@@ -166,22 +135,19 @@ var AmiClient = (function () {
                             "tryLeft": parseInt(tryleft)
                         });
                         return [3 /*break*/, 2];
-                    case 4:
-                        if (callback)
-                            callback(out);
-                        return [2 /*return*/, out];
+                    case 4: return [2 /*return*/, out];
                 }
             });
         });
     };
-    AmiClient.prototype.getActiveDongles = function (callback) {
+    DongleExtendedClient.prototype.getActiveDongles = function () {
         return __awaiter(this, void 0, void 0, function () {
             var actionid, evtResponse, dongleCount, out, evtResponse_2, imei, iccid, imsi, number, serviceprovider;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        actionid = this.postUserEventAction(Request.GetActiveDongles.buildAction()).actionid;
-                        return [4 /*yield*/, this.evtAmiUserEvent.waitFor(Response.GetActiveDongles.Infos.matchEvt(actionid), 10000)];
+                        actionid = this.postUserEventAction(Request.GetActiveDongles.buildAction());
+                        return [4 /*yield*/, this.evtUserEvent.waitFor(Response.GetActiveDongles.Infos.matchEvt(actionid), 10000)];
                     case 1:
                         evtResponse = _a.sent();
                         dongleCount = parseInt(evtResponse.donglecount);
@@ -189,7 +155,7 @@ var AmiClient = (function () {
                         _a.label = 2;
                     case 2:
                         if (!(out.length !== dongleCount)) return [3 /*break*/, 4];
-                        return [4 /*yield*/, this.evtAmiUserEvent.waitFor(Response.GetActiveDongles.Entry.matchEvt(actionid), 10000)];
+                        return [4 /*yield*/, this.evtUserEvent.waitFor(Response.GetActiveDongles.Entry.matchEvt(actionid), 10000)];
                     case 3:
                         evtResponse_2 = _a.sent();
                         imei = evtResponse_2.imei, iccid = evtResponse_2.iccid, imsi = evtResponse_2.imsi, number = evtResponse_2.number, serviceprovider = evtResponse_2.serviceprovider;
@@ -201,55 +167,41 @@ var AmiClient = (function () {
                             "serviceProvider": serviceprovider || undefined
                         });
                         return [3 /*break*/, 2];
-                    case 4:
-                        if (callback)
-                            callback(out);
-                        return [2 /*return*/, out];
+                    case 4: return [2 /*return*/, out];
                 }
             });
         });
     };
-    AmiClient.prototype.sendMessage = function (imei, number, text, callback) {
+    //return messageId
+    DongleExtendedClient.prototype.sendMessage = function (imei, number, text) {
         return __awaiter(this, void 0, void 0, function () {
-            var actionid, evtResponse, error, messageId;
+            var actionid, evtResponse;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        actionid = this.postUserEventAction(Request.SendMessage.buildAction(imei, number, text)).actionid;
-                        return [4 /*yield*/, this.evtAmiUserEvent.waitFor(Response.SendMessage.matchEvt(actionid), 30000)];
+                        actionid = this.postUserEventAction(Request.SendMessage.buildAction(imei, number, text));
+                        return [4 /*yield*/, this.evtUserEvent.waitFor(Response.SendMessage.matchEvt(actionid), 30000)];
                     case 1:
                         evtResponse = _a.sent();
-                        if (evtResponse.error) {
-                            error = new Error(evtResponse.error);
-                            messageId = NaN;
-                        }
-                        else {
-                            error = null;
-                            messageId = parseInt(evtResponse.messageid);
-                        }
-                        if (callback)
-                            callback(error, messageId);
-                        return [2 /*return*/, [error, messageId]];
+                        if (evtResponse.error)
+                            throw new Error(evtResponse.error);
+                        return [2 /*return*/, parseInt(evtResponse.messageid)];
                 }
             });
         });
     };
-    AmiClient.prototype.getSimPhonebook = function (imei, callback) {
+    DongleExtendedClient.prototype.getSimPhonebook = function (imei) {
         return __awaiter(this, void 0, void 0, function () {
-            var actionid, evt, error, infos, contactCount, contacts, evt_1, phonebook;
+            var actionid, evt, infos, contactCount, contacts, evt_1;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        actionid = this.postUserEventAction(Request.GetSimPhonebook.buildAction(imei)).actionid;
-                        return [4 /*yield*/, this.evtAmiUserEvent.waitFor(Response.GetSimPhonebook.Infos.matchEvt(actionid), 10000)];
+                        actionid = this.postUserEventAction(Request.GetSimPhonebook.buildAction(imei));
+                        return [4 /*yield*/, this.evtUserEvent.waitFor(Response.GetSimPhonebook.Infos.matchEvt(actionid), 10000)];
                     case 1:
                         evt = _a.sent();
-                        if (evt.error) {
-                            error = new Error(evt.error);
-                            if (callback)
-                                callback(error, null);
-                            return [2 /*return*/, [error, null]];
-                        }
+                        if (evt.error)
+                            throw new Error(evt.error);
                         infos = {
                             "contactNameMaxLength": parseInt(evt.contactnamemaxlength),
                             "numberMaxLength": parseInt(evt.numbermaxlength),
@@ -260,7 +212,7 @@ var AmiClient = (function () {
                         _a.label = 2;
                     case 2:
                         if (!(contacts.length !== contactCount)) return [3 /*break*/, 4];
-                        return [4 /*yield*/, this.evtAmiUserEvent.waitFor(Response.GetSimPhonebook.Entry.matchEvt(actionid), 10000)];
+                        return [4 /*yield*/, this.evtUserEvent.waitFor(Response.GetSimPhonebook.Entry.matchEvt(actionid), 10000)];
                     case 3:
                         evt_1 = _a.sent();
                         contacts.push({
@@ -269,65 +221,51 @@ var AmiClient = (function () {
                             "number": evt_1.number
                         });
                         return [3 /*break*/, 2];
-                    case 4:
-                        phonebook = { infos: infos, contacts: contacts };
-                        if (callback)
-                            callback(null, phonebook);
-                        return [2 /*return*/, [null, phonebook]];
+                    case 4: return [2 /*return*/, { infos: infos, contacts: contacts }];
                 }
             });
         });
     };
-    AmiClient.prototype.createContact = function (imei, name, number, callback) {
+    DongleExtendedClient.prototype.createContact = function (imei, name, number) {
         return __awaiter(this, void 0, void 0, function () {
-            var actionid, evt, error, contact;
+            var actionid, evt, contact;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        actionid = this.postUserEventAction(Request.CreateContact.buildAction(imei, name, number)).actionid;
-                        return [4 /*yield*/, this.evtAmiUserEvent.waitFor(Response.CreateContact.matchEvt(actionid), 10000)];
+                        actionid = this.postUserEventAction(Request.CreateContact.buildAction(imei, name, number));
+                        return [4 /*yield*/, this.evtUserEvent.waitFor(Response.CreateContact.matchEvt(actionid), 10000)];
                     case 1:
                         evt = _a.sent();
-                        if (evt.error) {
-                            error = new Error(evt.error);
-                            if (callback)
-                                callback(error, null);
-                            return [2 /*return*/, [error, null]];
-                        }
+                        if (evt.error)
+                            throw new Error(evt.error);
                         contact = {
                             "index": parseInt(evt.index),
                             "name": evt.name,
                             "number": evt.number
                         };
-                        if (callback)
-                            callback(null, contact);
-                        return [2 /*return*/, [null, contact]];
+                        return [2 /*return*/, contact];
                 }
             });
         });
     };
-    AmiClient.prototype.getMessages = function (imei, flush, callback) {
+    DongleExtendedClient.prototype.getMessages = function (imei, flush) {
         return __awaiter(this, void 0, void 0, function () {
-            var actionid, evt, error, messagesCount, messages, evt_2;
+            var actionid, evt, messagesCount, messages, evt_2;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        actionid = this.postUserEventAction(Request.GetMessages.buildAction(imei, flush ? "true" : "false")).actionid;
-                        return [4 /*yield*/, this.evtAmiUserEvent.waitFor(Response.GetMessages.Infos.matchEvt(actionid), 10000)];
+                        actionid = this.postUserEventAction(Request.GetMessages.buildAction(imei, flush ? "true" : "false"));
+                        return [4 /*yield*/, this.evtUserEvent.waitFor(Response.GetMessages.Infos.matchEvt(actionid), 10000)];
                     case 1:
                         evt = _a.sent();
-                        if (evt.error) {
-                            error = new Error(evt.error);
-                            if (callback)
-                                callback(error, null);
-                            return [2 /*return*/, [error, null]];
-                        }
+                        if (evt.error)
+                            throw new Error(evt.error);
                         messagesCount = parseInt(evt.messagescount);
                         messages = [];
                         _a.label = 2;
                     case 2:
                         if (!(messages.length !== messagesCount)) return [3 /*break*/, 4];
-                        return [4 /*yield*/, this.evtAmiUserEvent.waitFor(Response.GetMessages.Entry.matchEvt(actionid), 10000)];
+                        return [4 /*yield*/, this.evtUserEvent.waitFor(Response.GetMessages.Entry.matchEvt(actionid), 10000)];
                     case 3:
                         evt_2 = _a.sent();
                         messages.push({
@@ -336,92 +274,77 @@ var AmiClient = (function () {
                             "text": Response.GetMessages.Entry.reassembleText(evt_2)
                         });
                         return [3 /*break*/, 2];
-                    case 4:
-                        if (callback)
-                            callback(null, messages);
-                        return [2 /*return*/, [null, messages]];
+                    case 4: return [2 /*return*/, messages];
                 }
             });
         });
     };
-    AmiClient.prototype.deleteContact = function (imei, index, callback) {
+    DongleExtendedClient.prototype.deleteContact = function (imei, index) {
         return __awaiter(this, void 0, void 0, function () {
-            var actionid, evt, error;
+            var actionid, evt;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        actionid = this.postUserEventAction(Request.DeleteContact.buildAction(imei, index.toString())).actionid;
-                        return [4 /*yield*/, this.evtAmiUserEvent.waitFor(Response.matchEvt(Request.DeleteContact.keyword, actionid), 10000)];
+                        actionid = this.postUserEventAction(Request.DeleteContact.buildAction(imei, index.toString()));
+                        return [4 /*yield*/, this.evtUserEvent.waitFor(Response.matchEvt(Request.DeleteContact.keyword, actionid), 10000)];
                     case 1:
                         evt = _a.sent();
-                        error = evt.error ? new Error(evt.error) : null;
-                        if (callback)
-                            callback(error);
-                        return [2 /*return*/, error];
+                        if (evt.error)
+                            throw new Error(evt.error);
+                        return [2 /*return*/];
                 }
             });
         });
     };
-    AmiClient.readUnlockParams = function (inputs) {
-        var imei = inputs.shift();
-        var callback = undefined;
-        if (typeof inputs[inputs.length - 1] === "function")
-            callback = inputs.pop();
-        if (inputs.length === 1) {
-            var pin = inputs[0];
-            return { imei: imei, pin: pin, callback: callback };
-        }
-        else {
-            var puk = inputs[0], newPin = inputs[1];
-            return { imei: imei, puk: puk, newPin: newPin, callback: callback };
-        }
-    };
-    AmiClient.prototype.unlockDongle = function () {
+    DongleExtendedClient.prototype.unlockDongle = function () {
         var inputs = [];
         for (var _i = 0; _i < arguments.length; _i++) {
             inputs[_i] = arguments[_i];
         }
         return __awaiter(this, void 0, void 0, function () {
-            var _a, imei, pin, puk, newPin, callback, actionid, evt, error;
-            return __generator(this, function (_b) {
-                switch (_b.label) {
-                    case 0:
-                        _a = AmiClient.readUnlockParams(inputs), imei = _a.imei, pin = _a.pin, puk = _a.puk, newPin = _a.newPin, callback = _a.callback;
-                        if (pin)
-                            actionid = this.postUserEventAction(Request.UnlockDongle.buildAction(imei, pin)).actionid;
-                        else
-                            actionid = this.postUserEventAction(Request.UnlockDongle.buildAction(imei, puk, newPin)).actionid;
-                        return [4 /*yield*/, this.evtAmiUserEvent.waitFor(Response.matchEvt(Request.UnlockDongle.keyword, actionid), 10000)];
-                    case 1:
-                        evt = _b.sent();
-                        error = evt.error ? new Error(evt.error) : null;
-                        if (callback)
-                            callback(error);
-                        return [2 /*return*/, error];
-                }
-            });
-        });
-    };
-    AmiClient.prototype.updateNumber = function (imei, number, callback) {
-        return __awaiter(this, void 0, void 0, function () {
-            var actionid, evt, error;
+            var imei, actionid, pin, puk, newPin, evt;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        actionid = this.postUserEventAction(Request.UpdateNumber.buildAction(imei, number)).actionid;
-                        return [4 /*yield*/, this.evtAmiUserEvent.waitFor(Response.matchEvt(Request.UpdateNumber.keyword, actionid), 10000)];
+                        imei = inputs[0];
+                        if (inputs.length === 2) {
+                            pin = inputs[1];
+                            actionid = this.postUserEventAction(Request.UnlockDongle.buildAction(imei, pin));
+                        }
+                        else {
+                            puk = inputs[1];
+                            newPin = inputs[2];
+                            actionid = this.postUserEventAction(Request.UnlockDongle.buildAction(imei, puk, newPin));
+                        }
+                        return [4 /*yield*/, this.evtUserEvent.waitFor(Response.matchEvt(Request.UnlockDongle.keyword, actionid), 10000)];
                     case 1:
                         evt = _a.sent();
-                        error = evt.error ? new Error(evt.error) : null;
-                        if (callback)
-                            callback(error);
-                        return [2 /*return*/, error];
+                        if (evt.error)
+                            throw new Error(evt.error);
+                        return [2 /*return*/];
                 }
             });
         });
     };
-    return AmiClient;
+    DongleExtendedClient.prototype.updateNumber = function (imei, number) {
+        return __awaiter(this, void 0, void 0, function () {
+            var actionid, evt;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        actionid = this.postUserEventAction(Request.UpdateNumber.buildAction(imei, number));
+                        return [4 /*yield*/, this.evtUserEvent.waitFor(Response.matchEvt(Request.UpdateNumber.keyword, actionid), 10000)];
+                    case 1:
+                        evt = _a.sent();
+                        if (evt.error)
+                            throw new Error(evt.error);
+                        return [2 /*return*/];
+                }
+            });
+        });
+    };
+    return DongleExtendedClient;
 }());
-AmiClient.localClient = undefined;
-exports.AmiClient = AmiClient;
-//# sourceMappingURL=AmiClient.js.map
+DongleExtendedClient.localClient = undefined;
+exports.DongleExtendedClient = DongleExtendedClient;
+//# sourceMappingURL=DongleExtendedClient.js.map

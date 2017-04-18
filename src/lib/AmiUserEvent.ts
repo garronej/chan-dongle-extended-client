@@ -1,4 +1,4 @@
-import { LockedPinState } from "./AmiClient";
+import { LockedPinState } from "./DongleExtendedClient";
 
 export function strDivide(maxLength: number, str: string): string[] {
 
@@ -16,6 +16,7 @@ export function strDivide(maxLength: number, str: string): string[] {
 
 }
 
+//TODO replace
 export const generateUniqueActionId = (() => {
 
     let counter = Date.now();
@@ -44,6 +45,7 @@ export namespace UserEvent {
         };
 
     }
+    
 
     /*START EVENT*/
 

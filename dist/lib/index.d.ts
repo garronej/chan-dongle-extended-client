@@ -1,3 +1,2 @@
-export * from "./AmiClient";
+export * from "./DongleExtendedClient";
 export * from "./AmiUserEvent";
-export * from "./AmiCredential";

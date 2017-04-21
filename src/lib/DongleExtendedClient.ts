@@ -68,7 +68,7 @@ export class DongleExtendedClient {
 
         return this.localClient = new this(
             retrieveCredential(
-                { "user": "dongle-ext-user" }
+                { "user": "dongle_ext_user" }
             )
         );
 

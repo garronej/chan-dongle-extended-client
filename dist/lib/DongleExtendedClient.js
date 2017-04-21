@@ -100,7 +100,7 @@ var DongleExtendedClient = (function () {
     DongleExtendedClient.localhost = function () {
         if (this.localClient)
             return this.localClient;
-        return this.localClient = new this(ts_ami_1.retrieveCredential({ "user": "dongle-ext-user" }));
+        return this.localClient = new this(ts_ami_1.retrieveCredential({ "user": "dongle_ext_user" }));
     };
     ;
     DongleExtendedClient.prototype.postUserEventAction = function (userEvent) {

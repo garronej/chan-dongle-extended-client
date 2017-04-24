@@ -6,6 +6,7 @@ export interface StatusReport {
     dischargeTime: Date;
     isDelivered: boolean;
     status: string;
+    recipient: string;
 }
 export declare type LockedPinState = "SIM PIN" | "SIM PUK" | "SIM PIN2" | "SIM PUK2";
 export interface Message {

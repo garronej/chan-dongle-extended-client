@@ -63,7 +63,8 @@ var DongleExtendedClient = (function () {
                     "messageId": parseInt(evt.messageid),
                     "isDelivered": evt.isdelivered === "true",
                     "status": evt.status,
-                    "dischargeTime": new Date(evt.dischargetime)
+                    "dischargeTime": new Date(evt.dischargetime),
+                    "recipient": evt.recipient
                 });
             else if (Event.DongleDisconnect.matchEvt(evt))
                 _this.evtDongleDisconnect.post({

@@ -74,11 +74,12 @@ export declare namespace UserEvent {
             dischargetime: string;
             isdelivered: "true" | "false";
             status: string;
+            recipient: string;
         }
         namespace MessageStatusReport {
             const keyword = "MessageStatusReport";
             function matchEvt(evt: UserEvent): evt is MessageStatusReport;
-            function buildAction(imei: string, messageid: string, dischargetime: string, isdelivered: MessageStatusReport['isdelivered'], status: string): MessageStatusReport;
+            function buildAction(imei: string, messageid: string, dischargetime: string, isdelivered: MessageStatusReport['isdelivered'], status: string, recipient: string): MessageStatusReport;
         }
     }
     interface Request extends UserEvent {

@@ -125,12 +125,13 @@ var UserEvent;
                     evt.dongleevent === MessageStatusReport.keyword);
             }
             MessageStatusReport.matchEvt = matchEvt;
-            function buildAction(imei, messageid, dischargetime, isdelivered, status) {
+            function buildAction(imei, messageid, dischargetime, isdelivered, status, recipient) {
                 return __assign({}, Event.buildAction(MessageStatusReport.keyword), { imei: imei,
                     messageid: messageid,
                     dischargetime: dischargetime,
                     isdelivered: isdelivered,
-                    status: status });
+                    status: status,
+                    recipient: recipient });
             }
             MessageStatusReport.buildAction = buildAction;
         })(MessageStatusReport = Event.MessageStatusReport || (Event.MessageStatusReport = {}));

@@ -243,6 +243,7 @@ export namespace UserEvent {
             dischargetime: string;
             isdelivered: "true" | "false";
             status: string;
+            recipient: string;
         }
 
         export namespace MessageStatusReport {
@@ -263,7 +264,8 @@ export namespace UserEvent {
                 messageid: string,
                 dischargetime: string,
                 isdelivered: MessageStatusReport['isdelivered'],
-                status: string
+                status: string,
+                recipient: string
             ): MessageStatusReport {
 
                 return {
@@ -272,7 +274,8 @@ export namespace UserEvent {
                     messageid,
                     dischargetime,
                     isdelivered,
-                    status
+                    status,
+                    recipient
                 } as MessageStatusReport;
 
             }

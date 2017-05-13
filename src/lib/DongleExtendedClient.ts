@@ -107,6 +107,7 @@ export class DongleExtendedClient {
             userEvent => this.evtUserEvent.post(userEvent as any)
         );
 
+
         this.evtUserEvent.attach(Event.matchEvt, evt => {
 
             if (Event.MessageStatusReport.matchEvt(evt))

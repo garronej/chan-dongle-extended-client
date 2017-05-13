@@ -19,6 +19,15 @@ function strDivide(maxLength, str) {
     return callee([], str);
 }
 exports.strDivide = strDivide;
+/*
+
+lineMaxByteLength > Buffer.byteLength(`text000: ""\r\n`) + x*6;
+
+x < ( lineMaxByteLength - Buffer.byteLength(`text000: ""\r\n`) )/6
+
+*/
+var maxMessageLength = 20000;
+var maxLength = Math.floor((ts_ami_1.lineMaxByteLength - Buffer.byteLength("text000: \"\"\r\n")) / 6);
 var UserEvent;
 (function (UserEvent) {
     function buildAction(userevent, actionid) {
@@ -66,7 +75,9 @@ var UserEvent;
             }
             NewMessage.matchEvt = matchEvt;
             function buildAction(imei, number, date, text) {
-                var textParts = strDivide(500, text);
+                if (text.length > maxMessageLength)
+                    throw new Error("Message too long");
+                var textParts = strDivide(maxLength, text);
                 var out = __assign({}, Event.buildAction(NewMessage.keyword), { imei: imei,
                     number: number,
                     date: date, "textsplitcount": textParts.length.toString() });
@@ -242,7 +253,9 @@ var UserEvent;
             }
             SendMessage.matchEvt = matchEvt;
             function buildAction(imei, number, text) {
-                var textParts = strDivide(500, text);
+                if (text.length > maxMessageLength)
+                    throw new Error("Message too long");
+                var textParts = strDivide(maxLength, text);
                 var out = __assign({}, Request.buildAction(SendMessage.keyword), { imei: imei,
                     number: number, "textsplitcount": textParts.length.toString() });
                 for (var i = 0; i < textParts.length; i++)
@@ -479,7 +492,9 @@ var UserEvent;
                 }
                 Entry.matchEvt = matchEvt;
                 function buildAction(actionid, number, date, text) {
-                    var textParts = strDivide(500, text);
+                    if (text.length > maxMessageLength)
+                        throw new Error("Message too long");
+                    var textParts = strDivide(maxLength, text);
                     var out = __assign({}, Response.buildAction(Request.GetMessages.keyword, actionid), { number: number,
                         date: date, "textsplitcount": textParts.length.toString() });
                     for (var i = 0; i < textParts.length; i++)

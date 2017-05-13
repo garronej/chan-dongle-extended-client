@@ -1,6 +1,6 @@
 {
   "name": "chan-dongle-extended-client",
-  "version": "0.2.7",
+  "version": "0.2.8",
   "description": "client for chan-dongle-extended",
   "main": "./dist/lib/index.js",
   "types": "./dist/lib/index.d.ts",
@@ -28,7 +28,7 @@
     "ts-events-extended": "garronej/ts-events-extended"
   },
   "devDependencies": {
-    "typescript": "^2.2.1",
-    "@types/node": "^4.2.2"
+    "@types/node": "^4.2.2",
+    "typescript": "^2.3.2"
   }
 }

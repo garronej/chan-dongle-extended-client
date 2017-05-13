@@ -1,5 +1,5 @@
 import { LockedPinState } from "./DongleExtendedClient";
-import { generateUniqueActionId } from "ts-ami";
+import { generateUniqueActionId, lineMaxByteLength } from "ts-ami";
 
 export function strDivide(maxLength: number, str: string): string[] {
 
@@ -17,7 +17,17 @@ export function strDivide(maxLength: number, str: string): string[] {
 
 }
 
+/*
 
+lineMaxByteLength > Buffer.byteLength(`text000: ""\r\n`) + x*6;
+
+x < ( lineMaxByteLength - Buffer.byteLength(`text000: ""\r\n`) )/6
+
+*/
+
+const maxMessageLength= 20000;
+
+const maxLength= Math.floor(( lineMaxByteLength - Buffer.byteLength(`text000: ""\r\n`) )/6);
 
 export interface UserEvent {
     userevent: string;
@@ -128,7 +138,10 @@ export namespace UserEvent {
                 text: string
             ): NewMessage {
 
-                let textParts = strDivide(500, text);
+                if( text.length > maxMessageLength ) 
+                    throw new Error("Message too long");
+
+                let textParts = strDivide(maxLength, text);
 
                 let out = {
                     ...Event.buildAction(keyword),
@@ -504,7 +517,10 @@ export namespace UserEvent {
 
             export function buildAction(imei: string, number: string, text: string): SendMessage {
 
-                let textParts = strDivide(500, text);
+                if( text.length > maxMessageLength ) 
+                    throw new Error("Message too long");
+
+                let textParts = strDivide(maxLength, text);
 
                 let out = {
                     ...Request.buildAction(keyword),
@@ -952,7 +968,10 @@ export namespace UserEvent {
                     text: string
                 ): Entry {
 
-                    let textParts = strDivide(500, text);
+                    if (text.length > maxMessageLength)
+                        throw new Error("Message too long");
+
+                    let textParts = strDivide(maxLength, text);
 
                     let out = {
                         ...Response.buildAction(Request.GetMessages.keyword, actionid),

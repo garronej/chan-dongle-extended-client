@@ -12,6 +12,7 @@ import Event = UserEvent.Event;
 
 import { SyncEvent } from "ts-events-extended";
 
+
 export interface StatusReport {
     messageId: number;
     dischargeTime: Date;

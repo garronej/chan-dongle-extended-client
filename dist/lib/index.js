@@ -8,5 +8,5 @@ __export(require("./DongleExtendedClient"));
 __export(require("./AmiUserEvent"));
 var ts_ami_1 = require("ts-ami");
 exports.lineMaxByteLength = ts_ami_1.lineMaxByteLength;
-__export(require("./lineSplit"));
+__export(require("./textSplit"));
 //# sourceMappingURL=index.js.map

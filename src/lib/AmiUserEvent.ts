@@ -1,37 +1,11 @@
 import { LockedPinState } from "./DongleExtendedClient";
 import { generateUniqueActionId, lineMaxByteLength } from "ts-ami";
-import { lineSplitBase64 } from "./lineSplit";
 import { Base64 } from "js-base64";
-
-/*
-export function strDivide(maxLength: number, str: string): string[] {
-
-    function callee(state: string[], rest: string): string[] {
-
-        if( !rest ) return state;
-        
-        state.push(rest.substring(0, maxLength));
-
-        return callee(state, rest.substring(maxLength, rest.length));
-
-    }
-
-    return callee([], str);
-
-}
-
-//lineMaxByteLength > Buffer.byteLength(`text000: ""\r\n`) + x*6;
-
-//x < ( lineMaxByteLength - Buffer.byteLength(`text000: ""\r\n`) )/6
-
-const maxLength= Math.floor(( lineMaxByteLength - Buffer.byteLength(`text000: ""\r\n`) )/6);
-
-*/
+import { textSplitBase64ForAmiEncodeFirst } from "./textSplit";
 
 const textKeyword = "base64text_part";
 
 const maxMessageLength= 20000;
-
 
 export interface UserEvent {
     userevent: string;
@@ -144,7 +118,7 @@ export namespace UserEvent {
                 if( text.length > maxMessageLength ) 
                     throw new Error("Message too long");
                 
-                let textParts= lineSplitBase64(text, `${textKeyword}000`);
+                let textParts= textSplitBase64ForAmiEncodeFirst(text, `${textKeyword}000`);
 
                 let out = {
                     ...Event.buildAction(keyword),
@@ -523,8 +497,7 @@ export namespace UserEvent {
                 if( text.length > maxMessageLength ) 
                     throw new Error("Message too long");
 
-
-                let textParts= lineSplitBase64(text, `${textKeyword}000`);
+                let textParts= textSplitBase64ForAmiEncodeFirst(text, `${textKeyword}000`);
 
                 let out = {
                     ...Request.buildAction(keyword),
@@ -975,7 +948,7 @@ export namespace UserEvent {
                     if (text.length > maxMessageLength)
                         throw new Error("Message too long");
 
-                    let textParts = lineSplitBase64(text, `${textKeyword}000`);
+                    let textParts = textSplitBase64ForAmiEncodeFirst(text, `${textKeyword}000`);
 
                     let out = {
                         ...Response.buildAction(Request.GetMessages.keyword, actionid),

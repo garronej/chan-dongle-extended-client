@@ -9,32 +9,8 @@ var __assign = (this && this.__assign) || Object.assign || function(t) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var ts_ami_1 = require("ts-ami");
-var lineSplit_1 = require("./lineSplit");
 var js_base64_1 = require("js-base64");
-/*
-export function strDivide(maxLength: number, str: string): string[] {
-
-    function callee(state: string[], rest: string): string[] {
-
-        if( !rest ) return state;
-        
-        state.push(rest.substring(0, maxLength));
-
-        return callee(state, rest.substring(maxLength, rest.length));
-
-    }
-
-    return callee([], str);
-
-}
-
-//lineMaxByteLength > Buffer.byteLength(`text000: ""\r\n`) + x*6;
-
-//x < ( lineMaxByteLength - Buffer.byteLength(`text000: ""\r\n`) )/6
-
-const maxLength= Math.floor(( lineMaxByteLength - Buffer.byteLength(`text000: ""\r\n`) )/6);
-
-*/
+var textSplit_1 = require("./textSplit");
 var textKeyword = "base64text_part";
 var maxMessageLength = 20000;
 var UserEvent;
@@ -86,7 +62,7 @@ var UserEvent;
             function buildAction(imei, number, date, text) {
                 if (text.length > maxMessageLength)
                     throw new Error("Message too long");
-                var textParts = lineSplit_1.lineSplitBase64(text, textKeyword + "000");
+                var textParts = textSplit_1.textSplitBase64ForAmiEncodeFirst(text, textKeyword + "000");
                 var out = __assign({}, Event.buildAction(NewMessage.keyword), { imei: imei,
                     number: number,
                     date: date, "textsplitcount": "" + textParts.length });
@@ -264,7 +240,7 @@ var UserEvent;
             function buildAction(imei, number, text) {
                 if (text.length > maxMessageLength)
                     throw new Error("Message too long");
-                var textParts = lineSplit_1.lineSplitBase64(text, textKeyword + "000");
+                var textParts = textSplit_1.textSplitBase64ForAmiEncodeFirst(text, textKeyword + "000");
                 var out = __assign({}, Request.buildAction(SendMessage.keyword), { imei: imei,
                     number: number, "textsplitcount": "" + textParts.length });
                 for (var i = 0; i < textParts.length; i++)
@@ -503,7 +479,7 @@ var UserEvent;
                 function buildAction(actionid, number, date, text) {
                     if (text.length > maxMessageLength)
                         throw new Error("Message too long");
-                    var textParts = lineSplit_1.lineSplitBase64(text, textKeyword + "000");
+                    var textParts = textSplit_1.textSplitBase64ForAmiEncodeFirst(text, textKeyword + "000");
                     var out = __assign({}, Response.buildAction(Request.GetMessages.keyword, actionid), { number: number,
                         date: date, "textsplitcount": textParts.length.toString() });
                     for (var i = 0; i < textParts.length; i++)

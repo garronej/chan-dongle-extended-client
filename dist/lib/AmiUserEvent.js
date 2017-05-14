@@ -258,7 +258,7 @@ var UserEvent;
                     evt.hasOwnProperty("imei") &&
                     evt.hasOwnProperty("number") &&
                     ((evt.hasOwnProperty("textsplitcount") &&
-                        evt.hasOwnProperty("text0")) || evt.hasOwnProperty("text")));
+                        evt.hasOwnProperty(textKeyword + "0")) || evt.hasOwnProperty("text")));
             }
             SendMessage.matchEvt = matchEvt;
             function buildAction(imei, number, text) {

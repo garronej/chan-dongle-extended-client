@@ -512,7 +512,7 @@ export namespace UserEvent {
                     (
                         (
                             evt.hasOwnProperty("textsplitcount") &&
-                            evt.hasOwnProperty("text0")
+                            evt.hasOwnProperty(`${textKeyword}0`)
                         ) || evt.hasOwnProperty("text")
                     )
                 );

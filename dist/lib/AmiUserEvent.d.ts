@@ -1,5 +1,4 @@
 import { LockedPinState } from "./DongleExtendedClient";
-export declare function strDivide(maxLength: number, str: string): string[];
 export interface UserEvent {
     userevent: string;
     actionid: string;

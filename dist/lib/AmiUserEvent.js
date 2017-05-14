@@ -9,25 +9,34 @@ var __assign = (this && this.__assign) || Object.assign || function(t) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var ts_ami_1 = require("ts-ami");
-function strDivide(maxLength, str) {
-    function callee(state, rest) {
-        if (!rest)
-            return state;
-        state.push(rest.substring(0, maxLength));
-        return callee(state, rest.substring(maxLength, rest.length));
-    }
-    return callee([], str);
-}
-exports.strDivide = strDivide;
+var lineSplit_1 = require("./lineSplit");
+var js_base64_1 = require("js-base64");
 /*
+export function strDivide(maxLength: number, str: string): string[] {
 
-lineMaxByteLength > Buffer.byteLength(`text000: ""\r\n`) + x*6;
+    function callee(state: string[], rest: string): string[] {
 
-x < ( lineMaxByteLength - Buffer.byteLength(`text000: ""\r\n`) )/6
+        if( !rest ) return state;
+        
+        state.push(rest.substring(0, maxLength));
+
+        return callee(state, rest.substring(maxLength, rest.length));
+
+    }
+
+    return callee([], str);
+
+}
+
+//lineMaxByteLength > Buffer.byteLength(`text000: ""\r\n`) + x*6;
+
+//x < ( lineMaxByteLength - Buffer.byteLength(`text000: ""\r\n`) )/6
+
+const maxLength= Math.floor(( lineMaxByteLength - Buffer.byteLength(`text000: ""\r\n`) )/6);
 
 */
+var textKeyword = "base64text_part";
 var maxMessageLength = 20000;
-var maxLength = Math.floor((ts_ami_1.lineMaxByteLength - Buffer.byteLength("text000: \"\"\r\n")) / 6);
 var UserEvent;
 (function (UserEvent) {
     function buildAction(userevent, actionid) {
@@ -77,20 +86,20 @@ var UserEvent;
             function buildAction(imei, number, date, text) {
                 if (text.length > maxMessageLength)
                     throw new Error("Message too long");
-                var textParts = strDivide(maxLength, text);
+                var textParts = lineSplit_1.lineSplitBase64(text, textKeyword + "000");
                 var out = __assign({}, Event.buildAction(NewMessage.keyword), { imei: imei,
                     number: number,
-                    date: date, "textsplitcount": textParts.length.toString() });
+                    date: date, "textsplitcount": "" + textParts.length });
                 for (var i = 0; i < textParts.length; i++)
-                    out["text" + i] = JSON.stringify(textParts[i]);
+                    out["" + textKeyword + i] = textParts[i];
                 return out;
             }
             NewMessage.buildAction = buildAction;
             function reassembleText(evt) {
                 var out = "";
                 for (var i = 0; i < parseInt(evt.textsplitcount); i++)
-                    out += JSON.parse(evt["text" + i]);
-                return out;
+                    out += evt["" + textKeyword + i];
+                return js_base64_1.Base64.decode(out);
             }
             NewMessage.reassembleText = reassembleText;
         })(NewMessage = Event.NewMessage || (Event.NewMessage = {}));
@@ -255,11 +264,11 @@ var UserEvent;
             function buildAction(imei, number, text) {
                 if (text.length > maxMessageLength)
                     throw new Error("Message too long");
-                var textParts = strDivide(maxLength, text);
+                var textParts = lineSplit_1.lineSplitBase64(text, textKeyword + "000");
                 var out = __assign({}, Request.buildAction(SendMessage.keyword), { imei: imei,
-                    number: number, "textsplitcount": textParts.length.toString() });
+                    number: number, "textsplitcount": "" + textParts.length });
                 for (var i = 0; i < textParts.length; i++)
-                    out["text" + i] = JSON.stringify(textParts[i]);
+                    out["" + textKeyword + i] = textParts[i];
                 return out;
             }
             SendMessage.buildAction = buildAction;
@@ -274,8 +283,8 @@ var UserEvent;
                 }
                 var out = "";
                 for (var i = 0; i < parseInt(evt.textsplitcount); i++)
-                    out += JSON.parse(evt["text" + i]);
-                return out;
+                    out += evt["" + textKeyword + i];
+                return js_base64_1.Base64.decode(out);
             }
             SendMessage.reassembleText = reassembleText;
         })(SendMessage = Request.SendMessage || (Request.SendMessage = {}));
@@ -494,19 +503,19 @@ var UserEvent;
                 function buildAction(actionid, number, date, text) {
                     if (text.length > maxMessageLength)
                         throw new Error("Message too long");
-                    var textParts = strDivide(maxLength, text);
+                    var textParts = lineSplit_1.lineSplitBase64(text, textKeyword + "000");
                     var out = __assign({}, Response.buildAction(Request.GetMessages.keyword, actionid), { number: number,
                         date: date, "textsplitcount": textParts.length.toString() });
                     for (var i = 0; i < textParts.length; i++)
-                        out["text" + i] = JSON.stringify(textParts[i]);
+                        out["" + textKeyword + i] = textParts[i];
                     return out;
                 }
                 Entry.buildAction = buildAction;
                 function reassembleText(evt) {
                     var out = "";
                     for (var i = 0; i < parseInt(evt.textsplitcount); i++)
-                        out += JSON.parse(evt["text" + i]);
-                    return out;
+                        out += evt["" + textKeyword + i];
+                    return js_base64_1.Base64.decode(out);
                 }
                 Entry.reassembleText = reassembleText;
             })(Entry = GetMessages.Entry || (GetMessages.Entry = {}));

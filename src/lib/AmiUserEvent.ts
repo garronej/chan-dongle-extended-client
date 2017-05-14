@@ -1,6 +1,9 @@
 import { LockedPinState } from "./DongleExtendedClient";
 import { generateUniqueActionId, lineMaxByteLength } from "ts-ami";
+import { lineSplitBase64 } from "./lineSplit";
+import { Base64 } from "js-base64";
 
+/*
 export function strDivide(maxLength: number, str: string): string[] {
 
     function callee(state: string[], rest: string): string[] {
@@ -17,17 +20,18 @@ export function strDivide(maxLength: number, str: string): string[] {
 
 }
 
-/*
+//lineMaxByteLength > Buffer.byteLength(`text000: ""\r\n`) + x*6;
 
-lineMaxByteLength > Buffer.byteLength(`text000: ""\r\n`) + x*6;
+//x < ( lineMaxByteLength - Buffer.byteLength(`text000: ""\r\n`) )/6
 
-x < ( lineMaxByteLength - Buffer.byteLength(`text000: ""\r\n`) )/6
+const maxLength= Math.floor(( lineMaxByteLength - Buffer.byteLength(`text000: ""\r\n`) )/6);
 
 */
 
+const textKeyword = "base64text_part";
+
 const maxMessageLength= 20000;
 
-const maxLength= Math.floor(( lineMaxByteLength - Buffer.byteLength(`text000: ""\r\n`) )/6);
 
 export interface UserEvent {
     userevent: string;
@@ -49,7 +53,6 @@ export namespace UserEvent {
 
     }
     
-
     /*START EVENT*/
 
     export interface Event extends UserEvent {
@@ -140,19 +143,19 @@ export namespace UserEvent {
 
                 if( text.length > maxMessageLength ) 
                     throw new Error("Message too long");
-
-                let textParts = strDivide(maxLength, text);
+                
+                let textParts= lineSplitBase64(text, `${textKeyword}000`);
 
                 let out = {
                     ...Event.buildAction(keyword),
                     imei,
                     number,
                     date,
-                    "textsplitcount": textParts.length.toString(),
+                    "textsplitcount": `${textParts.length}`
                 } as NewMessage;
 
                 for (let i = 0; i < textParts.length; i++)
-                    out[`text${i}`] = JSON.stringify(textParts[i]);
+                    out[`${textKeyword}${i}`] = textParts[i];
 
                 return out;
             }
@@ -160,9 +163,9 @@ export namespace UserEvent {
             export function reassembleText(evt: NewMessage): string {
                 let out = "";
                 for (let i = 0; i < parseInt(evt.textsplitcount); i++)
-                    out += JSON.parse(evt[`text${i}`]);
+                    out += evt[`${textKeyword}${i}`];
 
-                return out;
+                return Base64.decode(out);
             }
 
         }
@@ -520,17 +523,18 @@ export namespace UserEvent {
                 if( text.length > maxMessageLength ) 
                     throw new Error("Message too long");
 
-                let textParts = strDivide(maxLength, text);
+
+                let textParts= lineSplitBase64(text, `${textKeyword}000`);
 
                 let out = {
                     ...Request.buildAction(keyword),
                     imei,
                     number,
-                    "textsplitcount": textParts.length.toString()
+                    "textsplitcount": `${textParts.length}`
                 } as SendMessage;
 
                 for (let i = 0; i < textParts.length; i++)
-                    out[`text${i}`] = JSON.stringify(textParts[i]);
+                    out[`${textKeyword}${i}`] = textParts[i];
 
                 return out;
 
@@ -548,9 +552,9 @@ export namespace UserEvent {
 
                 let out = "";
                 for (let i = 0; i < parseInt(evt.textsplitcount); i++)
-                    out += JSON.parse(evt[`text${i}`]);
+                    out += evt[`${textKeyword}${i}`];
 
-                return out;
+                return Base64.decode(out);
             }
 
         }
@@ -971,7 +975,7 @@ export namespace UserEvent {
                     if (text.length > maxMessageLength)
                         throw new Error("Message too long");
 
-                    let textParts = strDivide(maxLength, text);
+                    let textParts = lineSplitBase64(text, `${textKeyword}000`);
 
                     let out = {
                         ...Response.buildAction(Request.GetMessages.keyword, actionid),
@@ -981,7 +985,7 @@ export namespace UserEvent {
                     } as Entry;
 
                     for (let i = 0; i < textParts.length; i++)
-                        out[`text${i}`] = JSON.stringify(textParts[i]);
+                        out[`${textKeyword}${i}`] = textParts[i];
 
                     return out;
                 }
@@ -989,9 +993,9 @@ export namespace UserEvent {
                 export function reassembleText(evt: Entry): string {
                     let out = "";
                     for (let i = 0; i < parseInt(evt.textsplitcount); i++)
-                        out += JSON.parse(evt[`text${i}`]!);
+                        out += evt[`${textKeyword}${i}`];
 
-                    return out;
+                    return Base64.decode(out);
                 }
 
             }

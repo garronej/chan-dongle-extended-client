@@ -6,7 +6,7 @@
   "types": "./dist/lib/index.d.ts",
   "scripts": {
     "postinstall": "npm run fetch-ami-definitions",
-    "fetch-ami-definitions": "cd src/lib && wget https://raw.githubusercontent.com/garronej/chan-dongle-extended/master/src/lib/AmiUserEvent.ts",
+    "fetch-ami-definitions": "cd src/lib && mkdir -p fetched && cd fetched && wget -N https://raw.githubusercontent.com/garronej/chan-dongle-extended/master/src/lib/AmiUserEvents.ts",
     "tsc": "./node_modules/.bin/tsc -p ./tsconfig.json",
     "test": "node ./dist/test/main"
   },

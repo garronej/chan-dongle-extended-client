@@ -1,7 +1,6 @@
 import { Ami, Credential } from "ts-ami";
-import { LockedPinState } from "./AmiUserEvent";
+import { LockedPinState } from "./fetched/AmiUserEvents";
 import { SyncEvent } from "ts-events-extended";
-export declare const amiUser = "dongle_ext_user";
 export interface StatusReport {
     messageId: number;
     dischargeTime: Date;

@@ -38,4 +38,4 @@ jspm_packages
 
 dist/test
 .vscode
-src/lib/AmiUserEvents.ts
+fetched

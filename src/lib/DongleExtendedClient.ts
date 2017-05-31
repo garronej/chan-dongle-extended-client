@@ -9,12 +9,12 @@ import {
     Response, 
     Request, 
     Event,
-    LockedPinState
-} from "./AmiUserEvent";
+    LockedPinState,
+    amiUser
+} from "./fetched/AmiUserEvents";
 
 import { SyncEvent } from "ts-events-extended";
 
-export const amiUser= "dongle_ext_user";
 
 export interface StatusReport {
     messageId: number;

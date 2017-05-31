@@ -38,4 +38,4 @@ jspm_packages
 
 dist/test
 .vscode
-.node-persist
+src/lib/AmiUserEvents.ts

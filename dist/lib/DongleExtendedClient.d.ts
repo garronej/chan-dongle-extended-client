@@ -1,6 +1,7 @@
 import { Ami, Credential } from "ts-ami";
-import { UserEvent } from "./AmiUserEvent";
+import { LockedPinState } from "./AmiUserEvent";
 import { SyncEvent } from "ts-events-extended";
+export declare const amiUser = "dongle_ext_user";
 export interface StatusReport {
     messageId: number;
     dischargeTime: Date;
@@ -8,7 +9,6 @@ export interface StatusReport {
     status: string;
     recipient: string;
 }
-export declare type LockedPinState = "SIM PIN" | "SIM PUK" | "SIM PIN2" | "SIM PUK2";
 export interface Message {
     number: string;
     date: Date;
@@ -53,9 +53,6 @@ export declare class DongleExtendedClient {
     readonly evtNewMessage: SyncEvent<{
         imei: string;
     } & Message>;
-    readonly evtUserEvent: SyncEvent<UserEvent>;
-    lastActionId: string;
-    postUserEventAction(userEvent: UserEvent): Promise<any>;
     constructor(credential: Credential);
     disconnect(): void;
     getLockedDongles(): Promise<LockedDongle[]>;

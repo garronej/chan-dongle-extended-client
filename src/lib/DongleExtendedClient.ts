@@ -2,16 +2,19 @@ import {
     Ami, 
     retrieveCredential, 
     Credential, 
-    generateUniqueActionId 
+    UserEvent
 } from "ts-ami";
 
-import { UserEvent } from "./AmiUserEvent";
-import Response = UserEvent.Response;
-import Request = UserEvent.Request;
-import Event = UserEvent.Event;
+import { 
+    Response, 
+    Request, 
+    Event,
+    LockedPinState
+} from "./AmiUserEvent";
 
 import { SyncEvent } from "ts-events-extended";
 
+export const amiUser= "dongle_ext_user";
 
 export interface StatusReport {
     messageId: number;
@@ -20,8 +23,6 @@ export interface StatusReport {
     status: string;
     recipient: string;
 }
-
-export type LockedPinState = "SIM PIN" | "SIM PUK" | "SIM PIN2" | "SIM PUK2";
 
 export interface Message {
     number: string;
@@ -70,7 +71,7 @@ export class DongleExtendedClient {
 
         return this.localClient = new this(
             retrieveCredential(
-                { "user": "dongle_ext_user" }
+                { "user": amiUser }
             )
         );
 
@@ -85,33 +86,13 @@ export class DongleExtendedClient {
     public readonly evtNewMessage = new SyncEvent<{ imei: string } & Message>();
 
 
-    public readonly evtUserEvent= new SyncEvent<UserEvent>();
-
-    public lastActionId= "";
-
-    public postUserEventAction( userEvent: UserEvent ): Promise<any> {
-
-        let p= this.ami.postAction(userEvent as any);
-
-        this.lastActionId= this.ami.lastActionId;
-
-        return p;
-
-    }
-
     constructor(credential: Credential) {
 
         this.ami = new Ami(credential);
 
-        this.ami.evt.attach(
-            ({ event }) => event === "UserEvent",
-            userEvent => this.evtUserEvent.post(userEvent as any)
-        );
+        this.ami.evtUserEvent.attach(Event.match, evt => {
 
-
-        this.evtUserEvent.attach(Event.matchEvt, evt => {
-
-            if (Event.MessageStatusReport.matchEvt(evt))
+            if (Event.MessageStatusReport.match(evt))
                 this.evtMessageStatusReport.post({
                     "imei": evt.imei,
                     "messageId": parseInt(evt.messageid),
@@ -120,7 +101,7 @@ export class DongleExtendedClient {
                     "dischargeTime": new Date(evt.dischargetime),
                     "recipient": evt.recipient
                 });
-            else if (Event.DongleDisconnect.matchEvt(evt))
+            else if (Event.DongleDisconnect.match(evt))
                 this.evtDongleDisconnect.post({
                     "imei": evt.imei,
                     "iccid": evt.iccid,
@@ -128,7 +109,7 @@ export class DongleExtendedClient {
                     "number": evt.number || undefined,
                     "serviceProvider": evt.serviceprovider || undefined
                 });
-            else if (Event.NewActiveDongle.matchEvt(evt))
+            else if (Event.NewActiveDongle.match(evt))
                 this.evtNewActiveDongle.post({
                     "imei": evt.imei,
                     "iccid": evt.iccid,
@@ -136,21 +117,20 @@ export class DongleExtendedClient {
                     "number": evt.number || undefined,
                     "serviceProvider": evt.serviceprovider || undefined
                 });
-            else if (Event.RequestUnlockCode.matchEvt(evt))
+            else if (Event.RequestUnlockCode.match(evt))
                 this.evtRequestUnlockCode.post({
                     "imei": evt.imei,
                     "iccid": evt.iccid,
                     "pinState": evt.pinstate,
                     "tryLeft": parseInt(evt.tryleft)
                 });
-            else if (Event.NewMessage.matchEvt(evt))
+            else if (Event.NewMessage.match(evt))
                 this.evtNewMessage.post({
                     "imei": evt.imei,
                     "number": evt.number,
                     "date": new Date(evt.date),
-                    "text": UserEvent.Event.NewMessage.reassembleText(evt)
+                    "text": Event.NewMessage.reassembleText(evt)
                 });
-
         });
 
 
@@ -163,14 +143,14 @@ export class DongleExtendedClient {
 
     public async getLockedDongles(): Promise<LockedDongle[]> {
 
-        this.postUserEventAction(
-            Request.GetLockedDongles.buildAction()
+        this.ami.userEvent(
+            Request.GetLockedDongles.build()
         );
 
-        let actionid= this.lastActionId;
+        let actionid= this.ami.lastActionId;
 
-        let evtResponse = await this.evtUserEvent.waitFor(
-            Response.GetLockedDongles.Infos.matchEvt(actionid),
+        let evtResponse = await this.ami.evtUserEvent.waitFor(
+            Response.GetLockedDongles_first.match(actionid),
             10000
         );
 
@@ -180,8 +160,8 @@ export class DongleExtendedClient {
 
         while (out.length !== dongleCount) {
 
-            let evtResponse = await this.evtUserEvent.waitFor(
-                Response.GetLockedDongles.Entry.matchEvt(actionid),
+            let evtResponse = await this.ami.evtUserEvent.waitFor(
+                Response.GetLockedDongles_follow.match(actionid),
                 10000
             );
 
@@ -202,14 +182,14 @@ export class DongleExtendedClient {
 
     public async getActiveDongles(): Promise<DongleActive[]> {
 
-        this.postUserEventAction(
-            Request.GetActiveDongles.buildAction()
+        this.ami.userEvent(
+            Request.GetActiveDongles.build()
         );
 
-        let actionid= this.lastActionId;
+        let actionid= this.ami.lastActionId;
 
-        let evtResponse = await this.evtUserEvent.waitFor(
-            Response.GetActiveDongles.Infos.matchEvt(actionid),
+        let evtResponse = await this.ami.evtUserEvent.waitFor(
+            Response.GetActiveDongles_first.match(actionid),
             10000
         );
 
@@ -219,8 +199,8 @@ export class DongleExtendedClient {
 
         while (out.length !== dongleCount) {
 
-            let evtResponse = await this.evtUserEvent.waitFor(
-                Response.GetActiveDongles.Entry.matchEvt(actionid),
+            let evtResponse = await this.ami.evtUserEvent.waitFor(
+                Response.GetActiveDongles_follow.match(actionid),
                 10000
             );
 
@@ -248,16 +228,16 @@ export class DongleExtendedClient {
         text: string,
     ): Promise<number> {
 
-        this.postUserEventAction(
-            Request.SendMessage.buildAction(
+        this.ami.userEvent(
+            Request.SendMessage.build(
                 imei, number, text
             )
         );
 
-        let actionid= this.lastActionId;
+        let actionid= this.ami.lastActionId;
 
-        let evtResponse = await this.evtUserEvent.waitFor(
-            Response.SendMessage.matchEvt(actionid),
+        let evtResponse = await this.ami.evtUserEvent.waitFor(
+            Response.SendMessage.match(actionid),
             30000
         );
 
@@ -273,14 +253,14 @@ export class DongleExtendedClient {
         imei: string
     ): Promise<Phonebook> {
 
-        this.postUserEventAction(
-            Request.GetSimPhonebook.buildAction(imei)
+        this.ami.userEvent(
+            Request.GetSimPhonebook.build(imei)
         );
 
-        let actionid= this.lastActionId;
+        let actionid= this.ami.lastActionId;
 
-        let evt = await this.evtUserEvent.waitFor(
-            Response.GetSimPhonebook.Infos.matchEvt(actionid),
+        let evt = await this.ami.evtUserEvent.waitFor(
+            Response.GetSimPhonebook_first.match(actionid),
             10000
         );
 
@@ -299,8 +279,8 @@ export class DongleExtendedClient {
 
         while (contacts.length !== contactCount) {
 
-            let evt = await this.evtUserEvent.waitFor(
-                Response.GetSimPhonebook.Entry.matchEvt(actionid),
+            let evt = await this.ami.evtUserEvent.waitFor(
+                Response.GetSimPhonebook_follow.match(actionid),
                 10000
             );
 
@@ -323,18 +303,18 @@ export class DongleExtendedClient {
         number: string,
     ): Promise<Contact> {
 
-        this.postUserEventAction(
-            Request.CreateContact.buildAction(
+        this.ami.userEvent(
+            Request.CreateContact.build(
                 imei,
                 name,
                 number
             )
         );
 
-        let actionid= this.lastActionId;
+        let actionid= this.ami.lastActionId;
 
-        let evt = await this.evtUserEvent.waitFor(
-            Response.CreateContact.matchEvt(actionid),
+        let evt = await this.ami.evtUserEvent.waitFor(
+            Response.CreateContact.match(actionid),
             10000
         );
 
@@ -356,17 +336,17 @@ export class DongleExtendedClient {
         flush: boolean,
     ): Promise<Message[]> {
 
-        this.postUserEventAction(
-            Request.GetMessages.buildAction(
+        this.ami.userEvent(
+            Request.GetMessages.build(
                 imei,
                 flush ? "true" : "false"
             )
         );
 
-        let actionid= this.lastActionId;
+        let actionid= this.ami.lastActionId;
 
-        let evt = await this.evtUserEvent.waitFor(
-            Response.GetMessages.Infos.matchEvt(actionid),
+        let evt = await this.ami.evtUserEvent.waitFor(
+            Response.GetMessages_first.match(actionid),
             10000
         );
 
@@ -379,15 +359,15 @@ export class DongleExtendedClient {
 
         while (messages.length !== messagesCount) {
 
-            let evt = await this.evtUserEvent.waitFor(
-                Response.GetMessages.Entry.matchEvt(actionid),
+            let evt = await this.ami.evtUserEvent.waitFor(
+                Response.GetMessages_follow.match(actionid),
                 10000
             );
 
             messages.push({
                 "number": evt.number,
                 "date": new Date(evt.date),
-                "text": Response.GetMessages.Entry.reassembleText(evt)
+                "text": Response.GetMessages_follow.reassembleText(evt)
             });
 
         }
@@ -401,17 +381,17 @@ export class DongleExtendedClient {
         index: number
     ) {
 
-        this.postUserEventAction(
-            Request.DeleteContact.buildAction(
+        this.ami.userEvent(
+            Request.DeleteContact.build(
                 imei,
                 index.toString()
             )
         );
 
-        let actionid= this.lastActionId;
+        let actionid= this.ami.lastActionId;
 
-        let evt = await this.evtUserEvent.waitFor(
-            Response.matchEvt(Request.DeleteContact.keyword, actionid),
+        let evt = await this.ami.evtUserEvent.waitFor(
+            Response.match(actionid),
             10000
         );
 
@@ -431,8 +411,8 @@ export class DongleExtendedClient {
 
             let pin= inputs[1] as string;
 
-            this.postUserEventAction(
-                Request.UnlockDongle.buildAction(imei, pin)
+            this.ami.userEvent(
+                Request.UnlockDongle.build(imei, pin)
             );
 
         } else {
@@ -440,15 +420,16 @@ export class DongleExtendedClient {
             let puk= inputs[1] as string;
             let newPin= inputs[2] as string;
 
-            this.postUserEventAction(
-                Request.UnlockDongle.buildAction(imei, puk, newPin)
+            this.ami.userEvent(
+                Request.UnlockDongle.build(imei, puk, newPin)
             );
         }
 
-        let actionid= this.lastActionId;
+        let actionid= this.ami.lastActionId;
 
-        let evt = await this.evtUserEvent.waitFor(
-            Response.matchEvt(Request.UnlockDongle.keyword, actionid),
+
+        let evt = await this.ami.evtUserEvent.waitFor(
+            Response.match(actionid),
             10000
         );
 
@@ -462,14 +443,14 @@ export class DongleExtendedClient {
         number: string
     ) {
 
-        this.postUserEventAction(
-            Request.UpdateNumber.buildAction(imei, number)
+        this.ami.userEvent(
+            Request.UpdateNumber.build(imei, number)
         );
 
-        let actionid= this.lastActionId;
+        let actionid= this.ami.lastActionId;
 
-        let evt = await this.evtUserEvent.waitFor(
-            Response.matchEvt(Request.UpdateNumber.keyword, actionid),
+        let evt = await this.ami.evtUserEvent.waitFor(
+            Response.match(actionid),
             10000
         );
 

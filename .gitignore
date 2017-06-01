@@ -38,4 +38,4 @@ jspm_packages
 
 dist/test
 .vscode
-fetched
+src/lib/fetched

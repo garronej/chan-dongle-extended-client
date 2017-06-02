@@ -140,6 +140,42 @@ export class DongleExtendedClient {
         this.ami.disconnect();
     }
 
+    public async getContactName(
+        imei: string,
+        number: string
+    ): Promise<string | undefined> {
+
+        let numberPayload = DongleExtendedClient.getNumberPayload(number);
+
+        if (!numberPayload) return undefined;
+
+        let { contacts } = await this.getSimPhonebook(imei);
+
+        for (let { number, name } of contacts)
+            if (numberPayload === DongleExtendedClient.getNumberPayload(number)) return name;
+
+        return undefined;
+
+    }
+
+    //TODO: Use a library for this.
+    public static getNumberPayload(number: string): string | undefined {
+
+        let match = number.match(/^(?:0*|(?:\+[0-9]{2}))([0-9]+)$/);
+
+        return match ? match[1] : undefined;
+
+    }
+
+    public async getActiveDongle(imei: string): Promise<DongleActive | undefined>{
+
+        for( let dongleActive of await this.getActiveDongles() )
+            if( dongleActive.imei === imei ) return dongleActive;
+        
+        return undefined;
+
+    }
+
 
     public async getLockedDongles(): Promise<LockedDongle[]> {
 
@@ -147,7 +183,7 @@ export class DongleExtendedClient {
             Request.GetLockedDongles.build()
         );
 
-        let actionid= this.ami.lastActionId;
+        let actionid = this.ami.lastActionId;
 
         let evtResponse = await this.ami.evtUserEvent.waitFor(
             Response.GetLockedDongles_first.match(actionid),
@@ -186,7 +222,7 @@ export class DongleExtendedClient {
             Request.GetActiveDongles.build()
         );
 
-        let actionid= this.ami.lastActionId;
+        let actionid = this.ami.lastActionId;
 
         let evtResponse = await this.ami.evtUserEvent.waitFor(
             Response.GetActiveDongles_first.match(actionid),
@@ -234,7 +270,7 @@ export class DongleExtendedClient {
             )
         );
 
-        let actionid= this.ami.lastActionId;
+        let actionid = this.ami.lastActionId;
 
         let evtResponse = await this.ami.evtUserEvent.waitFor(
             Response.SendMessage.match(actionid),
@@ -257,14 +293,14 @@ export class DongleExtendedClient {
             Request.GetSimPhonebook.build(imei)
         );
 
-        let actionid= this.ami.lastActionId;
+        let actionid = this.ami.lastActionId;
 
         let evt = await this.ami.evtUserEvent.waitFor(
             Response.GetSimPhonebook_first.match(actionid),
             10000
         );
 
-        if (evt.error) 
+        if (evt.error)
             throw new Error(evt.error);
 
         let infos = {
@@ -311,7 +347,7 @@ export class DongleExtendedClient {
             )
         );
 
-        let actionid= this.ami.lastActionId;
+        let actionid = this.ami.lastActionId;
 
         let evt = await this.ami.evtUserEvent.waitFor(
             Response.CreateContact.match(actionid),
@@ -343,7 +379,7 @@ export class DongleExtendedClient {
             )
         );
 
-        let actionid= this.ami.lastActionId;
+        let actionid = this.ami.lastActionId;
 
         let evt = await this.ami.evtUserEvent.waitFor(
             Response.GetMessages_first.match(actionid),
@@ -388,14 +424,14 @@ export class DongleExtendedClient {
             )
         );
 
-        let actionid= this.ami.lastActionId;
+        let actionid = this.ami.lastActionId;
 
         let evt = await this.ami.evtUserEvent.waitFor(
             Response.match(actionid),
             10000
         );
 
-        if( evt.error )
+        if (evt.error)
             throw new Error(evt.error);
 
     }
@@ -405,11 +441,11 @@ export class DongleExtendedClient {
     public unlockDongle(imei: string, puk: string, newPin: string): Promise<void>;
     public async unlockDongle(...inputs: any[]): Promise<void> {
 
-        let imei= inputs[0] as string;
+        let imei = inputs[0] as string;
 
-        if (inputs.length === 2){
+        if (inputs.length === 2) {
 
-            let pin= inputs[1] as string;
+            let pin = inputs[1] as string;
 
             this.ami.userEvent(
                 Request.UnlockDongle.build(imei, pin)
@@ -417,15 +453,15 @@ export class DongleExtendedClient {
 
         } else {
 
-            let puk= inputs[1] as string;
-            let newPin= inputs[2] as string;
+            let puk = inputs[1] as string;
+            let newPin = inputs[2] as string;
 
             this.ami.userEvent(
                 Request.UnlockDongle.build(imei, puk, newPin)
             );
         }
 
-        let actionid= this.ami.lastActionId;
+        let actionid = this.ami.lastActionId;
 
 
         let evt = await this.ami.evtUserEvent.waitFor(
@@ -433,7 +469,7 @@ export class DongleExtendedClient {
             10000
         );
 
-        if( evt.error )
+        if (evt.error)
             throw new Error(evt.error);
 
     }
@@ -447,14 +483,14 @@ export class DongleExtendedClient {
             Request.UpdateNumber.build(imei, number)
         );
 
-        let actionid= this.ami.lastActionId;
+        let actionid = this.ami.lastActionId;
 
         let evt = await this.ami.evtUserEvent.waitFor(
             Response.match(actionid),
             10000
         );
 
-        if( evt.error ) throw new Error(evt.error);
+        if (evt.error) throw new Error(evt.error);
 
     }
 

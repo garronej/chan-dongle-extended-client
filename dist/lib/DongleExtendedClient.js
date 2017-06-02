@@ -34,6 +34,16 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
+var __values = (this && this.__values) || function (o) {
+    var m = typeof Symbol === "function" && o[Symbol.iterator], i = 0;
+    if (m) return m.call(o);
+    return {
+        next: function () {
+            if (o && i >= o.length) o = void 0;
+            return { value: o && o[i++], done: !o };
+        }
+    };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 var ts_ami_1 = require("ts-ami");
 var AmiUserEvents_1 = require("./fetched/AmiUserEvents");
@@ -97,6 +107,78 @@ var DongleExtendedClient = (function () {
     ;
     DongleExtendedClient.prototype.disconnect = function () {
         this.ami.disconnect();
+    };
+    DongleExtendedClient.prototype.getContactName = function (imei, number) {
+        return __awaiter(this, void 0, void 0, function () {
+            var numberPayload, contacts, contacts_1, contacts_1_1, _a, number_1, name_1, e_1, _b;
+            return __generator(this, function (_c) {
+                switch (_c.label) {
+                    case 0:
+                        numberPayload = DongleExtendedClient.getNumberPayload(number);
+                        if (!numberPayload)
+                            return [2 /*return*/, undefined];
+                        return [4 /*yield*/, this.getSimPhonebook(imei)];
+                    case 1:
+                        contacts = (_c.sent()).contacts;
+                        try {
+                            for (contacts_1 = __values(contacts), contacts_1_1 = contacts_1.next(); !contacts_1_1.done; contacts_1_1 = contacts_1.next()) {
+                                _a = contacts_1_1.value, number_1 = _a.number, name_1 = _a.name;
+                                if (numberPayload === DongleExtendedClient.getNumberPayload(number_1))
+                                    return [2 /*return*/, name_1];
+                            }
+                        }
+                        catch (e_1_1) { e_1 = { error: e_1_1 }; }
+                        finally {
+                            try {
+                                if (contacts_1_1 && !contacts_1_1.done && (_b = contacts_1.return)) _b.call(contacts_1);
+                            }
+                            finally { if (e_1) throw e_1.error; }
+                        }
+                        return [2 /*return*/, undefined];
+                }
+            });
+        });
+    };
+    //TODO: Use a library for this.
+    DongleExtendedClient.getNumberPayload = function (number) {
+        var match = number.match(/^(?:0*|(?:\+[0-9]{2}))([0-9]+)$/);
+        return match ? match[1] : undefined;
+    };
+    DongleExtendedClient.prototype.getActiveDongle = function (imei) {
+        return __awaiter(this, void 0, void 0, function () {
+            var _a, _b, dongleActive, e_2_1, e_2, _c;
+            return __generator(this, function (_d) {
+                switch (_d.label) {
+                    case 0:
+                        _d.trys.push([0, 5, 6, 7]);
+                        return [4 /*yield*/, this.getActiveDongles()];
+                    case 1:
+                        _a = __values.apply(void 0, [_d.sent()]), _b = _a.next();
+                        _d.label = 2;
+                    case 2:
+                        if (!!_b.done) return [3 /*break*/, 4];
+                        dongleActive = _b.value;
+                        if (dongleActive.imei === imei)
+                            return [2 /*return*/, dongleActive];
+                        _d.label = 3;
+                    case 3:
+                        _b = _a.next();
+                        return [3 /*break*/, 2];
+                    case 4: return [3 /*break*/, 7];
+                    case 5:
+                        e_2_1 = _d.sent();
+                        e_2 = { error: e_2_1 };
+                        return [3 /*break*/, 7];
+                    case 6:
+                        try {
+                            if (_b && !_b.done && (_c = _a.return)) _c.call(_a);
+                        }
+                        finally { if (e_2) throw e_2.error; }
+                        return [7 /*endfinally*/];
+                    case 7: return [2 /*return*/, undefined];
+                }
+            });
+        });
     };
     DongleExtendedClient.prototype.getLockedDongles = function () {
         return __awaiter(this, void 0, void 0, function () {

@@ -167,6 +167,20 @@ export class DongleExtendedClient {
 
     }
 
+    public async getConnectedDongles(): Promise<string[]> {
+
+        let imeis: string[]= [];
+
+        for( let { imei } of await this.getLockedDongles() )
+            imeis.push(imei);
+        
+        for( let { imei } of await this.getActiveDongles() )
+            imeis.push(imei);
+        
+        return imeis;
+
+    }
+
     public async getActiveDongle(imei: string): Promise<DongleActive | undefined>{
 
         for( let dongleActive of await this.getActiveDongles() )

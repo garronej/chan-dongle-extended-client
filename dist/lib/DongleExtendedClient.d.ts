@@ -56,6 +56,7 @@ export declare class DongleExtendedClient {
     disconnect(): void;
     getContactName(imei: string, number: string): Promise<string | undefined>;
     static getNumberPayload(number: string): string | undefined;
+    getConnectedDongles(): Promise<string[]>;
     getActiveDongle(imei: string): Promise<DongleActive | undefined>;
     getLockedDongles(): Promise<LockedDongle[]>;
     getActiveDongles(): Promise<DongleActive[]>;

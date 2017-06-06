@@ -144,9 +144,72 @@ var DongleExtendedClient = (function () {
         var match = number.match(/^(?:0*|(?:\+[0-9]{2}))([0-9]+)$/);
         return match ? match[1] : undefined;
     };
+    DongleExtendedClient.prototype.getConnectedDongles = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var imeis, _a, _b, imei, e_2_1, _c, _d, imei, e_3_1, e_2, _e, e_3, _f;
+            return __generator(this, function (_g) {
+                switch (_g.label) {
+                    case 0:
+                        imeis = [];
+                        _g.label = 1;
+                    case 1:
+                        _g.trys.push([1, 6, 7, 8]);
+                        return [4 /*yield*/, this.getLockedDongles()];
+                    case 2:
+                        _a = __values.apply(void 0, [_g.sent()]), _b = _a.next();
+                        _g.label = 3;
+                    case 3:
+                        if (!!_b.done) return [3 /*break*/, 5];
+                        imei = _b.value.imei;
+                        imeis.push(imei);
+                        _g.label = 4;
+                    case 4:
+                        _b = _a.next();
+                        return [3 /*break*/, 3];
+                    case 5: return [3 /*break*/, 8];
+                    case 6:
+                        e_2_1 = _g.sent();
+                        e_2 = { error: e_2_1 };
+                        return [3 /*break*/, 8];
+                    case 7:
+                        try {
+                            if (_b && !_b.done && (_e = _a.return)) _e.call(_a);
+                        }
+                        finally { if (e_2) throw e_2.error; }
+                        return [7 /*endfinally*/];
+                    case 8:
+                        _g.trys.push([8, 13, 14, 15]);
+                        return [4 /*yield*/, this.getActiveDongles()];
+                    case 9:
+                        _c = __values.apply(void 0, [_g.sent()]), _d = _c.next();
+                        _g.label = 10;
+                    case 10:
+                        if (!!_d.done) return [3 /*break*/, 12];
+                        imei = _d.value.imei;
+                        imeis.push(imei);
+                        _g.label = 11;
+                    case 11:
+                        _d = _c.next();
+                        return [3 /*break*/, 10];
+                    case 12: return [3 /*break*/, 15];
+                    case 13:
+                        e_3_1 = _g.sent();
+                        e_3 = { error: e_3_1 };
+                        return [3 /*break*/, 15];
+                    case 14:
+                        try {
+                            if (_d && !_d.done && (_f = _c.return)) _f.call(_c);
+                        }
+                        finally { if (e_3) throw e_3.error; }
+                        return [7 /*endfinally*/];
+                    case 15: return [2 /*return*/, imeis];
+                }
+            });
+        });
+    };
     DongleExtendedClient.prototype.getActiveDongle = function (imei) {
         return __awaiter(this, void 0, void 0, function () {
-            var _a, _b, dongleActive, e_2_1, e_2, _c;
+            var _a, _b, dongleActive, e_4_1, e_4, _c;
             return __generator(this, function (_d) {
                 switch (_d.label) {
                     case 0:
@@ -166,14 +229,14 @@ var DongleExtendedClient = (function () {
                         return [3 /*break*/, 2];
                     case 4: return [3 /*break*/, 7];
                     case 5:
-                        e_2_1 = _d.sent();
-                        e_2 = { error: e_2_1 };
+                        e_4_1 = _d.sent();
+                        e_4 = { error: e_4_1 };
                         return [3 /*break*/, 7];
                     case 6:
                         try {
                             if (_b && !_b.done && (_c = _a.return)) _c.call(_a);
                         }
-                        finally { if (e_2) throw e_2.error; }
+                        finally { if (e_4) throw e_4.error; }
                         return [7 /*endfinally*/];
                     case 7: return [2 /*return*/, undefined];
                 }

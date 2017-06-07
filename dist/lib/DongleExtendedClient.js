@@ -51,14 +51,54 @@ var ts_events_extended_1 = require("ts-events-extended");
 var DongleExtendedClient = (function () {
     function DongleExtendedClient(credential) {
         var _this = this;
+        this.evtActiveDongleDisconnect = new ts_events_extended_1.SyncEvent();
+        this.evtLockedDongleDisconnect = new ts_events_extended_1.SyncEvent();
         this.evtMessageStatusReport = new ts_events_extended_1.SyncEvent();
-        this.evtDongleDisconnect = new ts_events_extended_1.SyncEvent();
-        this.evtNewActiveDongle = new ts_events_extended_1.SyncEvent();
-        this.evtRequestUnlockCode = new ts_events_extended_1.SyncEvent();
         this.evtNewMessage = new ts_events_extended_1.SyncEvent();
+        this.evtDongleConnect = new ts_events_extended_1.SyncEvent();
+        var evtNewActiveDongle = new ts_events_extended_1.SyncEvent();
+        this.evtNewActiveDongle = evtNewActiveDongle.createProxy();
+        var evtRequestUnlockCode = new ts_events_extended_1.SyncEvent();
+        this.evtRequestUnlockCode = evtRequestUnlockCode.createProxy();
+        var evtDongleDisconnect = new ts_events_extended_1.SyncEvent();
+        this.evtDongleDisconnect = evtDongleDisconnect.createProxy();
         this.ami = new ts_ami_1.Ami(credential);
         this.ami.evtUserEvent.attach(AmiUserEvents_1.Event.match, function (evt) {
-            if (AmiUserEvents_1.Event.MessageStatusReport.match(evt))
+            if (AmiUserEvents_1.Event.ActiveDongleDisconnect.match(evt)) {
+                _this.evtActiveDongleDisconnect.post({
+                    "imei": evt.imei,
+                    "iccid": evt.iccid,
+                    "imsi": evt.imsi,
+                    "number": evt.number || undefined,
+                    "serviceProvider": evt.serviceprovider || undefined
+                });
+                evtDongleDisconnect.post(evt.imei);
+            }
+            else if (AmiUserEvents_1.Event.LockedDongleDisconnect.match(evt)) {
+                _this.evtLockedDongleDisconnect.post({
+                    "imei": evt.imei,
+                    "iccid": evt.iccid,
+                    "pinState": evt.pinstate,
+                    "tryLeft": parseInt(evt.tryleft)
+                });
+                evtDongleDisconnect.post(evt.imei);
+            }
+            else if (AmiUserEvents_1.Event.NewActiveDongle.match(evt))
+                evtNewActiveDongle.post({
+                    "imei": evt.imei,
+                    "iccid": evt.iccid,
+                    "imsi": evt.imsi,
+                    "number": evt.number || undefined,
+                    "serviceProvider": evt.serviceprovider || undefined
+                });
+            else if (AmiUserEvents_1.Event.RequestUnlockCode.match(evt))
+                evtRequestUnlockCode.post({
+                    "imei": evt.imei,
+                    "iccid": evt.iccid,
+                    "pinState": evt.pinstate,
+                    "tryLeft": parseInt(evt.tryleft)
+                });
+            else if (AmiUserEvents_1.Event.MessageStatusReport.match(evt))
                 _this.evtMessageStatusReport.post({
                     "imei": evt.imei,
                     "messageId": parseInt(evt.messageid),
@@ -67,29 +107,6 @@ var DongleExtendedClient = (function () {
                     "dischargeTime": new Date(evt.dischargetime),
                     "recipient": evt.recipient
                 });
-            else if (AmiUserEvents_1.Event.DongleDisconnect.match(evt))
-                _this.evtDongleDisconnect.post({
-                    "imei": evt.imei,
-                    "iccid": evt.iccid,
-                    "imsi": evt.imsi,
-                    "number": evt.number || undefined,
-                    "serviceProvider": evt.serviceprovider || undefined
-                });
-            else if (AmiUserEvents_1.Event.NewActiveDongle.match(evt))
-                _this.evtNewActiveDongle.post({
-                    "imei": evt.imei,
-                    "iccid": evt.iccid,
-                    "imsi": evt.imsi,
-                    "number": evt.number || undefined,
-                    "serviceProvider": evt.serviceprovider || undefined
-                });
-            else if (AmiUserEvents_1.Event.RequestUnlockCode.match(evt))
-                _this.evtRequestUnlockCode.post({
-                    "imei": evt.imei,
-                    "iccid": evt.iccid,
-                    "pinState": evt.pinstate,
-                    "tryLeft": parseInt(evt.tryleft)
-                });
             else if (AmiUserEvents_1.Event.NewMessage.match(evt))
                 _this.evtNewMessage.post({
                     "imei": evt.imei,
@@ -97,6 +114,24 @@ var DongleExtendedClient = (function () {
                     "date": new Date(evt.date),
                     "text": AmiUserEvents_1.Event.NewMessage.reassembleText(evt)
                 });
+        });
+        var evtNewActiveDongleProxy = evtNewActiveDongle.createProxy();
+        var evtRequestUnlockCodeProxy = evtRequestUnlockCode.createProxy();
+        var evtDongleDisconnectProxy = evtDongleDisconnect.createProxy();
+        evtRequestUnlockCodeProxy.attach(function (_a) {
+            var imei = _a.imei;
+            _this.evtDongleConnect.post(imei);
+            var voidFunction = function () { };
+            evtRequestUnlockCodeProxy.attachOnceExtract(function (lockedDongle) { return lockedDongle.imei === imei; }, voidFunction);
+            evtNewActiveDongleProxy.attachOnceExtract(function (dongleActive) { return dongleActive.imei === imei; }, voidFunction);
+            evtDongleDisconnectProxy.attachOnce(function (newImei) { return newImei === imei; }, function () {
+                evtNewActiveDongleProxy.detach(voidFunction);
+                evtRequestUnlockCodeProxy.detach(voidFunction);
+            });
+        });
+        evtNewActiveDongleProxy.attach(function (_a) {
+            var imei = _a.imei;
+            return _this.evtDongleConnect.post(imei);
         });
     }
     DongleExtendedClient.localhost = function () {

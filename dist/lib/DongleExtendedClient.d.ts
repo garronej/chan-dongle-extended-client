@@ -43,15 +43,18 @@ export declare class DongleExtendedClient {
     private static localClient;
     static localhost(): DongleExtendedClient;
     readonly ami: Ami;
+    readonly evtActiveDongleDisconnect: SyncEvent<DongleActive>;
+    readonly evtLockedDongleDisconnect: SyncEvent<LockedDongle>;
+    readonly evtNewActiveDongle: SyncEvent<DongleActive>;
+    readonly evtRequestUnlockCode: SyncEvent<LockedDongle>;
     readonly evtMessageStatusReport: SyncEvent<{
         imei: string;
     } & StatusReport>;
-    readonly evtDongleDisconnect: SyncEvent<DongleActive>;
-    readonly evtNewActiveDongle: SyncEvent<DongleActive>;
-    readonly evtRequestUnlockCode: SyncEvent<LockedDongle>;
     readonly evtNewMessage: SyncEvent<{
         imei: string;
     } & Message>;
+    readonly evtDongleConnect: SyncEvent<string>;
+    readonly evtDongleDisconnect: SyncEvent<string>;
     constructor(credential: Credential);
     disconnect(): void;
     getContactName(imei: string, number: string): Promise<string | undefined>;

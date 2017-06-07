@@ -79,38 +79,52 @@ export class DongleExtendedClient {
 
     public readonly ami: Ami;
 
+    public readonly evtActiveDongleDisconnect=new SyncEvent<DongleActive>();
+    public readonly evtLockedDongleDisconnect= new SyncEvent<LockedDongle>();
+    public readonly evtNewActiveDongle: SyncEvent<DongleActive>;
+    public readonly evtRequestUnlockCode: SyncEvent<LockedDongle>;
+
     public readonly evtMessageStatusReport = new SyncEvent<{ imei: string } & StatusReport>();
-    public readonly evtDongleDisconnect = new SyncEvent<DongleActive>();
-    public readonly evtNewActiveDongle = new SyncEvent<DongleActive>();
-    public readonly evtRequestUnlockCode = new SyncEvent<LockedDongle>();
     public readonly evtNewMessage = new SyncEvent<{ imei: string } & Message>();
 
+    public readonly evtDongleConnect= new SyncEvent<string>();
+    public readonly evtDongleDisconnect: SyncEvent<string>;
 
     constructor(credential: Credential) {
+
+        let evtNewActiveDongle: typeof DongleExtendedClient.prototype.evtNewActiveDongle= new SyncEvent();
+        this.evtNewActiveDongle= evtNewActiveDongle.createProxy();
+
+        let evtRequestUnlockCode: typeof DongleExtendedClient.prototype.evtRequestUnlockCode= new SyncEvent();
+        this.evtRequestUnlockCode= evtRequestUnlockCode.createProxy();
+
+        let evtDongleDisconnect: typeof DongleExtendedClient.prototype.evtDongleDisconnect= new SyncEvent();
+        this.evtDongleDisconnect= evtDongleDisconnect.createProxy();
 
         this.ami = new Ami(credential);
 
         this.ami.evtUserEvent.attach(Event.match, evt => {
-
-            if (Event.MessageStatusReport.match(evt))
-                this.evtMessageStatusReport.post({
-                    "imei": evt.imei,
-                    "messageId": parseInt(evt.messageid),
-                    "isDelivered": evt.isdelivered === "true",
-                    "status": evt.status,
-                    "dischargeTime": new Date(evt.dischargetime),
-                    "recipient": evt.recipient
-                });
-            else if (Event.DongleDisconnect.match(evt))
-                this.evtDongleDisconnect.post({
+            if (Event.ActiveDongleDisconnect.match(evt)){
+                this.evtActiveDongleDisconnect.post({
                     "imei": evt.imei,
                     "iccid": evt.iccid,
                     "imsi": evt.imsi,
                     "number": evt.number || undefined,
                     "serviceProvider": evt.serviceprovider || undefined
                 });
+                evtDongleDisconnect.post(evt.imei);
+            }
+            else if(Event.LockedDongleDisconnect.match(evt)){
+                this.evtLockedDongleDisconnect.post({
+                    "imei": evt.imei,
+                    "iccid": evt.iccid,
+                    "pinState": evt.pinstate,
+                    "tryLeft": parseInt(evt.tryleft)
+                });
+                evtDongleDisconnect.post(evt.imei);
+            }
             else if (Event.NewActiveDongle.match(evt))
-                this.evtNewActiveDongle.post({
+                evtNewActiveDongle.post({
                     "imei": evt.imei,
                     "iccid": evt.iccid,
                     "imsi": evt.imsi,
@@ -118,11 +132,20 @@ export class DongleExtendedClient {
                     "serviceProvider": evt.serviceprovider || undefined
                 });
             else if (Event.RequestUnlockCode.match(evt))
-                this.evtRequestUnlockCode.post({
+                evtRequestUnlockCode.post({
                     "imei": evt.imei,
                     "iccid": evt.iccid,
                     "pinState": evt.pinstate,
                     "tryLeft": parseInt(evt.tryleft)
+                });
+            else if (Event.MessageStatusReport.match(evt))
+                this.evtMessageStatusReport.post({
+                    "imei": evt.imei,
+                    "messageId": parseInt(evt.messageid),
+                    "isDelivered": evt.isdelivered === "true",
+                    "status": evt.status,
+                    "dischargeTime": new Date(evt.dischargetime),
+                    "recipient": evt.recipient
                 });
             else if (Event.NewMessage.match(evt))
                 this.evtNewMessage.post({
@@ -132,6 +155,38 @@ export class DongleExtendedClient {
                     "text": Event.NewMessage.reassembleText(evt)
                 });
         });
+
+        let evtNewActiveDongleProxy= evtNewActiveDongle.createProxy();
+        let evtRequestUnlockCodeProxy= evtRequestUnlockCode.createProxy();
+        let evtDongleDisconnectProxy= evtDongleDisconnect.createProxy();
+
+        evtRequestUnlockCodeProxy.attach(({ imei })=> {
+
+            this.evtDongleConnect.post(imei);
+
+            let voidFunction= ()=>{};
+
+            evtRequestUnlockCodeProxy.attachOnceExtract(
+                lockedDongle=> lockedDongle.imei === imei,
+                voidFunction
+            );
+
+            evtNewActiveDongleProxy.attachOnceExtract(
+                dongleActive=> dongleActive.imei === imei, 
+                voidFunction
+            );
+
+            evtDongleDisconnectProxy.attachOnce(
+                newImei=> newImei === imei,
+                ()=> { 
+                    evtNewActiveDongleProxy.detach(voidFunction);
+                    evtRequestUnlockCodeProxy.detach(voidFunction);
+                }
+            );
+
+        });
+
+        evtNewActiveDongleProxy.attach(({ imei }) => this.evtDongleConnect.post(imei) );
 
 
     }

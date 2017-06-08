@@ -286,7 +286,7 @@ var DongleExtendedClient = (function () {
                     case 0:
                         this.ami.userEvent(AmiUserEvents_1.Request.GetLockedDongles.build());
                         actionid = this.ami.lastActionId;
-                        return [4 /*yield*/, this.ami.evtUserEvent.waitFor(AmiUserEvents_1.Response.GetLockedDongles_first.match(actionid), 10000)];
+                        return [4 /*yield*/, this.ami.evtUserEvent.waitFor(AmiUserEvents_1.Response.GetLockedDongles_first.match(actionid), 10001)];
                     case 1:
                         evtResponse = _a.sent();
                         dongleCount = parseInt(evtResponse.donglecount);
@@ -294,7 +294,7 @@ var DongleExtendedClient = (function () {
                         _a.label = 2;
                     case 2:
                         if (!(out.length !== dongleCount)) return [3 /*break*/, 4];
-                        return [4 /*yield*/, this.ami.evtUserEvent.waitFor(AmiUserEvents_1.Response.GetLockedDongles_follow.match(actionid), 10000)];
+                        return [4 /*yield*/, this.ami.evtUserEvent.waitFor(AmiUserEvents_1.Response.GetLockedDongles_follow.match(actionid), 10002)];
                     case 3:
                         evtResponse_1 = _a.sent();
                         imei = evtResponse_1.imei, iccid = evtResponse_1.iccid, pinstate = evtResponse_1.pinstate, tryleft = evtResponse_1.tryleft;
@@ -318,7 +318,7 @@ var DongleExtendedClient = (function () {
                     case 0:
                         this.ami.userEvent(AmiUserEvents_1.Request.GetActiveDongles.build());
                         actionid = this.ami.lastActionId;
-                        return [4 /*yield*/, this.ami.evtUserEvent.waitFor(AmiUserEvents_1.Response.GetActiveDongles_first.match(actionid), 10000)];
+                        return [4 /*yield*/, this.ami.evtUserEvent.waitFor(AmiUserEvents_1.Response.GetActiveDongles_first.match(actionid), 10003)];
                     case 1:
                         evtResponse = _a.sent();
                         dongleCount = parseInt(evtResponse.donglecount);
@@ -326,7 +326,7 @@ var DongleExtendedClient = (function () {
                         _a.label = 2;
                     case 2:
                         if (!(out.length !== dongleCount)) return [3 /*break*/, 4];
-                        return [4 /*yield*/, this.ami.evtUserEvent.waitFor(AmiUserEvents_1.Response.GetActiveDongles_follow.match(actionid), 10000)];
+                        return [4 /*yield*/, this.ami.evtUserEvent.waitFor(AmiUserEvents_1.Response.GetActiveDongles_follow.match(actionid), 10004)];
                     case 3:
                         evtResponse_2 = _a.sent();
                         imei = evtResponse_2.imei, iccid = evtResponse_2.iccid, imsi = evtResponse_2.imsi, number = evtResponse_2.number, serviceprovider = evtResponse_2.serviceprovider;
@@ -370,7 +370,7 @@ var DongleExtendedClient = (function () {
                     case 0:
                         this.ami.userEvent(AmiUserEvents_1.Request.GetSimPhonebook.build(imei));
                         actionid = this.ami.lastActionId;
-                        return [4 /*yield*/, this.ami.evtUserEvent.waitFor(AmiUserEvents_1.Response.GetSimPhonebook_first.match(actionid), 10000)];
+                        return [4 /*yield*/, this.ami.evtUserEvent.waitFor(AmiUserEvents_1.Response.GetSimPhonebook_first.match(actionid), 10005)];
                     case 1:
                         evt = _a.sent();
                         if (evt.error)
@@ -385,7 +385,7 @@ var DongleExtendedClient = (function () {
                         _a.label = 2;
                     case 2:
                         if (!(contacts.length !== contactCount)) return [3 /*break*/, 4];
-                        return [4 /*yield*/, this.ami.evtUserEvent.waitFor(AmiUserEvents_1.Response.GetSimPhonebook_follow.match(actionid), 10000)];
+                        return [4 /*yield*/, this.ami.evtUserEvent.waitFor(AmiUserEvents_1.Response.GetSimPhonebook_follow.match(actionid), 10006)];
                     case 3:
                         evt_1 = _a.sent();
                         contacts.push({
@@ -407,7 +407,7 @@ var DongleExtendedClient = (function () {
                     case 0:
                         this.ami.userEvent(AmiUserEvents_1.Request.CreateContact.build(imei, name, number));
                         actionid = this.ami.lastActionId;
-                        return [4 /*yield*/, this.ami.evtUserEvent.waitFor(AmiUserEvents_1.Response.CreateContact.match(actionid), 10000)];
+                        return [4 /*yield*/, this.ami.evtUserEvent.waitFor(AmiUserEvents_1.Response.CreateContact.match(actionid), 10007)];
                     case 1:
                         evt = _a.sent();
                         if (evt.error)
@@ -430,7 +430,7 @@ var DongleExtendedClient = (function () {
                     case 0:
                         this.ami.userEvent(AmiUserEvents_1.Request.GetMessages.build(imei, flush ? "true" : "false"));
                         actionid = this.ami.lastActionId;
-                        return [4 /*yield*/, this.ami.evtUserEvent.waitFor(AmiUserEvents_1.Response.GetMessages_first.match(actionid), 10000)];
+                        return [4 /*yield*/, this.ami.evtUserEvent.waitFor(AmiUserEvents_1.Response.GetMessages_first.match(actionid), 10008)];
                     case 1:
                         evt = _a.sent();
                         if (evt.error)
@@ -440,7 +440,7 @@ var DongleExtendedClient = (function () {
                         _a.label = 2;
                     case 2:
                         if (!(messages.length !== messagesCount)) return [3 /*break*/, 4];
-                        return [4 /*yield*/, this.ami.evtUserEvent.waitFor(AmiUserEvents_1.Response.GetMessages_follow.match(actionid), 10000)];
+                        return [4 /*yield*/, this.ami.evtUserEvent.waitFor(AmiUserEvents_1.Response.GetMessages_follow.match(actionid), 10009)];
                     case 3:
                         evt_2 = _a.sent();
                         messages.push({
@@ -462,7 +462,7 @@ var DongleExtendedClient = (function () {
                     case 0:
                         this.ami.userEvent(AmiUserEvents_1.Request.DeleteContact.build(imei, index.toString()));
                         actionid = this.ami.lastActionId;
-                        return [4 /*yield*/, this.ami.evtUserEvent.waitFor(AmiUserEvents_1.Response.match(actionid), 10000)];
+                        return [4 /*yield*/, this.ami.evtUserEvent.waitFor(AmiUserEvents_1.Response.match(actionid), 10010)];
                     case 1:
                         evt = _a.sent();
                         if (evt.error)
@@ -493,7 +493,7 @@ var DongleExtendedClient = (function () {
                             this.ami.userEvent(AmiUserEvents_1.Request.UnlockDongle.build(imei, puk, newPin));
                         }
                         actionid = this.ami.lastActionId;
-                        return [4 /*yield*/, this.ami.evtUserEvent.waitFor(AmiUserEvents_1.Response.match(actionid), 10000)];
+                        return [4 /*yield*/, this.ami.evtUserEvent.waitFor(AmiUserEvents_1.Response.match(actionid), 10011)];
                     case 1:
                         evt = _a.sent();
                         if (evt.error)
@@ -511,7 +511,7 @@ var DongleExtendedClient = (function () {
                     case 0:
                         this.ami.userEvent(AmiUserEvents_1.Request.UpdateNumber.build(imei, number));
                         actionid = this.ami.lastActionId;
-                        return [4 /*yield*/, this.ami.evtUserEvent.waitFor(AmiUserEvents_1.Response.match(actionid), 10000)];
+                        return [4 /*yield*/, this.ami.evtUserEvent.waitFor(AmiUserEvents_1.Response.match(actionid), 10012)];
                     case 1:
                         evt = _a.sent();
                         if (evt.error)

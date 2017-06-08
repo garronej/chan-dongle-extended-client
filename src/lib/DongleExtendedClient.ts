@@ -256,7 +256,7 @@ export class DongleExtendedClient {
 
         let evtResponse = await this.ami.evtUserEvent.waitFor(
             Response.GetLockedDongles_first.match(actionid),
-            10000
+            10001
         );
 
         let dongleCount = parseInt(evtResponse.donglecount);
@@ -267,7 +267,7 @@ export class DongleExtendedClient {
 
             let evtResponse = await this.ami.evtUserEvent.waitFor(
                 Response.GetLockedDongles_follow.match(actionid),
-                10000
+                10002
             );
 
             let { imei, iccid, pinstate, tryleft } = evtResponse;
@@ -295,7 +295,7 @@ export class DongleExtendedClient {
 
         let evtResponse = await this.ami.evtUserEvent.waitFor(
             Response.GetActiveDongles_first.match(actionid),
-            10000
+            10003
         );
 
         let dongleCount = parseInt(evtResponse.donglecount);
@@ -306,7 +306,7 @@ export class DongleExtendedClient {
 
             let evtResponse = await this.ami.evtUserEvent.waitFor(
                 Response.GetActiveDongles_follow.match(actionid),
-                10000
+                10004
             );
 
             let { imei, iccid, imsi, number, serviceprovider } = evtResponse;
@@ -366,7 +366,7 @@ export class DongleExtendedClient {
 
         let evt = await this.ami.evtUserEvent.waitFor(
             Response.GetSimPhonebook_first.match(actionid),
-            10000
+            10005
         );
 
         if (evt.error)
@@ -386,7 +386,7 @@ export class DongleExtendedClient {
 
             let evt = await this.ami.evtUserEvent.waitFor(
                 Response.GetSimPhonebook_follow.match(actionid),
-                10000
+                10006
             );
 
             contacts.push({
@@ -420,7 +420,7 @@ export class DongleExtendedClient {
 
         let evt = await this.ami.evtUserEvent.waitFor(
             Response.CreateContact.match(actionid),
-            10000
+            10007
         );
 
         if (evt.error)
@@ -452,7 +452,7 @@ export class DongleExtendedClient {
 
         let evt = await this.ami.evtUserEvent.waitFor(
             Response.GetMessages_first.match(actionid),
-            10000
+            10008
         );
 
         if (evt.error)
@@ -466,7 +466,7 @@ export class DongleExtendedClient {
 
             let evt = await this.ami.evtUserEvent.waitFor(
                 Response.GetMessages_follow.match(actionid),
-                10000
+                10009
             );
 
             messages.push({
@@ -497,7 +497,7 @@ export class DongleExtendedClient {
 
         let evt = await this.ami.evtUserEvent.waitFor(
             Response.match(actionid),
-            10000
+            10010
         );
 
         if (evt.error)
@@ -535,7 +535,7 @@ export class DongleExtendedClient {
 
         let evt = await this.ami.evtUserEvent.waitFor(
             Response.match(actionid),
-            10000
+            10011
         );
 
         if (evt.error)
@@ -556,7 +556,7 @@ export class DongleExtendedClient {
 
         let evt = await this.ami.evtUserEvent.waitFor(
             Response.match(actionid),
-            10000
+            10012
         );
 
         if (evt.error) throw new Error(evt.error);

@@ -6,7 +6,7 @@
   "types": "./dist/lib/index.d.ts",
   "scripts": {
     "postinstall": "npm run fetch-ami-definitions",
-    "fetch-ami-definitions": "cd src/lib && mkdir -p fetched && cd fetched && wget -N https://raw.githubusercontent.com/garronej/chan-dongle-extended/master/src/lib/AmiUserEvents.ts",
+    "fetch-ami-definitions": "cd src/lib && mkdir -p fetched && cd fetched && curl --header 'Authorization: token a30f7432b117d8320cc21cc03513817c3f08d4b6' --header 'Accept: application/vnd.github.v3.raw' --remote-name --location https://api.github.com/repos/garronej/chan-dongle-extended/contents/src/lib/AmiUserEvents.ts",
     "tsc": "./node_modules/.bin/tsc -p ./tsconfig.json",
     "test": "node ./dist/test/main"
   },
@@ -23,7 +23,7 @@
     "PIN"
   ],
   "author": "Joseph Garrone",
-  "license": "MIT",
+  "license": "GNU GPLv2",
   "dependencies": {
     "js-base64": "^2.1.9",
     "rejection-tracker": "garronej/rejection-tracker",

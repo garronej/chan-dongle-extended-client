@@ -521,8 +521,8 @@ var DongleExtendedClient = (function () {
             });
         });
     };
+    DongleExtendedClient.localClient = undefined;
     return DongleExtendedClient;
 }());
-DongleExtendedClient.localClient = undefined;
 exports.DongleExtendedClient = DongleExtendedClient;
 //# sourceMappingURL=DongleExtendedClient.js.map

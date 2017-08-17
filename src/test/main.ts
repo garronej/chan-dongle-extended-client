@@ -42,4 +42,12 @@ import { Base64 } from "js-base64";
     ami.disconnect();
 
 
+});
+
+(async function getMessages() {
+
+    let messages= await DongleExtendedClient.localhost().getMessages("358880032664586", false);
+
+    console.log({ messages });
+
 })();

@@ -1,7 +1,5 @@
 import { UserEvent } from "ts-ami";
-export declare type LockedPinState = "SIM PIN" | "SIM PUK" | "SIM PIN2" | "SIM PUK2";
-export declare const amiUser = "dongle_ext_user";
-export declare function buildUserEvent(userevent: string, actionid?: string): UserEvent;
+import { typesDef as t } from "./typesDef";
 export interface Event extends UserEvent {
     userevent: typeof Event.userevent;
     dongleevent: string;
@@ -54,25 +52,25 @@ export declare namespace Event {
         dongleevent: typeof RequestUnlockCode.dongleevent;
         imei: string;
         iccid: string;
-        pinstate: LockedPinState;
+        pinstate: t.LockedPinState;
         tryleft: string;
     }
     namespace RequestUnlockCode {
         const dongleevent = "RequestUnlockCode";
         function match(evt: UserEvent): evt is RequestUnlockCode;
-        function build(imei: string, iccid: string, pinstate: LockedPinState, tryleft: string): RequestUnlockCode;
+        function build(imei: string, iccid: string, pinstate: t.LockedPinState, tryleft: string): RequestUnlockCode;
     }
     interface LockedDongleDisconnect extends Event {
         dongleevent: typeof LockedDongleDisconnect.dongleevent;
         imei: string;
         iccid: string;
-        pinstate: LockedPinState;
+        pinstate: t.LockedPinState;
         tryleft: string;
     }
     namespace LockedDongleDisconnect {
         const dongleevent = "LockedDongleDisconnect";
         function match(evt: UserEvent): evt is RequestUnlockCode;
-        function build(imei: string, iccid: string, pinstate: LockedPinState, tryleft: string): RequestUnlockCode;
+        function build(imei: string, iccid: string, pinstate: t.LockedPinState, tryleft: string): RequestUnlockCode;
     }
     interface MessageStatusReport extends Event {
         dongleevent: typeof MessageStatusReport.dongleevent;

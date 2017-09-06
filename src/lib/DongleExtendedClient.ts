@@ -1,65 +1,19 @@
 import { 
     Ami, 
     retrieveCredential, 
-    Credential, 
-    UserEvent
+    Credential
 } from "ts-ami";
+import { SyncEvent } from "ts-events-extended";
 
 import { 
     Response, 
     Request, 
     Event,
-    LockedPinState,
-    amiUser
-} from "./fetched/AmiUserEvents";
+} from "./AmiUserEvents";
 
-import { SyncEvent } from "ts-events-extended";
+import { typesDef as t } from "./typesDef";
 
-
-export interface StatusReport {
-    messageId: number;
-    dischargeTime: Date;
-    isDelivered: boolean;
-    status: string;
-    recipient: string;
-}
-
-export interface Message {
-    number: string;
-    date: Date;
-    text: string;
-}
-
-export interface Contact {
-    index: number;
-    number: string;
-    name: string;
-}
-
-export interface DongleBase {
-    imei: string;
-    iccid: string;
-}
-
-export interface LockedDongle extends DongleBase {
-    pinState: LockedPinState;
-    tryLeft: number;
-}
-
-export interface DongleActive extends DongleBase {
-    imsi: string;
-    number: string | undefined;
-    serviceProvider: string | undefined;
-}
-
-export type Phonebook = {
-    infos: {
-        contactNameMaxLength: number;
-        numberMaxLength: number;
-        storageLeft: number;
-    };
-    contacts: Contact[];
-};
+export const amiUser= "dongle_ext_user";
 
 export class DongleExtendedClient {
 
@@ -79,13 +33,13 @@ export class DongleExtendedClient {
 
     public readonly ami: Ami;
 
-    public readonly evtActiveDongleDisconnect=new SyncEvent<DongleActive>();
-    public readonly evtLockedDongleDisconnect= new SyncEvent<LockedDongle>();
-    public readonly evtNewActiveDongle: SyncEvent<DongleActive>;
-    public readonly evtRequestUnlockCode: SyncEvent<LockedDongle>;
+    public readonly evtActiveDongleDisconnect=new SyncEvent<t.DongleActive>();
+    public readonly evtLockedDongleDisconnect= new SyncEvent<t.LockedDongle>();
+    public readonly evtNewActiveDongle: SyncEvent<t.DongleActive>;
+    public readonly evtRequestUnlockCode: SyncEvent<t.LockedDongle>;
 
-    public readonly evtMessageStatusReport = new SyncEvent<{ imei: string } & StatusReport>();
-    public readonly evtNewMessage = new SyncEvent<{ imei: string } & Message>();
+    public readonly evtMessageStatusReport = new SyncEvent<{ imei: string } & t.StatusReport>();
+    public readonly evtNewMessage = new SyncEvent<{ imei: string } & t.Message>();
 
     public readonly evtDongleConnect= new SyncEvent<string>();
     public readonly evtDongleDisconnect: SyncEvent<string>;
@@ -236,7 +190,7 @@ export class DongleExtendedClient {
 
     }
 
-    public async getActiveDongle(imei: string): Promise<DongleActive | undefined>{
+    public async getActiveDongle(imei: string): Promise<t.DongleActive | undefined>{
 
         for( let dongleActive of await this.getActiveDongles() )
             if( dongleActive.imei === imei ) return dongleActive;
@@ -246,7 +200,7 @@ export class DongleExtendedClient {
     }
 
 
-    public async getLockedDongles(): Promise<LockedDongle[]> {
+    public async getLockedDongles(): Promise<t.LockedDongle[]> {
 
         this.ami.userEvent(
             Request.GetLockedDongles.build()
@@ -261,7 +215,7 @@ export class DongleExtendedClient {
 
         let dongleCount = parseInt(evtResponse.donglecount);
 
-        let out: LockedDongle[] = [];
+        let out: t.LockedDongle[] = [];
 
         while (out.length !== dongleCount) {
 
@@ -275,7 +229,7 @@ export class DongleExtendedClient {
             out.push({
                 imei,
                 iccid,
-                "pinState": pinstate as LockedPinState,
+                "pinState": pinstate as t.LockedPinState,
                 "tryLeft": parseInt(tryleft)
             });
 
@@ -285,7 +239,7 @@ export class DongleExtendedClient {
 
     }
 
-    public async getActiveDongles(): Promise<DongleActive[]> {
+    public async getActiveDongles(): Promise<t.DongleActive[]> {
 
         this.ami.userEvent(
             Request.GetActiveDongles.build()
@@ -300,7 +254,7 @@ export class DongleExtendedClient {
 
         let dongleCount = parseInt(evtResponse.donglecount);
 
-        let out: DongleActive[] = [];
+        let out: t.DongleActive[] = [];
 
         while (out.length !== dongleCount) {
 
@@ -356,7 +310,7 @@ export class DongleExtendedClient {
 
     public async getSimPhonebook(
         imei: string
-    ): Promise<Phonebook> {
+    ): Promise<t.Phonebook> {
 
         this.ami.userEvent(
             Request.GetSimPhonebook.build(imei)
@@ -380,7 +334,7 @@ export class DongleExtendedClient {
 
         let contactCount = parseInt(evt.contactcount);
 
-        let contacts: Contact[] = [];
+        let contacts: t.Contact[] = [];
 
         while (contacts.length !== contactCount) {
 
@@ -406,7 +360,7 @@ export class DongleExtendedClient {
         imei: string,
         name: string,
         number: string,
-    ): Promise<Contact> {
+    ): Promise<t.Contact> {
 
         this.ami.userEvent(
             Request.CreateContact.build(
@@ -426,7 +380,7 @@ export class DongleExtendedClient {
         if (evt.error)
             throw new Error(evt.error);
 
-        let contact: Contact = {
+        let contact: t.Contact = {
             "index": parseInt(evt.index),
             "name": evt.name,
             "number": evt.number
@@ -439,7 +393,7 @@ export class DongleExtendedClient {
     public async getMessages(
         imei: string,
         flush: boolean,
-    ): Promise<Message[]> {
+    ): Promise<t.Message[]> {
 
         this.ami.userEvent(
             Request.GetMessages.build(
@@ -460,7 +414,7 @@ export class DongleExtendedClient {
 
         let messagesCount = parseInt(evt.messagescount);
 
-        let messages: Message[] = [];
+        let messages: t.Message[] = [];
 
         while (messages.length !== messagesCount) {
 

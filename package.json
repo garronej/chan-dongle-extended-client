@@ -1,12 +1,10 @@
 {
   "name": "chan-dongle-extended-client",
-  "version": "0.4.3",
+  "version": "0.4.4",
   "description": "client for chan-dongle-extended",
   "main": "./dist/lib/index.js",
   "types": "./dist/lib/index.d.ts",
   "scripts": {
-    "postinstall": "npm run fetch-ami-definitions",
-    "fetch-ami-definitions": "cd src/lib && mkdir -p fetched && cd fetched && curl --header 'Authorization: token a30f7432b117d8320cc21cc03513817c3f08d4b6' --header 'Accept: application/vnd.github.v3.raw' --remote-name --location https://api.github.com/repos/garronej/chan-dongle-extended/contents/src/lib/AmiUserEvents.ts",
     "tsc": "./node_modules/.bin/tsc -p ./tsconfig.json",
     "test": "node ./dist/test/main"
   },

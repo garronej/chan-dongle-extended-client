@@ -1,5 +1,4 @@
-import { DongleExtendedClient } from "../lib";
-import { Request } from "../lib/fetched/AmiUserEvents";
+import { DongleExtendedClient, Request } from "../lib";
 import { SyncEvent } from "ts-events-extended";
 import { Base64 } from "js-base64";
 

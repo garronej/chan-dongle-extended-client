@@ -10,7 +10,6 @@ var __assign = (this && this.__assign) || Object.assign || function(t) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var ts_ami_1 = require("ts-ami");
 var js_base64_1 = require("js-base64");
-exports.amiUser = "dongle_ext_user";
 var textKeyword = "base64text_part";
 var maxMessageLength = 20000;
 var usereventPrefix = "DongleAPI/";
@@ -18,7 +17,6 @@ function buildUserEvent(userevent, actionid) {
     actionid = actionid || ts_ami_1.Ami.generateUniqueActionId();
     return { userevent: userevent, actionid: actionid };
 }
-exports.buildUserEvent = buildUserEvent;
 var Event;
 (function (Event) {
     Event.userevent = usereventPrefix + "Event";
@@ -509,4 +507,3 @@ var Response;
     })(GetActiveDongles_follow = Response.GetActiveDongles_follow || (Response.GetActiveDongles_follow = {}));
 })(Response = exports.Response || (exports.Response = {}));
 /*END RESPONSE*/
-//# sourceMappingURL=AmiUserEvents.js.map

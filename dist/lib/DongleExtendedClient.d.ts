@@ -1,58 +1,21 @@
 import { Ami, Credential } from "ts-ami";
-import { LockedPinState } from "./fetched/AmiUserEvents";
 import { SyncEvent } from "ts-events-extended";
-export interface StatusReport {
-    messageId: number;
-    dischargeTime: Date;
-    isDelivered: boolean;
-    status: string;
-    recipient: string;
-}
-export interface Message {
-    number: string;
-    date: Date;
-    text: string;
-}
-export interface Contact {
-    index: number;
-    number: string;
-    name: string;
-}
-export interface DongleBase {
-    imei: string;
-    iccid: string;
-}
-export interface LockedDongle extends DongleBase {
-    pinState: LockedPinState;
-    tryLeft: number;
-}
-export interface DongleActive extends DongleBase {
-    imsi: string;
-    number: string | undefined;
-    serviceProvider: string | undefined;
-}
-export declare type Phonebook = {
-    infos: {
-        contactNameMaxLength: number;
-        numberMaxLength: number;
-        storageLeft: number;
-    };
-    contacts: Contact[];
-};
+import { typesDef as t } from "./typesDef";
+export declare const amiUser = "dongle_ext_user";
 export declare class DongleExtendedClient {
     private static localClient;
     static localhost(): DongleExtendedClient;
     readonly ami: Ami;
-    readonly evtActiveDongleDisconnect: SyncEvent<DongleActive>;
-    readonly evtLockedDongleDisconnect: SyncEvent<LockedDongle>;
-    readonly evtNewActiveDongle: SyncEvent<DongleActive>;
-    readonly evtRequestUnlockCode: SyncEvent<LockedDongle>;
+    readonly evtActiveDongleDisconnect: SyncEvent<t.DongleActive>;
+    readonly evtLockedDongleDisconnect: SyncEvent<t.LockedDongle>;
+    readonly evtNewActiveDongle: SyncEvent<t.DongleActive>;
+    readonly evtRequestUnlockCode: SyncEvent<t.LockedDongle>;
     readonly evtMessageStatusReport: SyncEvent<{
         imei: string;
-    } & StatusReport>;
+    } & t.StatusReport>;
     readonly evtNewMessage: SyncEvent<{
         imei: string;
-    } & Message>;
+    } & t.Message>;
     readonly evtDongleConnect: SyncEvent<string>;
     readonly evtDongleDisconnect: SyncEvent<string>;
     constructor(credential: Credential);
@@ -60,13 +23,13 @@ export declare class DongleExtendedClient {
     getContactName(imei: string, number: string): Promise<string | undefined>;
     static getNumberPayload(number: string): string | undefined;
     getConnectedDongles(): Promise<string[]>;
-    getActiveDongle(imei: string): Promise<DongleActive | undefined>;
-    getLockedDongles(): Promise<LockedDongle[]>;
-    getActiveDongles(): Promise<DongleActive[]>;
+    getActiveDongle(imei: string): Promise<t.DongleActive | undefined>;
+    getLockedDongles(): Promise<t.LockedDongle[]>;
+    getActiveDongles(): Promise<t.DongleActive[]>;
     sendMessage(imei: string, number: string, text: string): Promise<number>;
-    getSimPhonebook(imei: string): Promise<Phonebook>;
-    createContact(imei: string, name: string, number: string): Promise<Contact>;
-    getMessages(imei: string, flush: boolean): Promise<Message[]>;
+    getSimPhonebook(imei: string): Promise<t.Phonebook>;
+    createContact(imei: string, name: string, number: string): Promise<t.Contact>;
+    getMessages(imei: string, flush: boolean): Promise<t.Message[]>;
     deleteContact(imei: string, index: number): Promise<void>;
     unlockDongle(imei: string, pin: string): Promise<void>;
     unlockDongle(imei: string, puk: string, newPin: string): Promise<void>;

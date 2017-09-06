@@ -46,9 +46,10 @@ var __values = (this && this.__values) || function (o) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var ts_ami_1 = require("ts-ami");
-var AmiUserEvents_1 = require("./fetched/AmiUserEvents");
 var ts_events_extended_1 = require("ts-events-extended");
-var DongleExtendedClient = (function () {
+var AmiUserEvents_1 = require("./AmiUserEvents");
+exports.amiUser = "dongle_ext_user";
+var DongleExtendedClient = /** @class */ (function () {
     function DongleExtendedClient(credential) {
         var _this = this;
         this.evtActiveDongleDisconnect = new ts_events_extended_1.SyncEvent();
@@ -137,7 +138,7 @@ var DongleExtendedClient = (function () {
     DongleExtendedClient.localhost = function () {
         if (this.localClient)
             return this.localClient;
-        return this.localClient = new this(ts_ami_1.retrieveCredential({ "user": AmiUserEvents_1.amiUser }));
+        return this.localClient = new this(ts_ami_1.retrieveCredential({ "user": exports.amiUser }));
     };
     ;
     DongleExtendedClient.prototype.disconnect = function () {
@@ -145,7 +146,7 @@ var DongleExtendedClient = (function () {
     };
     DongleExtendedClient.prototype.getContactName = function (imei, number) {
         return __awaiter(this, void 0, void 0, function () {
-            var numberPayload, contacts, contacts_1, contacts_1_1, _a, number_1, name_1, e_1, _b;
+            var numberPayload, contacts, contacts_1, contacts_1_1, _a, number_1, name, e_1, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
@@ -157,9 +158,9 @@ var DongleExtendedClient = (function () {
                         contacts = (_c.sent()).contacts;
                         try {
                             for (contacts_1 = __values(contacts), contacts_1_1 = contacts_1.next(); !contacts_1_1.done; contacts_1_1 = contacts_1.next()) {
-                                _a = contacts_1_1.value, number_1 = _a.number, name_1 = _a.name;
+                                _a = contacts_1_1.value, number_1 = _a.number, name = _a.name;
                                 if (numberPayload === DongleExtendedClient.getNumberPayload(number_1))
-                                    return [2 /*return*/, name_1];
+                                    return [2 /*return*/, name];
                             }
                         }
                         catch (e_1_1) { e_1 = { error: e_1_1 }; }
@@ -525,4 +526,3 @@ var DongleExtendedClient = (function () {
     return DongleExtendedClient;
 }());
 exports.DongleExtendedClient = DongleExtendedClient;
-//# sourceMappingURL=DongleExtendedClient.js.map

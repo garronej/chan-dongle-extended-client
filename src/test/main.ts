@@ -49,4 +49,12 @@ import { Base64 } from "js-base64";
 
     console.log({ messages });
 
+});
+
+(async function getConfig() {
+
+    let config= await DongleExtendedClient.localhost().getConfig();
+
+    console.log( config );
+
 })();

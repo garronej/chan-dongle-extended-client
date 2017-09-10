@@ -34,4 +34,5 @@ export declare class DongleExtendedClient {
     unlockDongle(imei: string, pin: string): Promise<void>;
     unlockDongle(imei: string, puk: string, newPin: string): Promise<void>;
     updateNumber(imei: string, number: string): Promise<void>;
+    getConfig(): Promise<t.ModuleConfiguration>;
 }

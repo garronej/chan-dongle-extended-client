@@ -95,6 +95,14 @@ export declare namespace Request {
     const userevent: string;
     function match(evt: UserEvent): evt is Request;
     function build(donglerequest: string): Request;
+    interface GetConfig extends Request {
+        donglerequest: typeof GetConfig.donglerequest;
+    }
+    namespace GetConfig {
+        const donglerequest = "GetConfig";
+        function match(evt: UserEvent): evt is GetConfig;
+        function build(): UpdateNumber;
+    }
     interface UpdateNumber extends Request {
         donglerequest: typeof UpdateNumber.donglerequest;
         imei: string;
@@ -255,6 +263,15 @@ export declare namespace Response {
     namespace GetMessages_first {
         function match(actionid: string): (evt: UserEvent) => evt is GetMessages_first;
         function build(actionid: string, messagescount: string): GetMessages_first;
+    }
+    interface GetConfig extends Response {
+        textsplitcount: string;
+        [textn: string]: string | undefined;
+    }
+    namespace GetConfig {
+        function match(actionid: string): (evt: UserEvent) => evt is GetConfig;
+        function build(actionid: string, config: t.ModuleConfiguration): GetConfig;
+        function reassembleConfig(evt: GetConfig): t.ModuleConfiguration;
     }
     interface GetMessages_follow extends Response {
         number: string;

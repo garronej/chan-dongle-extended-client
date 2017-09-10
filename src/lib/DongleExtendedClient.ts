@@ -176,6 +176,7 @@ export class DongleExtendedClient {
 
     }
 
+
     public async getConnectedDongles(): Promise<string[]> {
 
         let imeis: string[]= [];
@@ -189,6 +190,7 @@ export class DongleExtendedClient {
         return imeis;
 
     }
+
 
     public async getActiveDongle(imei: string): Promise<t.DongleActive | undefined>{
 
@@ -459,7 +461,6 @@ export class DongleExtendedClient {
 
     }
 
-
     public unlockDongle(imei: string, pin: string): Promise<void>;
     public unlockDongle(imei: string, puk: string, newPin: string): Promise<void>;
     public async unlockDongle(...inputs: any[]): Promise<void> {
@@ -514,6 +515,23 @@ export class DongleExtendedClient {
         );
 
         if (evt.error) throw new Error(evt.error);
+
+    }
+
+    public async getConfig(): Promise<t.ModuleConfiguration> {
+
+        this.ami.userEvent(
+            Request.GetConfig.build()
+        );
+
+        let actionid= this.ami.lastActionId;
+
+        let evt = await this.ami.evtUserEvent.waitFor(
+            Response.GetConfig.match(actionid),
+            10013
+        );
+
+        return Response.GetConfig.reassembleConfig(evt);
 
     }
 

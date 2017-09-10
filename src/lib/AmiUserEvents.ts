@@ -336,6 +336,29 @@ export namespace Request {
         } as Request;
     }
 
+    export interface GetConfig extends Request {
+        donglerequest: typeof GetConfig.donglerequest;
+    }
+
+    export namespace GetConfig {
+
+        export const donglerequest= "GetConfig";
+
+        export function match(evt: UserEvent): evt is GetConfig {
+            return (
+                Request.match(evt) &&
+                evt.donglerequest === donglerequest
+            );
+        }
+
+        export function build(): UpdateNumber {
+            return {
+                ...Request.build(donglerequest)
+            } as UpdateNumber;
+        }
+
+    }
+
     export interface UpdateNumber extends Request {
         donglerequest: typeof UpdateNumber.donglerequest;
         imei: string;
@@ -364,6 +387,7 @@ export namespace Request {
         }
 
     }
+
 
 
     export interface GetSimPhonebook extends Request {
@@ -913,6 +937,56 @@ export namespace Response {
                 messagescount
             } as GetMessages_first;
         }
+
+    }
+
+    export interface GetConfig extends Response {
+        textsplitcount: string;
+        [textn: string]: string | undefined;
+    }
+
+    export namespace GetConfig {
+
+        export function match(actionid: string) {
+            return (evt: UserEvent): evt is GetConfig => 
+            (
+                Response.match(actionid)(evt) &&
+                !GetMessages_first.match(actionid)(evt)
+            );
+        }
+
+        export function build(
+            actionid: string,
+            config: t.ModuleConfiguration
+        ): GetConfig{
+
+            let text= JSON.stringify(config);
+
+            if( text.length > maxMessageLength )
+                throw new Error("Config too long");
+
+            let textParts= Ami.base64TextSplit(text);
+
+            let out= {
+                ...Response.build(actionid),
+                "textsplitcount": `${textParts.length}`
+            } as GetConfig;
+
+            for( let i=0; i< textParts.length; i++ )
+                out[`${textKeyword}${i}`] = textParts[i];
+
+            return out;
+
+        }
+
+        export function reassembleConfig(evt: GetConfig): t.ModuleConfiguration {
+            let text = "";
+            for (let i = 0; i < parseInt(evt.textsplitcount); i++)
+                text += Base64.decode(evt[`${textKeyword}${i}`]!);
+
+            return JSON.parse(text);
+        }
+
 
     }
 

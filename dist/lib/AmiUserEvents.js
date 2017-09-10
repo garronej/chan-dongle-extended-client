@@ -153,6 +153,19 @@ var Request;
         return __assign({}, buildUserEvent(Request.userevent), { donglerequest: donglerequest });
     }
     Request.build = build;
+    var GetConfig;
+    (function (GetConfig) {
+        GetConfig.donglerequest = "GetConfig";
+        function match(evt) {
+            return (Request.match(evt) &&
+                evt.donglerequest === GetConfig.donglerequest);
+        }
+        GetConfig.match = match;
+        function build() {
+            return __assign({}, Request.build(GetConfig.donglerequest));
+        }
+        GetConfig.build = build;
+    })(GetConfig = Request.GetConfig || (Request.GetConfig = {}));
     var UpdateNumber;
     (function (UpdateNumber) {
         UpdateNumber.donglerequest = "UpdateNumber";
@@ -445,6 +458,34 @@ var Response;
         }
         GetMessages_first.build = build;
     })(GetMessages_first = Response.GetMessages_first || (Response.GetMessages_first = {}));
+    var GetConfig;
+    (function (GetConfig) {
+        function match(actionid) {
+            return function (evt) {
+                return (Response.match(actionid)(evt) &&
+                    !GetMessages_first.match(actionid)(evt));
+            };
+        }
+        GetConfig.match = match;
+        function build(actionid, config) {
+            var text = JSON.stringify(config);
+            if (text.length > maxMessageLength)
+                throw new Error("Config too long");
+            var textParts = ts_ami_1.Ami.base64TextSplit(text);
+            var out = __assign({}, Response.build(actionid), { "textsplitcount": "" + textParts.length });
+            for (var i = 0; i < textParts.length; i++)
+                out["" + textKeyword + i] = textParts[i];
+            return out;
+        }
+        GetConfig.build = build;
+        function reassembleConfig(evt) {
+            var text = "";
+            for (var i = 0; i < parseInt(evt.textsplitcount); i++)
+                text += js_base64_1.Base64.decode(evt["" + textKeyword + i]);
+            return JSON.parse(text);
+        }
+        GetConfig.reassembleConfig = reassembleConfig;
+    })(GetConfig = Response.GetConfig || (Response.GetConfig = {}));
     var GetMessages_follow;
     (function (GetMessages_follow) {
         function match(actionid) {

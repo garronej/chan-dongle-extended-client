@@ -522,6 +522,22 @@ var DongleExtendedClient = /** @class */ (function () {
             });
         });
     };
+    DongleExtendedClient.prototype.getConfig = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var actionid, evt;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        this.ami.userEvent(AmiUserEvents_1.Request.GetConfig.build());
+                        actionid = this.ami.lastActionId;
+                        return [4 /*yield*/, this.ami.evtUserEvent.waitFor(AmiUserEvents_1.Response.GetConfig.match(actionid), 10013)];
+                    case 1:
+                        evt = _a.sent();
+                        return [2 /*return*/, AmiUserEvents_1.Response.GetConfig.reassembleConfig(evt)];
+                }
+            });
+        });
+    };
     DongleExtendedClient.localClient = undefined;
     return DongleExtendedClient;
 }());

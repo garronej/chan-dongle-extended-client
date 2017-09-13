@@ -15,6 +15,7 @@ export declare class DongleExtendedClient {
     } & t.StatusReport>;
     readonly evtNewMessage: SyncEvent<{
         imei: string;
+        imsi: string;
     } & t.Message>;
     readonly evtDongleConnect: SyncEvent<string>;
     readonly evtDongleDisconnect: SyncEvent<string>;

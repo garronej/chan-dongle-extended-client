@@ -51,6 +51,7 @@ export namespace Event {
     export interface NewMessage extends Event {
         dongleevent: typeof NewMessage.dongleevent;
         imei: string;
+        imsi: string;
         number: string;
         date: string;
         textsplitcount: string;
@@ -70,6 +71,7 @@ export namespace Event {
 
         export function build(
             imei: string,
+            imsi: string,
             number: string,
             date: string,
             text: string
@@ -83,6 +85,7 @@ export namespace Event {
             let out = {
                 ...Event.build(dongleevent),
                 imei,
+                imsi,
                 number,
                 date,
                 "textsplitcount": `${textParts.length}`

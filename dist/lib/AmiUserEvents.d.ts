@@ -11,6 +11,7 @@ export declare namespace Event {
     interface NewMessage extends Event {
         dongleevent: typeof NewMessage.dongleevent;
         imei: string;
+        imsi: string;
         number: string;
         date: string;
         textsplitcount: string;
@@ -19,7 +20,7 @@ export declare namespace Event {
     namespace NewMessage {
         const dongleevent = "NewMessage";
         function match(evt: UserEvent): evt is NewMessage;
-        function build(imei: string, number: string, date: string, text: string): NewMessage;
+        function build(imei: string, imsi: string, number: string, date: string, text: string): NewMessage;
         function reassembleText(evt: NewMessage): string;
     }
     interface NewActiveDongle extends Event {

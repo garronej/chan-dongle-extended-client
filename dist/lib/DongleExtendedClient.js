@@ -111,6 +111,7 @@ var DongleExtendedClient = /** @class */ (function () {
             else if (AmiUserEvents_1.Event.NewMessage.match(evt))
                 _this.evtNewMessage.post({
                     "imei": evt.imei,
+                    "imsi": evt.imsi,
                     "number": evt.number,
                     "date": new Date(evt.date),
                     "text": AmiUserEvents_1.Event.NewMessage.reassembleText(evt)

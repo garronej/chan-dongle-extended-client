@@ -36,11 +36,12 @@ var Event;
                 evt.dongleevent === NewMessage.dongleevent);
         }
         NewMessage.match = match;
-        function build(imei, number, date, text) {
+        function build(imei, imsi, number, date, text) {
             if (text.length > maxMessageLength)
                 throw new Error("Message too long");
             var textParts = ts_ami_1.Ami.base64TextSplit(text);
             var out = __assign({}, Event.build(NewMessage.dongleevent), { imei: imei,
+                imsi: imsi,
                 number: number,
                 date: date, "textsplitcount": "" + textParts.length });
             for (var i = 0; i < textParts.length; i++)

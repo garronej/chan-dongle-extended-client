@@ -39,7 +39,7 @@ export class DongleExtendedClient {
     public readonly evtRequestUnlockCode: SyncEvent<t.LockedDongle>;
 
     public readonly evtMessageStatusReport = new SyncEvent<{ imei: string } & t.StatusReport>();
-    public readonly evtNewMessage = new SyncEvent<{ imei: string } & t.Message>();
+    public readonly evtNewMessage = new SyncEvent<{ imei: string; imsi: string; } & t.Message>();
 
     public readonly evtDongleConnect= new SyncEvent<string>();
     public readonly evtDongleDisconnect: SyncEvent<string>;
@@ -104,6 +104,7 @@ export class DongleExtendedClient {
             else if (Event.NewMessage.match(evt))
                 this.evtNewMessage.post({
                     "imei": evt.imei,
+                    "imsi": evt.imsi,
                     "number": evt.number,
                     "date": new Date(evt.date),
                     "text": Event.NewMessage.reassembleText(evt)

@@ -266,6 +266,7 @@ export namespace Event {
     export interface MessageStatusReport extends Event {
         dongleevent: typeof MessageStatusReport.dongleevent;
         imei: string;
+        imsi: string;
         messageid: string;
         dischargetime: string;
         isdelivered: "true" | "false";
@@ -288,6 +289,7 @@ export namespace Event {
 
         export function build(
             imei: string,
+            imsi: string,
             messageid: string,
             dischargetime: string,
             isdelivered: MessageStatusReport['isdelivered'],
@@ -298,6 +300,7 @@ export namespace Event {
             return {
                 ...Event.build(dongleevent),
                 imei,
+                imsi,
                 messageid,
                 dischargetime,
                 isdelivered,

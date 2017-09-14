@@ -76,6 +76,7 @@ export declare namespace Event {
     interface MessageStatusReport extends Event {
         dongleevent: typeof MessageStatusReport.dongleevent;
         imei: string;
+        imsi: string;
         messageid: string;
         dischargetime: string;
         isdelivered: "true" | "false";
@@ -85,7 +86,7 @@ export declare namespace Event {
     namespace MessageStatusReport {
         const dongleevent = "MessageStatusReport";
         function match(evt: UserEvent): evt is MessageStatusReport;
-        function build(imei: string, messageid: string, dischargetime: string, isdelivered: MessageStatusReport['isdelivered'], status: string, recipient: string): MessageStatusReport;
+        function build(imei: string, imsi: string, messageid: string, dischargetime: string, isdelivered: MessageStatusReport['isdelivered'], status: string, recipient: string): MessageStatusReport;
     }
 }
 export interface Request extends UserEvent {

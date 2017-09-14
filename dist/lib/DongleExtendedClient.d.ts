@@ -12,6 +12,7 @@ export declare class DongleExtendedClient {
     readonly evtRequestUnlockCode: SyncEvent<t.LockedDongle>;
     readonly evtMessageStatusReport: SyncEvent<{
         imei: string;
+        imsi: string;
     } & t.StatusReport>;
     readonly evtNewMessage: SyncEvent<{
         imei: string;

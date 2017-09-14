@@ -131,8 +131,9 @@ var Event;
                 evt.dongleevent === MessageStatusReport.dongleevent);
         }
         MessageStatusReport.match = match;
-        function build(imei, messageid, dischargetime, isdelivered, status, recipient) {
+        function build(imei, imsi, messageid, dischargetime, isdelivered, status, recipient) {
             return __assign({}, Event.build(MessageStatusReport.dongleevent), { imei: imei,
+                imsi: imsi,
                 messageid: messageid,
                 dischargetime: dischargetime,
                 isdelivered: isdelivered,

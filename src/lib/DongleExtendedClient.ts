@@ -38,7 +38,7 @@ export class DongleExtendedClient {
     public readonly evtNewActiveDongle: SyncEvent<t.DongleActive>;
     public readonly evtRequestUnlockCode: SyncEvent<t.LockedDongle>;
 
-    public readonly evtMessageStatusReport = new SyncEvent<{ imei: string } & t.StatusReport>();
+    public readonly evtMessageStatusReport = new SyncEvent<{ imei: string; imsi: string; } & t.StatusReport>();
     public readonly evtNewMessage = new SyncEvent<{ imei: string; imsi: string; } & t.Message>();
 
     public readonly evtDongleConnect= new SyncEvent<string>();
@@ -95,6 +95,7 @@ export class DongleExtendedClient {
             else if (Event.MessageStatusReport.match(evt))
                 this.evtMessageStatusReport.post({
                     "imei": evt.imei,
+                    "imsi": evt.imsi,
                     "messageId": parseInt(evt.messageid),
                     "isDelivered": evt.isdelivered === "true",
                     "status": evt.status,

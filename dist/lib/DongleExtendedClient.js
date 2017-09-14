@@ -102,6 +102,7 @@ var DongleExtendedClient = /** @class */ (function () {
             else if (AmiUserEvents_1.Event.MessageStatusReport.match(evt))
                 _this.evtMessageStatusReport.post({
                     "imei": evt.imei,
+                    "imsi": evt.imsi,
                     "messageId": parseInt(evt.messageid),
                     "isDelivered": evt.isdelivered === "true",
                     "status": evt.status,

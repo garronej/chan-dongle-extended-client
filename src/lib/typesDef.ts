@@ -1,6 +1,10 @@
 export namespace typesDef {
 
-    export const errMessDongleNotFound= "Dongle not found";
+    export const errorMessages= {
+        "dongleNotFound": "Dongle not found",
+        "messageNotSent": "Message not sent",
+        "noStorageLeft": "No storage left on SIM card"
+    };
 
     export const defaultConfig = {
         "general": {

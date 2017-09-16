@@ -2,7 +2,11 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 var typesDef;
 (function (typesDef) {
-    typesDef.errMessDongleNotFound = "Dongle not found";
+    typesDef.errorMessages = {
+        "dongleNotFound": "Dongle not found",
+        "messageNotSent": "Message not sent",
+        "noStorageLeft": "No storage left on SIM card"
+    };
     typesDef.defaultConfig = {
         "general": {
             "interval": "10000000",

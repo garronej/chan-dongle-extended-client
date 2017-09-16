@@ -1,5 +1,9 @@
 export declare namespace typesDef {
-    const errMessDongleNotFound = "Dongle not found";
+    const errorMessages: {
+        "dongleNotFound": string;
+        "messageNotSent": string;
+        "noStorageLeft": string;
+    };
     const defaultConfig: {
         "general": {
             "interval": string;

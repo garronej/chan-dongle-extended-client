@@ -71,7 +71,8 @@ var DongleExtendedClient = /** @class */ (function () {
                     "iccid": evt.iccid,
                     "imsi": evt.imsi,
                     "number": evt.number || undefined,
-                    "serviceProvider": evt.serviceprovider || undefined
+                    "serviceProvider": evt.serviceprovider || undefined,
+                    "isVoiceEnabled": (evt.voice === "undefined") ? undefined : (evt.voice === "true")
                 });
                 evtDongleDisconnect.post(evt.imei);
             }
@@ -90,7 +91,8 @@ var DongleExtendedClient = /** @class */ (function () {
                     "iccid": evt.iccid,
                     "imsi": evt.imsi,
                     "number": evt.number || undefined,
-                    "serviceProvider": evt.serviceprovider || undefined
+                    "serviceProvider": evt.serviceprovider || undefined,
+                    "isVoiceEnabled": (evt.voice === "undefined") ? undefined : (evt.voice === "true")
                 });
             else if (AmiUserEvents_1.Event.RequestUnlockCode.match(evt))
                 evtRequestUnlockCode.post({
@@ -315,7 +317,7 @@ var DongleExtendedClient = /** @class */ (function () {
     };
     DongleExtendedClient.prototype.getActiveDongles = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var actionid, evtResponse, dongleCount, out, evtResponse_2, imei, iccid, imsi, number, serviceprovider;
+            var actionid, evtResponse, dongleCount, out, evtResponse_2, imei, iccid, imsi, number, serviceprovider, voice;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -332,13 +334,14 @@ var DongleExtendedClient = /** @class */ (function () {
                         return [4 /*yield*/, this.ami.evtUserEvent.waitFor(AmiUserEvents_1.Response.GetActiveDongles_follow.match(actionid), 10004)];
                     case 3:
                         evtResponse_2 = _a.sent();
-                        imei = evtResponse_2.imei, iccid = evtResponse_2.iccid, imsi = evtResponse_2.imsi, number = evtResponse_2.number, serviceprovider = evtResponse_2.serviceprovider;
+                        imei = evtResponse_2.imei, iccid = evtResponse_2.iccid, imsi = evtResponse_2.imsi, number = evtResponse_2.number, serviceprovider = evtResponse_2.serviceprovider, voice = evtResponse_2.voice;
                         out.push({
                             imei: imei,
                             iccid: iccid,
                             imsi: imsi,
                             "number": number || undefined,
-                            "serviceProvider": serviceprovider || undefined
+                            "serviceProvider": serviceprovider || undefined,
+                            "isVoiceEnabled": (voice === "undefined") ? undefined : (voice === "true")
                         });
                         return [3 /*break*/, 2];
                     case 4: return [2 /*return*/, out];

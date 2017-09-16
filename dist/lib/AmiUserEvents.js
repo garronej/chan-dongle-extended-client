@@ -65,12 +65,14 @@ var Event;
                 evt.dongleevent === NewActiveDongle.dongleevent);
         }
         NewActiveDongle.match = match;
-        function build(imei, iccid, imsi, number, serviceprovider) {
+        function build(imei, iccid, imsi, number, serviceprovider, isVoiceEnabled) {
+            var voice = "" + isVoiceEnabled;
             return __assign({}, Event.build(NewActiveDongle.dongleevent), { imei: imei,
                 iccid: iccid,
                 imsi: imsi,
                 number: number,
-                serviceprovider: serviceprovider });
+                serviceprovider: serviceprovider,
+                voice: voice });
         }
         NewActiveDongle.build = build;
     })(NewActiveDongle = Event.NewActiveDongle || (Event.NewActiveDongle = {}));
@@ -82,12 +84,14 @@ var Event;
                 evt.dongleevent === ActiveDongleDisconnect.dongleevent);
         }
         ActiveDongleDisconnect.match = match;
-        function build(imei, iccid, imsi, number, serviceprovider) {
+        function build(imei, iccid, imsi, number, serviceprovider, isVoiceEnabled) {
+            var voice = "" + isVoiceEnabled;
             return __assign({}, Event.build(ActiveDongleDisconnect.dongleevent), { imei: imei,
                 iccid: iccid,
                 imsi: imsi,
                 number: number,
-                serviceprovider: serviceprovider });
+                serviceprovider: serviceprovider,
+                voice: voice });
         }
         ActiveDongleDisconnect.build = build;
     })(ActiveDongleDisconnect = Event.ActiveDongleDisconnect || (Event.ActiveDongleDisconnect = {}));
@@ -446,20 +450,6 @@ var Response;
         }
         GetLockedDongles_follow.build = build;
     })(GetLockedDongles_follow = Response.GetLockedDongles_follow || (Response.GetLockedDongles_follow = {}));
-    var GetMessages_first;
-    (function (GetMessages_first) {
-        function match(actionid) {
-            return function (evt) {
-                return (Response.match(actionid)(evt) &&
-                    ("messagescount" in evt || "error" in evt));
-            };
-        }
-        GetMessages_first.match = match;
-        function build(actionid, messagescount) {
-            return __assign({}, Response.build(actionid), { messagescount: messagescount });
-        }
-        GetMessages_first.build = build;
-    })(GetMessages_first = Response.GetMessages_first || (Response.GetMessages_first = {}));
     var GetConfig;
     (function (GetConfig) {
         function match(actionid) {
@@ -488,6 +478,20 @@ var Response;
         }
         GetConfig.reassembleConfig = reassembleConfig;
     })(GetConfig = Response.GetConfig || (Response.GetConfig = {}));
+    var GetMessages_first;
+    (function (GetMessages_first) {
+        function match(actionid) {
+            return function (evt) {
+                return (Response.match(actionid)(evt) &&
+                    ("messagescount" in evt || "error" in evt));
+            };
+        }
+        GetMessages_first.match = match;
+        function build(actionid, messagescount) {
+            return __assign({}, Response.build(actionid), { messagescount: messagescount });
+        }
+        GetMessages_first.build = build;
+    })(GetMessages_first = Response.GetMessages_first || (Response.GetMessages_first = {}));
     var GetMessages_follow;
     (function (GetMessages_follow) {
         function match(actionid) {
@@ -539,12 +543,14 @@ var Response;
             };
         }
         GetActiveDongles_follow.match = match;
-        function build(actionid, imei, iccid, imsi, number, serviceprovider) {
+        function build(actionid, imei, iccid, imsi, number, serviceprovider, isVoiceEnabled) {
+            var voice = "" + isVoiceEnabled;
             return __assign({}, Response.build(actionid), { imei: imei,
                 iccid: iccid,
                 imsi: imsi,
                 number: number,
-                serviceprovider: serviceprovider });
+                serviceprovider: serviceprovider,
+                voice: voice });
         }
         GetActiveDongles_follow.build = build;
     })(GetActiveDongles_follow = Response.GetActiveDongles_follow || (Response.GetActiveDongles_follow = {}));

@@ -30,11 +30,12 @@ export declare namespace Event {
         imsi: string;
         number: string;
         serviceprovider: string;
+        voice: "true" | "false" | "undefined";
     }
     namespace NewActiveDongle {
         const dongleevent = "NewActiveDongle";
         function match(evt: UserEvent): evt is NewActiveDongle;
-        function build(imei: string, iccid: string, imsi: string, number: string, serviceprovider: string): NewActiveDongle;
+        function build(imei: string, iccid: string, imsi: string, number: string, serviceprovider: string, isVoiceEnabled: boolean | undefined): NewActiveDongle;
     }
     interface ActiveDongleDisconnect extends Event {
         dongleevent: typeof ActiveDongleDisconnect.dongleevent;
@@ -43,11 +44,12 @@ export declare namespace Event {
         imsi: string;
         number: string;
         serviceprovider: string;
+        voice: "true" | "false" | "undefined";
     }
     namespace ActiveDongleDisconnect {
         const dongleevent = "ActiveDongleDisconnect";
         function match(evt: UserEvent): evt is ActiveDongleDisconnect;
-        function build(imei: string, iccid: string, imsi: string, number: string, serviceprovider: string): ActiveDongleDisconnect;
+        function build(imei: string, iccid: string, imsi: string, number: string, serviceprovider: string, isVoiceEnabled: boolean | undefined): ActiveDongleDisconnect;
     }
     interface RequestUnlockCode extends Event {
         dongleevent: typeof RequestUnlockCode.dongleevent;
@@ -259,13 +261,6 @@ export declare namespace Response {
         function match(actionid: string): (evt: UserEvent) => evt is GetLockedDongles_follow;
         function build(actionid: string, imei: string, iccid: string, pinstate: string, tryleft: string): GetLockedDongles_follow;
     }
-    interface GetMessages_first extends Response {
-        messagescount: string;
-    }
-    namespace GetMessages_first {
-        function match(actionid: string): (evt: UserEvent) => evt is GetMessages_first;
-        function build(actionid: string, messagescount: string): GetMessages_first;
-    }
     interface GetConfig extends Response {
         textsplitcount: string;
         [textn: string]: string | undefined;
@@ -274,6 +269,13 @@ export declare namespace Response {
         function match(actionid: string): (evt: UserEvent) => evt is GetConfig;
         function build(actionid: string, config: t.ModuleConfiguration): GetConfig;
         function reassembleConfig(evt: GetConfig): t.ModuleConfiguration;
+    }
+    interface GetMessages_first extends Response {
+        messagescount: string;
+    }
+    namespace GetMessages_first {
+        function match(actionid: string): (evt: UserEvent) => evt is GetMessages_first;
+        function build(actionid: string, messagescount: string): GetMessages_first;
     }
     interface GetMessages_follow extends Response {
         number: string;
@@ -299,9 +301,10 @@ export declare namespace Response {
         imsi: string;
         number: string;
         serviceprovider: string;
+        voice: "true" | "false" | "undefined";
     }
     namespace GetActiveDongles_follow {
         function match(actionid: string): (evt: UserEvent) => evt is GetActiveDongles_follow;
-        function build(actionid: string, imei: string, iccid: string, imsi: string, number: string, serviceprovider: string): GetActiveDongles_follow;
+        function build(actionid: string, imei: string, iccid: string, imsi: string, number: string, serviceprovider: string, isVoiceEnabled: boolean | undefined): GetActiveDongles_follow;
     }
 }

@@ -76,6 +76,7 @@ export namespace typesDef {
         imsi: string;
         number: string | undefined;
         serviceProvider: string | undefined;
+        isVoiceEnabled: boolean | undefined;
     }
 
     export type Phonebook = {

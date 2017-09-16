@@ -1,19 +1,19 @@
-import { 
-    Ami, 
-    retrieveCredential, 
+import {
+    Ami,
+    retrieveCredential,
     Credential
 } from "ts-ami";
 import { SyncEvent } from "ts-events-extended";
 
-import { 
-    Response, 
-    Request, 
+import {
+    Response,
+    Request,
     Event,
 } from "./AmiUserEvents";
 
 import { typesDef as t } from "./typesDef";
 
-export const amiUser= "dongle_ext_user";
+export const amiUser = "dongle_ext_user";
 
 export class DongleExtendedClient {
 
@@ -33,42 +33,43 @@ export class DongleExtendedClient {
 
     public readonly ami: Ami;
 
-    public readonly evtActiveDongleDisconnect=new SyncEvent<t.DongleActive>();
-    public readonly evtLockedDongleDisconnect= new SyncEvent<t.LockedDongle>();
+    public readonly evtActiveDongleDisconnect = new SyncEvent<t.DongleActive>();
+    public readonly evtLockedDongleDisconnect = new SyncEvent<t.LockedDongle>();
     public readonly evtNewActiveDongle: SyncEvent<t.DongleActive>;
     public readonly evtRequestUnlockCode: SyncEvent<t.LockedDongle>;
 
     public readonly evtMessageStatusReport = new SyncEvent<{ imei: string; imsi: string; } & t.StatusReport>();
     public readonly evtNewMessage = new SyncEvent<{ imei: string; imsi: string; } & t.Message>();
 
-    public readonly evtDongleConnect= new SyncEvent<string>();
+    public readonly evtDongleConnect = new SyncEvent<string>();
     public readonly evtDongleDisconnect: SyncEvent<string>;
 
     constructor(credential: Credential) {
 
-        let evtNewActiveDongle: typeof DongleExtendedClient.prototype.evtNewActiveDongle= new SyncEvent();
-        this.evtNewActiveDongle= evtNewActiveDongle.createProxy();
+        let evtNewActiveDongle: typeof DongleExtendedClient.prototype.evtNewActiveDongle = new SyncEvent();
+        this.evtNewActiveDongle = evtNewActiveDongle.createProxy();
 
-        let evtRequestUnlockCode: typeof DongleExtendedClient.prototype.evtRequestUnlockCode= new SyncEvent();
-        this.evtRequestUnlockCode= evtRequestUnlockCode.createProxy();
+        let evtRequestUnlockCode: typeof DongleExtendedClient.prototype.evtRequestUnlockCode = new SyncEvent();
+        this.evtRequestUnlockCode = evtRequestUnlockCode.createProxy();
 
-        let evtDongleDisconnect: typeof DongleExtendedClient.prototype.evtDongleDisconnect= new SyncEvent();
-        this.evtDongleDisconnect= evtDongleDisconnect.createProxy();
+        let evtDongleDisconnect: typeof DongleExtendedClient.prototype.evtDongleDisconnect = new SyncEvent();
+        this.evtDongleDisconnect = evtDongleDisconnect.createProxy();
 
         this.ami = new Ami(credential);
 
         this.ami.evtUserEvent.attach(Event.match, evt => {
-            if (Event.ActiveDongleDisconnect.match(evt)){
+            if (Event.ActiveDongleDisconnect.match(evt)) {
                 this.evtActiveDongleDisconnect.post({
                     "imei": evt.imei,
                     "iccid": evt.iccid,
                     "imsi": evt.imsi,
                     "number": evt.number || undefined,
-                    "serviceProvider": evt.serviceprovider || undefined
+                    "serviceProvider": evt.serviceprovider || undefined,
+                    "isVoiceEnabled": (evt.voice === "undefined") ? undefined : (evt.voice === "true")
                 });
                 evtDongleDisconnect.post(evt.imei);
             }
-            else if(Event.LockedDongleDisconnect.match(evt)){
+            else if (Event.LockedDongleDisconnect.match(evt)) {
                 this.evtLockedDongleDisconnect.post({
                     "imei": evt.imei,
                     "iccid": evt.iccid,
@@ -83,7 +84,8 @@ export class DongleExtendedClient {
                     "iccid": evt.iccid,
                     "imsi": evt.imsi,
                     "number": evt.number || undefined,
-                    "serviceProvider": evt.serviceprovider || undefined
+                    "serviceProvider": evt.serviceprovider || undefined,
+                    "isVoiceEnabled": (evt.voice === "undefined") ? undefined : (evt.voice === "true")
                 });
             else if (Event.RequestUnlockCode.match(evt))
                 evtRequestUnlockCode.post({
@@ -112,29 +114,29 @@ export class DongleExtendedClient {
                 });
         });
 
-        let evtNewActiveDongleProxy= evtNewActiveDongle.createProxy();
-        let evtRequestUnlockCodeProxy= evtRequestUnlockCode.createProxy();
-        let evtDongleDisconnectProxy= evtDongleDisconnect.createProxy();
+        let evtNewActiveDongleProxy = evtNewActiveDongle.createProxy();
+        let evtRequestUnlockCodeProxy = evtRequestUnlockCode.createProxy();
+        let evtDongleDisconnectProxy = evtDongleDisconnect.createProxy();
 
-        evtRequestUnlockCodeProxy.attach(({ imei })=> {
+        evtRequestUnlockCodeProxy.attach(({ imei }) => {
 
             this.evtDongleConnect.post(imei);
 
-            let voidFunction= ()=>{};
+            let voidFunction = () => { };
 
             evtRequestUnlockCodeProxy.attachOnceExtract(
-                lockedDongle=> lockedDongle.imei === imei,
+                lockedDongle => lockedDongle.imei === imei,
                 voidFunction
             );
 
             evtNewActiveDongleProxy.attachOnceExtract(
-                dongleActive=> dongleActive.imei === imei, 
+                dongleActive => dongleActive.imei === imei,
                 voidFunction
             );
 
             evtDongleDisconnectProxy.attachOnce(
-                newImei=> newImei === imei,
-                ()=> { 
+                newImei => newImei === imei,
+                () => {
                     evtNewActiveDongleProxy.detach(voidFunction);
                     evtRequestUnlockCodeProxy.detach(voidFunction);
                 }
@@ -142,7 +144,7 @@ export class DongleExtendedClient {
 
         });
 
-        evtNewActiveDongleProxy.attach(({ imei }) => this.evtDongleConnect.post(imei) );
+        evtNewActiveDongleProxy.attach(({ imei }) => this.evtDongleConnect.post(imei));
 
 
     }
@@ -181,24 +183,24 @@ export class DongleExtendedClient {
 
     public async getConnectedDongles(): Promise<string[]> {
 
-        let imeis: string[]= [];
+        let imeis: string[] = [];
 
-        for( let { imei } of await this.getLockedDongles() )
+        for (let { imei } of await this.getLockedDongles())
             imeis.push(imei);
-        
-        for( let { imei } of await this.getActiveDongles() )
+
+        for (let { imei } of await this.getActiveDongles())
             imeis.push(imei);
-        
+
         return imeis;
 
     }
 
 
-    public async getActiveDongle(imei: string): Promise<t.DongleActive | undefined>{
+    public async getActiveDongle(imei: string): Promise<t.DongleActive | undefined> {
 
-        for( let dongleActive of await this.getActiveDongles() )
-            if( dongleActive.imei === imei ) return dongleActive;
-        
+        for (let dongleActive of await this.getActiveDongles())
+            if (dongleActive.imei === imei) return dongleActive;
+
         return undefined;
 
     }
@@ -267,14 +269,15 @@ export class DongleExtendedClient {
                 10004
             );
 
-            let { imei, iccid, imsi, number, serviceprovider } = evtResponse;
+            let { imei, iccid, imsi, number, serviceprovider, voice } = evtResponse;
 
             out.push({
                 imei,
                 iccid,
                 imsi,
                 "number": number || undefined,
-                "serviceProvider": serviceprovider || undefined
+                "serviceProvider": serviceprovider || undefined,
+                "isVoiceEnabled": (voice === "undefined") ? undefined : (voice === "true")
             });
 
         }
@@ -526,7 +529,7 @@ export class DongleExtendedClient {
             Request.GetConfig.build()
         );
 
-        let actionid= this.ami.lastActionId;
+        let actionid = this.ami.lastActionId;
 
         let evt = await this.ami.evtUserEvent.waitFor(
             Response.GetConfig.match(actionid),

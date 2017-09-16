@@ -1,5 +1,7 @@
 export namespace typesDef {
 
+    export const errMessDongleNotFound= "Dongle not found";
+
     export const defaultConfig = {
         "general": {
             "interval": "10000000",

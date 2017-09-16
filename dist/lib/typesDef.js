@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 var typesDef;
 (function (typesDef) {
+    typesDef.errMessDongleNotFound = "Dongle not found";
     typesDef.defaultConfig = {
         "general": {
             "interval": "10000000",

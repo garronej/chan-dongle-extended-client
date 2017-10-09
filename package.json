@@ -1,11 +1,12 @@
 {
   "name": "chan-dongle-extended-client",
-  "version": "0.5.1",
+  "version": "0.6.0",
   "description": "client for chan-dongle-extended",
   "main": "./dist/lib/index.js",
   "types": "./dist/lib/index.d.ts",
   "scripts": {
     "tsc": "./node_modules/.bin/tsc -p ./tsconfig.json",
+    "tsc-w": "node ./node_modules/typescript/bin/tsc -w -p ./tsconfig.json",
     "test": "node ./dist/test/main"
   },
   "repository": {
@@ -21,16 +22,16 @@
     "PIN"
   ],
   "author": "Joseph Garrone",
-  "license": "GNU GPLv2",
+  "license": "SEE LICENSE IN LICENSE",
   "dependencies": {
-    "js-base64": "^2.1.9",
     "rejection-tracker": "garronej/rejection-tracker",
+    "trackable-map": "github:garronej/trackable-map",
     "ts-ami": "github:garronej/ts-ami",
     "ts-events-extended": "garronej/ts-events-extended"
   },
   "devDependencies": {
     "@types/js-base64": "^2.1.5",
     "@types/node": "^4.2.2",
-    "typescript": "^2.3.2"
+    "typescript": "^2.5.3"
   }
 }

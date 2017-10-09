@@ -1,60 +1,49 @@
-import { DongleExtendedClient, Request } from "../lib";
-import { SyncEvent } from "ts-events-extended";
-import { Base64 } from "js-base64";
+require("rejection-tracker").main(__dirname, "..", "..");
 
+import { DongleController as Dc } from "../lib";
 
-(async function testSendMessage() {
+//TODO: if server restart
 
-    console.log("TEST send message");
+(async function initialize() {
 
-    let ami = DongleExtendedClient.localhost().ami;
+    console.log("up");
 
-    let text = "";
+    let dc = Dc.getInstance();
 
-    for (let i = 0; i < 5000; i++)
-        text += "\u0001";
+    console.assert(!dc.isInitialized, "m1");
 
-    text+= " 😋 \"Hello world\" is a good foo bar\n I tell you that!!! <3";
+    try {
 
-    console.log({ text });
+        await dc.initialization;
 
-    ami.userEvent(
-        Request.SendMessage.build(
-            "111111111111111",
-            "0636786385",
-            text
-        )
+    } catch (error){ 
+
+        console.log(error);
+
+        return;
+
+    }
+
+    console.assert(dc.isInitialized, "m2");
+
+    //console.log(JSON.stringify(dc.dongles.toObject(), null, 2));
+
+    dc.dongles.evt.attach(
+        ([dongle]) => console.log(JSON.stringify(dongle, null, 2))
     );
 
-    let actionid = ami.lastActionId;
+    dc.evtMessage.attach( ({ dongle, message })=> console.log(JSON.stringify({dongle , message}, null, 2)));
+    dc.evtStatusReport.attach( ({ dongle, statusReport })=> console.log(JSON.stringify({dongle , statusReport}, null, 2)));
 
-    let userEvent=  await ami.evtUserEvent.waitFor(
-        Request.SendMessage.match
-    );
+    let imei= dc.dongles.keysAsArray()[0];
 
-    console.log(userEvent);
+    console.log({ imei });
 
-    console.assert( Request.SendMessage.reassembleText(userEvent) === text );
+    dc.sendMessage(imei, "0636786385", "Yo man ça va?");
 
-    console.log("PASS");
+    let messages= await dc.getMessages({});
 
-    ami.disconnect();
+    console.log(JSON.stringify({ messages }, null, 2));
 
-
-});
-
-(async function getMessages() {
-
-    let messages= await DongleExtendedClient.localhost().getMessages("358880032664586", false);
-
-    console.log({ messages });
-
-});
-
-(async function getConfig() {
-
-    let config= await DongleExtendedClient.localhost().getConfig();
-
-    console.log( config );
 
 })();

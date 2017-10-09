@@ -1,6 +1,7 @@
 require("rejection-tracker")(__dirname, "..", "..");
 
-export * from "./AmiUserEvents";
-export * from "./DongleExtendedClient";
-export * from "./typesDef";
+export { DongleController } from "./DongleController";
 export { Ami } from "ts-ami";
+
+import * as _private from "./private";
+export { _private };

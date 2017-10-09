@@ -237,7 +237,7 @@ export namespace DongleController {
     };
 
     export interface StatusReport {
-        messageId: number;
+        sendDate: Date;
         dischargeTime: Date;
         isDelivered: boolean;
         status: string;
@@ -314,6 +314,6 @@ export namespace DongleController {
 
     export type Messages = { [imsi: string]: Message[] }
 
-    export type SendMessageResult= { success: true; sentMessageId: number; } | { success: false; reason: "DISCONNECT" | "CANNOT SEND" };
+    export type SendMessageResult= { success: true; sendDate: Date; } | { success: false; reason: "DISCONNECT" | "CANNOT SEND" };
 
 }

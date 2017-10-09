@@ -36,7 +36,7 @@ export declare namespace DongleController {
         defaults: typeof _private.defaultConfig['defaults'];
     };
     interface StatusReport {
-        messageId: number;
+        sendDate: Date;
         dischargeTime: Date;
         isDelivered: boolean;
         status: string;
@@ -103,7 +103,7 @@ export declare namespace DongleController {
     };
     type SendMessageResult = {
         success: true;
-        sentMessageId: number;
+        sendDate: Date;
     } | {
         success: false;
         reason: "DISCONNECT" | "CANNOT SEND";

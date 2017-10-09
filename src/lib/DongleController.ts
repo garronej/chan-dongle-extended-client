@@ -238,7 +238,7 @@ export namespace DongleController {
 
     export interface StatusReport {
         sendDate: Date;
-        dischargeTime: Date;
+        dischargeDate: Date;
         isDelivered: boolean;
         status: string;
         recipient: string;

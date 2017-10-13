@@ -121,7 +121,7 @@ export namespace api {
 
         export type Params = {
             imei?: string;
-            imsi?: string;
+            iccid?: string;
             fromDate?: Date;
             toDate?: Date;
             flush?: boolean;

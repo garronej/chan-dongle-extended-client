@@ -99,7 +99,9 @@ export declare namespace DongleController {
     }
     type Dongle = LockedDongle | ActiveDongle;
     type Messages = {
-        [imsi: string]: Message[];
+        [dongleImei: string]: {
+            [simImsi: string]: Message[];
+        };
     };
     type SendMessageResult = {
         success: true;

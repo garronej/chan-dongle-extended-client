@@ -312,8 +312,12 @@ export namespace DongleController {
 
     export type Dongle = LockedDongle | ActiveDongle;
 
-    export type Messages = { [imsi: string]: Message[] }
+    export type Messages = {
+        [dongleImei: string]: {
+            [simImsi: string]: Message[];
+        }
+    }
 
-    export type SendMessageResult= { success: true; sendDate: Date; } | { success: false; reason: "DISCONNECT" | "CANNOT SEND" };
+    export type SendMessageResult = { success: true; sendDate: Date; } | { success: false; reason: "DISCONNECT" | "CANNOT SEND" };
 
 }

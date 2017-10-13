@@ -88,6 +88,7 @@ export declare namespace api {
     namespace getMessages {
         const method = "getMessages";
         type Params = {
+            imei?: string;
             imsi?: string;
             fromDate?: Date;
             toDate?: Date;

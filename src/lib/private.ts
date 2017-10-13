@@ -120,6 +120,7 @@ export namespace api {
         export const method = "getMessages";
 
         export type Params = {
+            imei?: string;
             imsi?: string;
             fromDate?: Date;
             toDate?: Date;

@@ -314,7 +314,7 @@ export namespace DongleController {
 
     export type Messages = {
         [dongleImei: string]: {
-            [simImsi: string]: Message[];
+            [simIccid: string]: Message[];
         }
     }
 

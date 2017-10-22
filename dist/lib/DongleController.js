@@ -237,18 +237,33 @@ var DongleController = /** @class */ (function () {
         for (var _i = 0; _i < arguments.length; _i++) {
             inputs[_i] = arguments[_i];
         }
-        var _a = __read(inputs, 3), dongleImei = _a[0], p2 = _a[1], p3 = _a[2];
-        if (!this.lockedDongles.has(dongleImei)) {
-            throw new Error("This dongle is not currently locked");
-        }
-        var params;
-        if (p3) {
-            params = { dongleImei: dongleImei, "puk": p2, "newPin": p3 };
-        }
-        else {
-            params = { dongleImei: dongleImei, "pin": p2 };
-        }
-        return this.ami.apiClient.makeRequest(api.unlock.method, params, 30000);
+        return __awaiter(this, void 0, void 0, function () {
+            var _a, dongleImei, p2, p3, dongle, params, unlockResult;
+            return __generator(this, function (_b) {
+                switch (_b.label) {
+                    case 0:
+                        _a = __read(inputs, 3), dongleImei = _a[0], p2 = _a[1], p3 = _a[2];
+                        dongle = this.lockedDongles.get(dongleImei);
+                        if (!dongle) {
+                            throw new Error("This dongle is not currently locked");
+                        }
+                        if (p3) {
+                            params = { dongleImei: dongleImei, "puk": p2, "newPin": p3 };
+                        }
+                        else {
+                            params = { dongleImei: dongleImei, "pin": p2 };
+                        }
+                        return [4 /*yield*/, this.ami.apiClient.makeRequest(api.unlock.method, params, 30000)];
+                    case 1:
+                        unlockResult = _b.sent();
+                        if (!unlockResult.success) {
+                            dongle.sim.pinState = unlockResult.pinState;
+                            dongle.sim.tryLeft = unlockResult.tryLeft;
+                        }
+                        return [2 /*return*/, unlockResult];
+                }
+            });
+        });
     };
     DongleController.prototype.getMessages = function (params) {
         return this.ami.apiClient.makeRequest(api.getMessages.method, params);

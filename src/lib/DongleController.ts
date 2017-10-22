@@ -193,11 +193,13 @@ export class DongleController {
         pin: string
     ): Promise<DongleController.UnlockResult>;
 
-    public unlock(...inputs) {
+    public async unlock(...inputs) {
 
         let [dongleImei, p2, p3] = inputs;
 
-        if (!this.lockedDongles.has(dongleImei)) {
+        let dongle= this.lockedDongles.get(dongleImei);
+
+        if (!dongle) {
 
             throw new Error("This dongle is not currently locked");
 
@@ -215,7 +217,16 @@ export class DongleController {
 
         }
 
-        return this.ami.apiClient.makeRequest(api.unlock.method, params, 30000);
+        let unlockResult: DongleController.UnlockResult= await this.ami.apiClient.makeRequest(api.unlock.method, params, 30000);
+
+        if( !unlockResult.success ){
+
+            dongle.sim.pinState= unlockResult.pinState;
+            dongle.sim.tryLeft= unlockResult.tryLeft;
+
+        }
+
+        return unlockResult;
 
     }
 

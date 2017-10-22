@@ -2,8 +2,6 @@ require("rejection-tracker").main(__dirname, "..", "..");
 
 import { DongleController as Dc } from "../lib";
 
-//TODO: if server restart
-
 (async function initialize() {
 
     console.log("up");
@@ -47,3 +45,20 @@ import { DongleController as Dc } from "../lib";
 
 
 })();
+
+(async function testGetMessages() {
+
+    let dc= Dc.getInstance();
+
+    await dc.initialization;
+
+    let dongle= dc.dongles.valuesAsArray()[0];
+
+    let record= await dc.getMessages({
+        "imei": dongle.imei,
+        "iccid": dongle.sim.iccid
+    });
+
+    console.log(record);
+
+});

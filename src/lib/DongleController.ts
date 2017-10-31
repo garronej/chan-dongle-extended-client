@@ -1,5 +1,5 @@
 import { SyncEvent } from "ts-events-extended";
-import { Ami } from "ts-ami";
+import { Ami, amiApi } from "ts-ami";
 import { TrackableMap } from "trackable-map";
 
 import * as _private from "./private";
@@ -50,6 +50,8 @@ export class DongleController {
 
     public readonly initialization: Promise<void>;
 
+    private readonly apiClient: amiApi.Client;
+
     public constructor(asteriskManagerCredential?: Ami.Credential) {
 
         if (asteriskManagerCredential) {
@@ -57,6 +59,8 @@ export class DongleController {
         } else {
             this.ami = new Ami(_private.amiUser);
         }
+
+        this.apiClient= this.ami.createApiClient(DongleController.apiId);
 
         this.initialization = this.initialize();
 
@@ -68,7 +72,7 @@ export class DongleController {
 
         try {
 
-            initializationResponse = await this.ami.apiClient.makeRequest(api.initialize.method);
+            initializationResponse = await this.apiClient.makeRequest(api.initialize.method);
 
         } catch (error) {
 
@@ -86,7 +90,7 @@ export class DongleController {
 
         this.moduleConfiguration = moduleConfiguration;
 
-        this.ami.apiClient.evtEvent.attach(
+        this.apiClient.evtEvent.attach(
             ({ name, event }) => {
 
                 if (name === api.Events.updateMap.name) {
@@ -172,7 +176,7 @@ export class DongleController {
 
         let params: api.sendMessage.Params = { viaDongleImei, toNumber, text };
 
-        let returnValue: api.sendMessage.Response = await this.ami.apiClient.makeRequest(
+        let returnValue: api.sendMessage.Response = await this.apiClient.makeRequest(
             api.sendMessage.method,
             params,
             240000
@@ -217,7 +221,7 @@ export class DongleController {
 
         }
 
-        let unlockResult: DongleController.UnlockResult= await this.ami.apiClient.makeRequest(api.unlock.method, params, 30000);
+        let unlockResult: DongleController.UnlockResult= await this.apiClient.makeRequest(api.unlock.method, params, 30000);
 
         if( !unlockResult.success ){
 
@@ -234,13 +238,15 @@ export class DongleController {
         params: api.getMessages.Params
     ): Promise<api.getMessages.Response> {
 
-        return this.ami.apiClient.makeRequest(api.getMessages.method, params);
+        return this.apiClient.makeRequest(api.getMessages.method, params);
 
     }
 
 }
 
 export namespace DongleController {
+
+    export const apiId= "dongle-extended";
 
     export type ModuleConfiguration = {
         general: typeof _private.defaultConfig['general'];

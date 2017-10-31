@@ -77,6 +77,7 @@ var DongleController = /** @class */ (function () {
         else {
             this.ami = new ts_ami_1.Ami(_private.amiUser);
         }
+        this.apiClient = this.ami.createApiClient(DongleController.apiId);
         this.initialization = this.initialize();
     }
     Object.defineProperty(DongleController, "hasInstance", {
@@ -106,7 +107,7 @@ var DongleController = /** @class */ (function () {
                 switch (_b.label) {
                     case 0:
                         _b.trys.push([0, 2, , 3]);
-                        return [4 /*yield*/, this.ami.apiClient.makeRequest(api.initialize.method)];
+                        return [4 /*yield*/, this.apiClient.makeRequest(api.initialize.method)];
                     case 1:
                         initializationResponse = _b.sent();
                         return [3 /*break*/, 3];
@@ -130,7 +131,7 @@ var DongleController = /** @class */ (function () {
                             finally { if (e_1) throw e_1.error; }
                         }
                         this.moduleConfiguration = moduleConfiguration;
-                        this.ami.apiClient.evtEvent.attach(function (_a) {
+                        this.apiClient.evtEvent.attach(function (_a) {
                             var name = _a.name, event = _a.event;
                             if (name === api.Events.updateMap.name) {
                                 var dongleImei = event.dongleImei, dongle = event.dongle;
@@ -224,7 +225,7 @@ var DongleController = /** @class */ (function () {
                             throw new Error("This dongle is not currently connected");
                         }
                         params = { viaDongleImei: viaDongleImei, toNumber: toNumber, text: text };
-                        return [4 /*yield*/, this.ami.apiClient.makeRequest(api.sendMessage.method, params, 240000)];
+                        return [4 /*yield*/, this.apiClient.makeRequest(api.sendMessage.method, params, 240000)];
                     case 1:
                         returnValue = _a.sent();
                         return [2 /*return*/, returnValue];
@@ -253,7 +254,7 @@ var DongleController = /** @class */ (function () {
                         else {
                             params = { dongleImei: dongleImei, "pin": p2 };
                         }
-                        return [4 /*yield*/, this.ami.apiClient.makeRequest(api.unlock.method, params, 30000)];
+                        return [4 /*yield*/, this.apiClient.makeRequest(api.unlock.method, params, 30000)];
                     case 1:
                         unlockResult = _b.sent();
                         if (!unlockResult.success) {
@@ -266,13 +267,14 @@ var DongleController = /** @class */ (function () {
         });
     };
     DongleController.prototype.getMessages = function (params) {
-        return this.ami.apiClient.makeRequest(api.getMessages.method, params);
+        return this.apiClient.makeRequest(api.getMessages.method, params);
     };
     DongleController.instance = undefined;
     return DongleController;
 }());
 exports.DongleController = DongleController;
 (function (DongleController) {
+    DongleController.apiId = "dongle-extended";
     var LockedDongle;
     (function (LockedDongle) {
         function match(dongle) {

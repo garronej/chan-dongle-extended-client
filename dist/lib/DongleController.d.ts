@@ -20,6 +20,7 @@ export declare class DongleController {
     }>;
     readonly ami: Ami;
     readonly initialization: Promise<void>;
+    private readonly apiClient;
     constructor(asteriskManagerCredential?: Ami.Credential);
     private initialize();
     readonly isInitialized: boolean;
@@ -31,6 +32,7 @@ export declare class DongleController {
     getMessages(params: api.getMessages.Params): Promise<api.getMessages.Response>;
 }
 export declare namespace DongleController {
+    const apiId = "dongle-extended";
     type ModuleConfiguration = {
         general: typeof _private.defaultConfig['general'];
         defaults: typeof _private.defaultConfig['defaults'];

@@ -37,7 +37,7 @@ import { DongleController as Dc } from "../lib";
 
     console.log({ imei });
 
-    dc.sendMessage(imei, "0636786385", "Yo man ça va?");
+    dc.sendMessage(imei, "0636786385", "TEST DONGLE CONTROLLER");
 
     let messages= await dc.getMessages({});
 

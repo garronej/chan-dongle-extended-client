@@ -88,12 +88,13 @@ export declare namespace api {
     namespace getMessages {
         const method = "getMessages";
         type Params = {
-            imei?: string;
-            iccid?: string;
+            imsi?: string;
             fromDate?: Date;
             toDate?: Date;
             flush?: boolean;
         };
-        type Response = Dc.Messages;
+        type Response = {
+            [imsi: string]: Dc.Message[];
+        };
     }
 }

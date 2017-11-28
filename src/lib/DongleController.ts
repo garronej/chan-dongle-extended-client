@@ -235,12 +235,29 @@ export class DongleController {
     }
 
     public getMessages(
-        params: api.getMessages.Params
+        params: { fromDate?: Date; toDate?: Date; flush?: boolean; }
     ): Promise<api.getMessages.Response> {
 
-        return this.apiClient.makeRequest(api.getMessages.method, params);
+        return this.apiClient.makeRequest(
+            api.getMessages.method, 
+            params
+        );
 
     }
+
+    public async getMessagesOfSim(
+        params: { imsi: string; fromDate?: Date; toDate?: Date; flush?: boolean; }
+    ): Promise<DongleController.Message[]> {
+
+        let messagesRecord: api.getMessages.Response= await this.apiClient.makeRequest(
+            api.getMessages.method, 
+            params
+        );
+
+        return messagesRecord[params.imsi] || [];
+
+    }
+
 
 }
 
@@ -328,12 +345,6 @@ export namespace DongleController {
     }
 
     export type Dongle = LockedDongle | ActiveDongle;
-
-    export type Messages = {
-        [dongleImei: string]: {
-            [simIccid: string]: Message[];
-        }
-    }
 
     export type SendMessageResult = { success: true; sendDate: Date; } | { success: false; reason: "DISCONNECT" | "CANNOT SEND" };
 

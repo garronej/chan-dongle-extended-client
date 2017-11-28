@@ -44,7 +44,7 @@ import { DongleController as Dc } from "../lib";
     console.log(JSON.stringify({ messages }, null, 2));
 
 
-})();
+});
 
 (async function testGetMessages() {
 
@@ -52,13 +52,37 @@ import { DongleController as Dc } from "../lib";
 
     await dc.initialization;
 
-    let dongle= dc.dongles.valuesAsArray()[0];
+    for( let dongle of dc.activeDongles.values()){
 
-    let record= await dc.getMessages({
-        "imei": dongle.imei,
-        "iccid": dongle.sim.iccid
-    });
+        let messages = await dc.getMessagesOfSim({ "imsi": dongle.sim.imsi });
 
-    console.log(record);
+        console.log(messages);
+
+    }
 
 });
+
+(async function testGetMessageWrongImsi() {
+
+    let dc= Dc.getInstance();
+
+    await dc.initialization;
+
+    try{
+
+        let messages = await dc.getMessagesOfSim({ "imsi": "42" });
+
+        console.log("Fail");
+
+        process.exit(-1);
+
+    }catch(error){
+
+        console.log(error.message);
+
+        console.log("PASS");
+
+    }
+
+
+})();

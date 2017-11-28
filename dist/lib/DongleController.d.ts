@@ -29,7 +29,17 @@ export declare class DongleController {
     sendMessage(viaDongleImei: string, toNumber: string, text: string): Promise<DongleController.SendMessageResult>;
     unlock(dongleImei: string, puk: string, newPin: string): Promise<DongleController.UnlockResult>;
     unlock(dongleImei: string, pin: string): Promise<DongleController.UnlockResult>;
-    getMessages(params: api.getMessages.Params): Promise<api.getMessages.Response>;
+    getMessages(params: {
+        fromDate?: Date;
+        toDate?: Date;
+        flush?: boolean;
+    }): Promise<api.getMessages.Response>;
+    getMessagesOfSim(params: {
+        imsi: string;
+        fromDate?: Date;
+        toDate?: Date;
+        flush?: boolean;
+    }): Promise<DongleController.Message[]>;
 }
 export declare namespace DongleController {
     const apiId = "dongle-extended";
@@ -100,11 +110,6 @@ export declare namespace DongleController {
         function match(dongle: Dongle): dongle is ActiveDongle;
     }
     type Dongle = LockedDongle | ActiveDongle;
-    type Messages = {
-        [dongleImei: string]: {
-            [simIccid: string]: Message[];
-        };
-    };
     type SendMessageResult = {
         success: true;
         sendDate: Date;

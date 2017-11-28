@@ -269,6 +269,19 @@ var DongleController = /** @class */ (function () {
     DongleController.prototype.getMessages = function (params) {
         return this.apiClient.makeRequest(api.getMessages.method, params);
     };
+    DongleController.prototype.getMessagesOfSim = function (params) {
+        return __awaiter(this, void 0, void 0, function () {
+            var messagesRecord;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, this.apiClient.makeRequest(api.getMessages.method, params)];
+                    case 1:
+                        messagesRecord = _a.sent();
+                        return [2 /*return*/, messagesRecord[params.imsi] || []];
+                }
+            });
+        });
+    };
     DongleController.instance = undefined;
     return DongleController;
 }());

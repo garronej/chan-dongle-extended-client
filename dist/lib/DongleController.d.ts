@@ -64,6 +64,9 @@ export declare namespace DongleController {
         number: string;
         name: string;
     }
+    namespace Contact {
+        function sanityCheck(o: Contact): boolean;
+    }
     type Phonebook = {
         infos: {
             contactNameMaxLength: number;
@@ -72,7 +75,13 @@ export declare namespace DongleController {
         };
         contacts: Contact[];
     };
+    namespace Phonebook {
+        function sanityCheck(o: Phonebook): boolean;
+    }
     type LockedPinState = "SIM PIN" | "SIM PUK" | "SIM PIN2" | "SIM PUK2";
+    namespace LockedPinState {
+        function sanityCheck(o: LockedPinState): boolean;
+    }
     type UnlockResult = UnlockResult.Success | UnlockResult.Failed;
     namespace UnlockResult {
         type Success = {
@@ -83,6 +92,7 @@ export declare namespace DongleController {
             pinState: LockedPinState;
             tryLeft: number;
         };
+        function sanityCheck(o: UnlockResult): boolean;
     }
     interface LockedDongle {
         imei: string;
@@ -94,6 +104,7 @@ export declare namespace DongleController {
     }
     namespace LockedDongle {
         function match(dongle: Dongle): dongle is LockedDongle;
+        function sanityCheck(o: LockedDongle): boolean;
     }
     interface ActiveDongle {
         imei: string;
@@ -108,8 +119,12 @@ export declare namespace DongleController {
     }
     namespace ActiveDongle {
         function match(dongle: Dongle): dongle is ActiveDongle;
+        function sanityCheck(o: ActiveDongle): boolean;
     }
     type Dongle = LockedDongle | ActiveDongle;
+    namespace Dongle {
+        function sanityCheck(o: Dongle): boolean;
+    }
     type SendMessageResult = {
         success: true;
         sendDate: Date;

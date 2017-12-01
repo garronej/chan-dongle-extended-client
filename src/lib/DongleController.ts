@@ -290,6 +290,21 @@ export namespace DongleController {
         name: string;
     }
 
+    export namespace Contact {
+
+        export function sanityCheck(o: Contact): boolean {
+
+            return (
+                o instanceof Object &&
+                typeof o.index === "number" &&
+                typeof o.number === "string" &&
+                typeof o.name === "string"
+            );
+
+        }
+
+    }
+
     export type Phonebook = {
         infos: {
             contactNameMaxLength: number;
@@ -299,8 +314,54 @@ export namespace DongleController {
         contacts: Contact[];
     };
 
+    export namespace Phonebook {
+
+        export function sanityCheck(o: Phonebook): boolean {
+
+            if (!(
+                o instanceof Object &&
+                o.infos instanceof Object &&
+                o.contacts instanceof Array
+            )) return false;
+
+            let { infos, contacts } = o;
+
+            if (!(
+                typeof infos.contactNameMaxLength === "number" &&
+                typeof infos.numberMaxLength === "number" &&
+                typeof infos.storageLeft === "number"
+            )) return false;
+
+            for (let contact of contacts) {
+
+                if (!Contact.sanityCheck(contact)) return false;
+
+            }
+
+            return true;
+
+        }
+
+
+    }
 
     export type LockedPinState = "SIM PIN" | "SIM PUK" | "SIM PIN2" | "SIM PUK2";
+
+    export namespace LockedPinState {
+
+        export function sanityCheck(o: LockedPinState): boolean {
+            return (
+                typeof o === "string" &&
+                (
+                    o === "SIM PIN" ||
+                    o === "SIM PUK" ||
+                    o === "SIM PIN2" ||
+                    o === "SIM PUK2"
+                )
+            );
+        }
+
+    }
 
     export type UnlockResult = UnlockResult.Success | UnlockResult.Failed;
 
@@ -308,6 +369,29 @@ export namespace DongleController {
 
         export type Success = { success: true; };
         export type Failed = { success: false; pinState: LockedPinState; tryLeft: number; };
+
+        export function sanityCheck(o: UnlockResult): boolean {
+
+            if (!(
+                o instanceof Object &&
+                typeof o.success === "boolean"
+            )) return false;
+
+            if (o.success) {
+
+                return true;
+
+            } else {
+
+                return (
+                    LockedPinState.sanityCheck(o.pinState) &&
+                    typeof o.tryLeft === "number"
+                );
+
+
+            }
+
+        }
 
     }
 
@@ -321,8 +405,27 @@ export namespace DongleController {
     }
 
     export namespace LockedDongle {
+
         export function match(dongle: Dongle): dongle is LockedDongle {
             return (dongle.sim as LockedDongle['sim']).pinState !== undefined;
+        }
+
+        export function sanityCheck(o: LockedDongle): boolean {
+
+            return (
+                o instanceof Object &&
+                typeof o.imei === "string" &&
+                o.sim instanceof Object &&
+                (
+                    (
+                        typeof o.sim.iccid === "string" ||
+                        o.sim.iccid === undefined
+                    ) &&
+                    LockedPinState.sanityCheck(o.sim.pinState) &&
+                    typeof o.sim.tryLeft === "number"
+                )
+            );
+
         }
     }
 
@@ -339,13 +442,61 @@ export namespace DongleController {
     }
 
     export namespace ActiveDongle {
+
         export function match(dongle: Dongle): dongle is ActiveDongle {
             return !LockedDongle.match(dongle);
         }
+
+        export function sanityCheck(o: ActiveDongle): boolean {
+
+            return (
+                o instanceof Object &&
+                typeof o.imei === "string" &&
+                (
+                    typeof o.isVoiceEnabled === "boolean" ||
+                    o.isVoiceEnabled === undefined
+                ) && 
+                o.sim instanceof Object && 
+                (
+                    typeof o.sim.iccid === "string" && 
+                    typeof o.sim.imsi === "string" &&
+                    (
+                        typeof o.sim.number === "string" ||
+                        o.sim.number === undefined
+                    ) && (
+                        typeof o.sim.serviceProvider === "string" ||
+                        o.sim.serviceProvider === undefined
+                    ) &&
+                    Phonebook.sanityCheck(o.sim.phonebook)
+                )
+            );
+
+        }
+        
     }
 
     export type Dongle = LockedDongle | ActiveDongle;
 
-    export type SendMessageResult = { success: true; sendDate: Date; } | { success: false; reason: "DISCONNECT" | "CANNOT SEND" };
+    export namespace Dongle {
+
+        export function sanityCheck(o: Dongle): boolean {
+
+            return (
+                LockedDongle.sanityCheck(o as LockedDongle) || 
+                ActiveDongle.sanityCheck(o as ActiveDongle) 
+            );
+
+        }
+
+    }
+
+    export type SendMessageResult = 
+    { 
+        success: true; 
+        sendDate: Date; 
+    } | { 
+        success: false; 
+        reason: "DISCONNECT" | "CANNOT SEND" 
+    };
 
 }

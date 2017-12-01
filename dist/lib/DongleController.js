@@ -288,12 +288,90 @@ var DongleController = /** @class */ (function () {
 exports.DongleController = DongleController;
 (function (DongleController) {
     DongleController.apiId = "dongle-extended";
+    var Contact;
+    (function (Contact) {
+        function sanityCheck(o) {
+            return (o instanceof Object &&
+                typeof o.index === "number" &&
+                typeof o.number === "string" &&
+                typeof o.name === "string");
+        }
+        Contact.sanityCheck = sanityCheck;
+    })(Contact = DongleController.Contact || (DongleController.Contact = {}));
+    var Phonebook;
+    (function (Phonebook) {
+        function sanityCheck(o) {
+            if (!(o instanceof Object &&
+                o.infos instanceof Object &&
+                o.contacts instanceof Array))
+                return false;
+            var infos = o.infos, contacts = o.contacts;
+            if (!(typeof infos.contactNameMaxLength === "number" &&
+                typeof infos.numberMaxLength === "number" &&
+                typeof infos.storageLeft === "number"))
+                return false;
+            try {
+                for (var contacts_1 = __values(contacts), contacts_1_1 = contacts_1.next(); !contacts_1_1.done; contacts_1_1 = contacts_1.next()) {
+                    var contact = contacts_1_1.value;
+                    if (!Contact.sanityCheck(contact))
+                        return false;
+                }
+            }
+            catch (e_4_1) { e_4 = { error: e_4_1 }; }
+            finally {
+                try {
+                    if (contacts_1_1 && !contacts_1_1.done && (_a = contacts_1.return)) _a.call(contacts_1);
+                }
+                finally { if (e_4) throw e_4.error; }
+            }
+            return true;
+            var e_4, _a;
+        }
+        Phonebook.sanityCheck = sanityCheck;
+    })(Phonebook = DongleController.Phonebook || (DongleController.Phonebook = {}));
+    var LockedPinState;
+    (function (LockedPinState) {
+        function sanityCheck(o) {
+            return (typeof o === "string" &&
+                (o === "SIM PIN" ||
+                    o === "SIM PUK" ||
+                    o === "SIM PIN2" ||
+                    o === "SIM PUK2"));
+        }
+        LockedPinState.sanityCheck = sanityCheck;
+    })(LockedPinState = DongleController.LockedPinState || (DongleController.LockedPinState = {}));
+    var UnlockResult;
+    (function (UnlockResult) {
+        function sanityCheck(o) {
+            if (!(o instanceof Object &&
+                typeof o.success === "boolean"))
+                return false;
+            if (o.success) {
+                return true;
+            }
+            else {
+                return (LockedPinState.sanityCheck(o.pinState) &&
+                    typeof o.tryLeft === "number");
+            }
+        }
+        UnlockResult.sanityCheck = sanityCheck;
+    })(UnlockResult = DongleController.UnlockResult || (DongleController.UnlockResult = {}));
     var LockedDongle;
     (function (LockedDongle) {
         function match(dongle) {
             return dongle.sim.pinState !== undefined;
         }
         LockedDongle.match = match;
+        function sanityCheck(o) {
+            return (o instanceof Object &&
+                typeof o.imei === "string" &&
+                o.sim instanceof Object &&
+                ((typeof o.sim.iccid === "string" ||
+                    o.sim.iccid === undefined) &&
+                    LockedPinState.sanityCheck(o.sim.pinState) &&
+                    typeof o.sim.tryLeft === "number"));
+        }
+        LockedDongle.sanityCheck = sanityCheck;
     })(LockedDongle = DongleController.LockedDongle || (DongleController.LockedDongle = {}));
     var ActiveDongle;
     (function (ActiveDongle) {
@@ -301,6 +379,28 @@ exports.DongleController = DongleController;
             return !LockedDongle.match(dongle);
         }
         ActiveDongle.match = match;
+        function sanityCheck(o) {
+            return (o instanceof Object &&
+                typeof o.imei === "string" &&
+                (typeof o.isVoiceEnabled === "boolean" ||
+                    o.isVoiceEnabled === undefined) &&
+                o.sim instanceof Object &&
+                (typeof o.sim.iccid === "string" &&
+                    typeof o.sim.imsi === "string" &&
+                    (typeof o.sim.number === "string" ||
+                        o.sim.number === undefined) && (typeof o.sim.serviceProvider === "string" ||
+                    o.sim.serviceProvider === undefined) &&
+                    Phonebook.sanityCheck(o.sim.phonebook)));
+        }
+        ActiveDongle.sanityCheck = sanityCheck;
     })(ActiveDongle = DongleController.ActiveDongle || (DongleController.ActiveDongle = {}));
+    var Dongle;
+    (function (Dongle) {
+        function sanityCheck(o) {
+            return (LockedDongle.sanityCheck(o) ||
+                ActiveDongle.sanityCheck(o));
+        }
+        Dongle.sanityCheck = sanityCheck;
+    })(Dongle = DongleController.Dongle || (DongleController.Dongle = {}));
 })(DongleController = exports.DongleController || (exports.DongleController = {}));
 exports.DongleController = DongleController;

@@ -1,6 +1,6 @@
 {
   "name": "chan-dongle-extended-client",
-  "version": "0.7.1",
+  "version": "0.8.0",
   "description": "client for chan-dongle-extended",
   "main": "./dist/lib/index.js",
   "types": "./dist/lib/index.d.ts",
@@ -24,10 +24,13 @@
   "author": "Joseph Garrone",
   "license": "SEE LICENSE IN LICENSE",
   "dependencies": {
+    "md5": "^2.2.1",
     "rejection-tracker": "garronej/rejection-tracker",
     "trackable-map": "github:garronej/trackable-map",
     "ts-ami": "github:garronej/ts-ami",
-    "ts-events-extended": "garronej/ts-events-extended"
+    "ts-events-extended": "garronej/ts-events-extended",
+    "imsi-grok": "^1.0.0",
+    "awesome-phonenumber": "^2.1.0"
   },
   "devDependencies": {
     "@types/js-base64": "^2.1.5",

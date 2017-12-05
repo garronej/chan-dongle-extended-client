@@ -7,5 +7,7 @@ var ts_ami_1 = require("ts-ami");
 exports.Ami = ts_ami_1.Ami;
 exports.amiApi = ts_ami_1.amiApi;
 exports.agi = ts_ami_1.agi;
+var phoneNumberLibrary = require("./phoneNumberLibrary");
+exports.phoneNumberLibrary = phoneNumberLibrary;
 var _private = require("./private");
 exports._private = _private;

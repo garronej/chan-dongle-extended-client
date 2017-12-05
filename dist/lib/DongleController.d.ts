@@ -47,36 +47,45 @@ export declare namespace DongleController {
         general: typeof _private.defaultConfig['general'];
         defaults: typeof _private.defaultConfig['defaults'];
     };
-    interface StatusReport {
+    type StatusReport = {
         sendDate: Date;
         dischargeDate: Date;
         isDelivered: boolean;
         status: string;
         recipient: string;
-    }
-    interface Message {
+    };
+    type Message = {
         number: string;
         date: Date;
         text: string;
-    }
-    interface Contact {
-        index: number;
-        number: string;
-        name: string;
-    }
+    };
+    type Contact = {
+        readonly index: number;
+        readonly name: {
+            readonly asStored: string;
+            full: string;
+        };
+        readonly number: {
+            readonly asStored: string;
+            localFormat: string;
+        };
+    };
     namespace Contact {
         function sanityCheck(o: Contact): boolean;
     }
-    type Phonebook = {
+    type SimStorage = {
+        number?: string;
         infos: {
             contactNameMaxLength: number;
             numberMaxLength: number;
             storageLeft: number;
         };
         contacts: Contact[];
+        digest: string;
     };
-    namespace Phonebook {
-        function sanityCheck(o: Phonebook): boolean;
+    namespace SimStorage {
+        function sanityCheck(o: SimStorage): boolean;
+        function computeDigest(number: string | undefined, storageLeft: number, contacts: Contact[]): string;
     }
     type LockedPinState = "SIM PIN" | "SIM PUK" | "SIM PIN2" | "SIM PUK2";
     namespace LockedPinState {
@@ -112,9 +121,11 @@ export declare namespace DongleController {
         sim: {
             iccid: string;
             imsi: string;
-            number?: string;
-            serviceProvider?: string;
-            phonebook: Phonebook;
+            serviceProvider: {
+                fromImsi?: string;
+                fromNetwork?: string;
+            };
+            storage: SimStorage;
         };
     }
     namespace ActiveDongle {

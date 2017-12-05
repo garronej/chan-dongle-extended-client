@@ -64,6 +64,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var ts_events_extended_1 = require("ts-events-extended");
 var ts_ami_1 = require("ts-ami");
 var trackable_map_1 = require("trackable-map");
+var md5 = require("md5");
 var _private = require("./private");
 var api = _private.api;
 var DongleController = /** @class */ (function () {
@@ -88,8 +89,9 @@ var DongleController = /** @class */ (function () {
         configurable: true
     });
     DongleController.getInstance = function (asteriskManagerCredential) {
-        if (this.instance)
+        if (this.instance) {
             return this.instance;
+        }
         this.instance = new this(asteriskManagerCredential);
         return this.instance;
     };
@@ -293,15 +295,20 @@ exports.DongleController = DongleController;
         function sanityCheck(o) {
             return (o instanceof Object &&
                 typeof o.index === "number" &&
-                typeof o.number === "string" &&
-                typeof o.name === "string");
+                o.name instanceof Object &&
+                typeof o.name.asStored === "string" &&
+                typeof o.name.full === "string" &&
+                o.number instanceof Object &&
+                typeof o.number.asStored === "string" &&
+                typeof o.number.localFormat === "string");
         }
         Contact.sanityCheck = sanityCheck;
     })(Contact = DongleController.Contact || (DongleController.Contact = {}));
-    var Phonebook;
-    (function (Phonebook) {
+    var SimStorage;
+    (function (SimStorage) {
         function sanityCheck(o) {
-            if (!(o instanceof Object &&
+            if (!(o instanceof Object && (typeof o.number === "string" ||
+                o.number === undefined) &&
                 o.infos instanceof Object &&
                 o.contacts instanceof Array))
                 return false;
@@ -313,8 +320,9 @@ exports.DongleController = DongleController;
             try {
                 for (var contacts_1 = __values(contacts), contacts_1_1 = contacts_1.next(); !contacts_1_1.done; contacts_1_1 = contacts_1.next()) {
                     var contact = contacts_1_1.value;
-                    if (!Contact.sanityCheck(contact))
+                    if (!Contact.sanityCheck(contact)) {
                         return false;
+                    }
                 }
             }
             catch (e_4_1) { e_4 = { error: e_4_1 }; }
@@ -327,8 +335,17 @@ exports.DongleController = DongleController;
             return true;
             var e_4, _a;
         }
-        Phonebook.sanityCheck = sanityCheck;
-    })(Phonebook = DongleController.Phonebook || (DongleController.Phonebook = {}));
+        SimStorage.sanityCheck = sanityCheck;
+        function computeDigest(number, storageLeft, contacts) {
+            var strArr = contacts
+                .sort(function (c1, c2) { return c1.index - c2.index; })
+                .map(function (c) { return "" + c.index + c.name.asStored + c.number.asStored; });
+            strArr.push("" + number);
+            strArr.push("" + storageLeft);
+            return md5(strArr.join(""));
+        }
+        SimStorage.computeDigest = computeDigest;
+    })(SimStorage = DongleController.SimStorage || (DongleController.SimStorage = {}));
     var LockedPinState;
     (function (LockedPinState) {
         function sanityCheck(o) {
@@ -386,11 +403,9 @@ exports.DongleController = DongleController;
                     o.isVoiceEnabled === undefined) &&
                 o.sim instanceof Object &&
                 (typeof o.sim.iccid === "string" &&
-                    typeof o.sim.imsi === "string" &&
-                    (typeof o.sim.number === "string" ||
-                        o.sim.number === undefined) && (typeof o.sim.serviceProvider === "string" ||
+                    typeof o.sim.imsi === "string" && (typeof o.sim.serviceProvider === "string" ||
                     o.sim.serviceProvider === undefined) &&
-                    Phonebook.sanityCheck(o.sim.phonebook)));
+                    SimStorage.sanityCheck(o.sim.storage)));
         }
         ActiveDongle.sanityCheck = sanityCheck;
     })(ActiveDongle = DongleController.ActiveDongle || (DongleController.ActiveDongle = {}));

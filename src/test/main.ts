@@ -44,7 +44,7 @@ import { DongleController as Dc } from "../lib";
     console.log(JSON.stringify({ messages }, null, 2));
 
 
-});
+})();
 
 (async function testGetMessages() {
 
@@ -85,4 +85,4 @@ import { DongleController as Dc } from "../lib";
     }
 
 
-})();
+});

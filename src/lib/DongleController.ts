@@ -1,6 +1,7 @@
 import { SyncEvent } from "ts-events-extended";
 import { Ami, amiApi } from "ts-ami";
 import { TrackableMap } from "trackable-map";
+import * as md5 from "md5";
 
 import * as _private from "./private";
 import api= _private.api;
@@ -17,7 +18,9 @@ export class DongleController {
         asteriskManagerCredential?: Ami.Credential
     ): DongleController {
 
-        if (this.instance) return this.instance;
+        if (this.instance){
+             return this.instance;
+        }
 
         this.instance = new this(asteriskManagerCredential);
 
@@ -270,24 +273,30 @@ export namespace DongleController {
         defaults: typeof _private.defaultConfig['defaults'];
     };
 
-    export interface StatusReport {
+    export type StatusReport= {
         sendDate: Date;
         dischargeDate: Date;
         isDelivered: boolean;
         status: string;
         recipient: string;
-    }
+    };
 
-    export interface Message {
+    export type Message= {
         number: string;
         date: Date;
         text: string;
-    }
+    };
 
-    export interface Contact {
-        index: number;
-        number: string;
-        name: string;
+    export type Contact= {
+        readonly index: number;
+        readonly name: {
+            readonly asStored: string;
+            full: string;
+        };
+        readonly number: {
+            readonly asStored: string;
+            localFormat: string;
+        };
     }
 
     export namespace Contact {
@@ -297,29 +306,38 @@ export namespace DongleController {
             return (
                 o instanceof Object &&
                 typeof o.index === "number" &&
-                typeof o.number === "string" &&
-                typeof o.name === "string"
+                o.name instanceof Object && 
+                typeof o.name.asStored === "string" &&
+                typeof o.name.full === "string" &&
+                o.number instanceof Object &&
+                typeof o.number.asStored === "string" &&
+                typeof o.number.localFormat === "string"
             );
 
         }
 
     }
 
-    export type Phonebook = {
+    export type SimStorage = {
+        number?: string;
         infos: {
             contactNameMaxLength: number;
             numberMaxLength: number;
             storageLeft: number;
         };
         contacts: Contact[];
+        digest: string;
     };
 
-    export namespace Phonebook {
+    export namespace SimStorage {
 
-        export function sanityCheck(o: Phonebook): boolean {
+        export function sanityCheck(o: SimStorage): boolean {
 
             if (!(
-                o instanceof Object &&
+                o instanceof Object && (
+                    typeof o.number === "string" ||
+                    o.number === undefined
+                ) && 
                 o.infos instanceof Object &&
                 o.contacts instanceof Array
             )) return false;
@@ -334,11 +352,30 @@ export namespace DongleController {
 
             for (let contact of contacts) {
 
-                if (!Contact.sanityCheck(contact)) return false;
+                if (!Contact.sanityCheck(contact)){
+                    return false;
+                }
 
             }
 
             return true;
+
+        }
+
+        export function computeDigest(
+            number: string | undefined,
+            storageLeft: number,
+            contacts: Contact[]
+        ): string {
+
+            let strArr = contacts
+                .sort((c1, c2) => c1.index - c2.index)
+                .map(c => `${c.index}${c.name.asStored}${c.number.asStored}`);
+
+            strArr.push(`${number}`);
+            strArr.push(`${storageLeft}`);
+
+            return md5(strArr.join(""));
 
         }
 
@@ -388,7 +425,6 @@ export namespace DongleController {
                     typeof o.tryLeft === "number"
                 );
 
-
             }
 
         }
@@ -435,9 +471,11 @@ export namespace DongleController {
         sim: {
             iccid: string;
             imsi: string;
-            number?: string;
-            serviceProvider?: string;
-            phonebook: Phonebook;
+            serviceProvider: {
+                fromImsi?: string;
+                fromNetwork?: string;
+            },
+            storage: SimStorage;
         }
     }
 
@@ -455,24 +493,20 @@ export namespace DongleController {
                 (
                     typeof o.isVoiceEnabled === "boolean" ||
                     o.isVoiceEnabled === undefined
-                ) && 
-                o.sim instanceof Object && 
+                ) &&
+                o.sim instanceof Object &&
                 (
-                    typeof o.sim.iccid === "string" && 
-                    typeof o.sim.imsi === "string" &&
-                    (
-                        typeof o.sim.number === "string" ||
-                        o.sim.number === undefined
-                    ) && (
+                    typeof o.sim.iccid === "string" &&
+                    typeof o.sim.imsi === "string" && (
                         typeof o.sim.serviceProvider === "string" ||
                         o.sim.serviceProvider === undefined
                     ) &&
-                    Phonebook.sanityCheck(o.sim.phonebook)
+                    SimStorage.sanityCheck(o.sim.storage)
                 )
             );
 
         }
-        
+
     }
 
     export type Dongle = LockedDongle | ActiveDongle;
@@ -482,21 +516,21 @@ export namespace DongleController {
         export function sanityCheck(o: Dongle): boolean {
 
             return (
-                LockedDongle.sanityCheck(o as LockedDongle) || 
-                ActiveDongle.sanityCheck(o as ActiveDongle) 
+                LockedDongle.sanityCheck(o as LockedDongle) ||
+                ActiveDongle.sanityCheck(o as ActiveDongle)
             );
 
         }
 
     }
 
-    export type SendMessageResult = 
-    { 
-        success: true; 
-        sendDate: Date; 
-    } | { 
-        success: false; 
-        reason: "DISCONNECT" | "CANNOT SEND" 
-    };
+    export type SendMessageResult =
+        {
+            success: true;
+            sendDate: Date;
+        } | {
+            success: false;
+            reason: "DISCONNECT" | "CANNOT SEND"
+        };
 
 }

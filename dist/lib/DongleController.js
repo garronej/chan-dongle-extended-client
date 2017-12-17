@@ -290,6 +290,18 @@ var DongleController = /** @class */ (function () {
 exports.DongleController = DongleController;
 (function (DongleController) {
     DongleController.apiId = "dongle-extended";
+    function isImsiWellFormed(imsi) {
+        return typeof imsi === "string" && imsi.match(/^[0-9]{15}$/) !== null;
+    }
+    DongleController.isImsiWellFormed = isImsiWellFormed;
+    function isImeiWellFormed(imei) {
+        return isImsiWellFormed(imei);
+    }
+    DongleController.isImeiWellFormed = isImeiWellFormed;
+    function isIccidWellFormed(iccid) {
+        return typeof iccid === "string" && iccid.match(/^[0-9]{6,22}$/) !== null;
+    }
+    DongleController.isIccidWellFormed = isIccidWellFormed;
     var Contact;
     (function (Contact) {
         function sanityCheck(o) {
@@ -381,10 +393,10 @@ exports.DongleController = DongleController;
         LockedDongle.match = match;
         function sanityCheck(o) {
             return (o instanceof Object &&
-                typeof o.imei === "string" &&
+                isImeiWellFormed(o.imei) &&
                 o.sim instanceof Object &&
-                ((typeof o.sim.iccid === "string" ||
-                    o.sim.iccid === undefined) &&
+                ((o.sim.iccid === undefined ||
+                    isIccidWellFormed(o.sim.iccid)) &&
                     LockedPinState.sanityCheck(o.sim.pinState) &&
                     typeof o.sim.tryLeft === "number"));
         }
@@ -398,12 +410,12 @@ exports.DongleController = DongleController;
         ActiveDongle.match = match;
         function sanityCheck(o) {
             return (o instanceof Object &&
-                typeof o.imei === "string" &&
+                isImeiWellFormed(o.imei) &&
                 (typeof o.isVoiceEnabled === "boolean" ||
                     o.isVoiceEnabled === undefined) &&
                 o.sim instanceof Object &&
-                (typeof o.sim.iccid === "string" &&
-                    typeof o.sim.imsi === "string" && (typeof o.sim.serviceProvider === "string" ||
+                (isIccidWellFormed(o.sim.iccid) &&
+                    isImsiWellFormed(o.sim.imsi) && (typeof o.sim.serviceProvider === "string" ||
                     o.sim.serviceProvider === undefined) &&
                     SimStorage.sanityCheck(o.sim.storage)));
         }

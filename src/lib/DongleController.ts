@@ -268,6 +268,18 @@ export namespace DongleController {
 
     export const apiId= "dongle-extended";
 
+    export function isImsiWellFormed(imsi: string){
+        return typeof imsi === "string" && imsi.match(/^[0-9]{15}$/) !== null;
+    }
+
+    export function isImeiWellFormed(imei: string){
+        return isImsiWellFormed(imei);
+    }
+
+    export function isIccidWellFormed(iccid: string){
+        return typeof iccid === "string" && iccid.match(/^[0-9]{6,22}$/) !== null;
+    }
+
     export type ModuleConfiguration = {
         general: typeof _private.defaultConfig['general'];
         defaults: typeof _private.defaultConfig['defaults'];
@@ -450,12 +462,12 @@ export namespace DongleController {
 
             return (
                 o instanceof Object &&
-                typeof o.imei === "string" &&
+                isImeiWellFormed(o.imei) &&
                 o.sim instanceof Object &&
                 (
                     (
-                        typeof o.sim.iccid === "string" ||
-                        o.sim.iccid === undefined
+                        o.sim.iccid === undefined ||
+                        isIccidWellFormed(o.sim.iccid)
                     ) &&
                     LockedPinState.sanityCheck(o.sim.pinState) &&
                     typeof o.sim.tryLeft === "number"
@@ -489,15 +501,15 @@ export namespace DongleController {
 
             return (
                 o instanceof Object &&
-                typeof o.imei === "string" &&
+                isImeiWellFormed(o.imei) &&
                 (
                     typeof o.isVoiceEnabled === "boolean" ||
                     o.isVoiceEnabled === undefined
                 ) &&
                 o.sim instanceof Object &&
                 (
-                    typeof o.sim.iccid === "string" &&
-                    typeof o.sim.imsi === "string" && (
+                    isIccidWellFormed(o.sim.iccid) &&
+                    isImsiWellFormed(o.sim.imsi) && (
                         typeof o.sim.serviceProvider === "string" ||
                         o.sim.serviceProvider === undefined
                     ) &&

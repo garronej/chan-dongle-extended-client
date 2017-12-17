@@ -43,6 +43,9 @@ export declare class DongleController {
 }
 export declare namespace DongleController {
     const apiId = "dongle-extended";
+    function isImsiWellFormed(imsi: string): boolean;
+    function isImeiWellFormed(imei: string): boolean;
+    function isIccidWellFormed(iccid: string): boolean;
     type ModuleConfiguration = {
         general: typeof _private.defaultConfig['general'];
         defaults: typeof _private.defaultConfig['defaults'];

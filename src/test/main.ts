@@ -2,6 +2,8 @@ require("rejection-tracker").main(__dirname, "..", "..");
 
 import { DongleController as Dc } from "../lib";
 
+
+
 (async function initialize() {
 
     console.log("up");
@@ -14,7 +16,7 @@ import { DongleController as Dc } from "../lib";
 
         await dc.initialization;
 
-    } catch (error){ 
+    } catch (error) {
 
         console.log(error);
 
@@ -26,20 +28,26 @@ import { DongleController as Dc } from "../lib";
 
     //console.log(JSON.stringify(dc.dongles.toObject(), null, 2));
 
+    for( let dongle of dc.dongles.valueSet() ){
+
+        console.assert( Dc.Dongle.sanityCheck(dongle), "sanity check failed" );
+
+    }
+
     dc.dongles.evt.attach(
         ([dongle]) => console.log(JSON.stringify(dongle, null, 2))
     );
 
-    dc.evtMessage.attach( ({ dongle, message })=> console.log(JSON.stringify({dongle , message}, null, 2)));
-    dc.evtStatusReport.attach( ({ dongle, statusReport })=> console.log(JSON.stringify({dongle , statusReport}, null, 2)));
+    dc.evtMessage.attach(({ dongle, message }) => console.log(JSON.stringify({ dongle, message }, null, 2)));
+    dc.evtStatusReport.attach(({ dongle, statusReport }) => console.log(JSON.stringify({ dongle, statusReport }, null, 2)));
 
-    let imei= dc.dongles.keysAsArray()[0];
+    let imei = dc.dongles.keysAsArray()[0];
 
     console.log({ imei });
 
     dc.sendMessage(imei, "0636786385", "TEST DONGLE CONTROLLER");
 
-    let messages= await dc.getMessages({});
+    let messages = await dc.getMessages({});
 
     console.log(JSON.stringify({ messages }, null, 2));
 
@@ -48,11 +56,11 @@ import { DongleController as Dc } from "../lib";
 
 (async function testGetMessages() {
 
-    let dc= Dc.getInstance();
+    let dc = Dc.getInstance();
 
     await dc.initialization;
 
-    for( let dongle of dc.activeDongles.values()){
+    for (let dongle of dc.activeDongles.values()) {
 
         let messages = await dc.getMessagesOfSim({ "imsi": dongle.sim.imsi });
 
@@ -64,11 +72,11 @@ import { DongleController as Dc } from "../lib";
 
 (async function testGetMessageWrongImsi() {
 
-    let dc= Dc.getInstance();
+    let dc = Dc.getInstance();
 
     await dc.initialization;
 
-    try{
+    try {
 
         let messages = await dc.getMessagesOfSim({ "imsi": "42" });
 
@@ -76,7 +84,7 @@ import { DongleController as Dc } from "../lib";
 
         process.exit(-1);
 
-    }catch(error){
+    } catch (error) {
 
         console.log(error.message);
 
@@ -86,3 +94,57 @@ import { DongleController as Dc } from "../lib";
 
 
 });
+
+(function testSanityChecks() {
+
+    let dongle = {
+        "imei": "353762037478870",
+        "isVoiceEnabled": true,
+        "sim": {
+            "iccid": "8933150116110005978",
+            "imsi": "208150113995832",
+            "serviceProvider": {
+                "fromImsi": "Lliad/FREE Mobile",
+                "fromNetwork": "Free"
+            },
+            "storage": {
+                "number": "+33769365812",
+                "infos": {
+                    "contactNameMaxLength": 14,
+                    "numberMaxLength": 24,
+                    "storageLeft": 242
+                },
+                "contacts": [
+                    {
+                        "index": 1,
+                        "name": {
+                            "asStored": "Joseph Garrone",
+                            "full": "Joseph Garrone"
+                        },
+                        "number": {
+                            "asStored": "0636786385",
+                            "localFormat": "0636786385"
+                        }
+                    },
+                    {
+                        "index": 7,
+                        "name": {
+                            "asStored": "Sienna",
+                            "full": "Sienna"
+                        },
+                        "number": {
+                            "asStored": "0782397709",
+                            "localFormat": "0782397709"
+                        }
+                    }
+                ],
+                "digest": "133f4ab5a08e6a30c04e78c0016d1551"
+            }
+        }
+    };
+
+    console.assert( Dc.Dongle.sanityCheck(dongle) );
+
+    console.log("PASS SANITY CHECKS");
+
+})();

@@ -415,8 +415,9 @@ exports.DongleController = DongleController;
                     o.isVoiceEnabled === undefined) &&
                 o.sim instanceof Object &&
                 (isIccidWellFormed(o.sim.iccid) &&
-                    isImsiWellFormed(o.sim.imsi) && (typeof o.sim.serviceProvider === "string" ||
-                    o.sim.serviceProvider === undefined) &&
+                    isImsiWellFormed(o.sim.imsi) && (typeof o.sim.serviceProvider.fromImsi === "string" ||
+                    o.sim.serviceProvider.fromImsi === undefined) && (typeof o.sim.serviceProvider.fromNetwork === "string" ||
+                    o.sim.serviceProvider.fromNetwork === undefined) &&
                     SimStorage.sanityCheck(o.sim.storage)));
         }
         ActiveDongle.sanityCheck = sanityCheck;

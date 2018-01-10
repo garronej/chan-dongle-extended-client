@@ -510,8 +510,11 @@ export namespace DongleController {
                 (
                     isIccidWellFormed(o.sim.iccid) &&
                     isImsiWellFormed(o.sim.imsi) && (
-                        typeof o.sim.serviceProvider === "string" ||
-                        o.sim.serviceProvider === undefined
+                        typeof o.sim.serviceProvider.fromImsi === "string" ||
+                        o.sim.serviceProvider.fromImsi === undefined
+                    ) && (
+                        typeof o.sim.serviceProvider.fromNetwork === "string" ||
+                        o.sim.serviceProvider.fromNetwork === undefined
                     ) &&
                     SimStorage.sanityCheck(o.sim.storage)
                 )

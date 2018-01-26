@@ -1,6 +1,7 @@
 import { SyncEvent } from "ts-events-extended";
 import { Ami } from "ts-ami";
 import { TrackableMap } from "trackable-map";
+import { SimCountry } from "./utils";
 import * as _private from "./private";
 import api = _private.api;
 export declare class DongleController {
@@ -77,7 +78,10 @@ export declare namespace DongleController {
         function sanityCheck(o: Contact): boolean;
     }
     type SimStorage = {
-        number?: string;
+        number?: {
+            readonly asStored: string;
+            localFormat: string;
+        };
         infos: {
             contactNameMaxLength: number;
             numberMaxLength: number;
@@ -108,6 +112,9 @@ export declare namespace DongleController {
     }
     interface LockedDongle {
         imei: string;
+        manufacturer: string;
+        model: string;
+        firmwareVersion: string;
         sim: {
             iccid?: string;
             pinState: LockedPinState;
@@ -120,10 +127,14 @@ export declare namespace DongleController {
     }
     interface ActiveDongle {
         imei: string;
+        manufacturer: string;
+        model: string;
+        firmwareVersion: string;
         isVoiceEnabled?: boolean;
         sim: {
             iccid: string;
             imsi: string;
+            country?: SimCountry;
             serviceProvider: {
                 fromImsi?: string;
                 fromNetwork?: string;

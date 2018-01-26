@@ -3,9 +3,9 @@ require("rejection-tracker")(__dirname, "..", "..");
 export { DongleController } from "./DongleController";
 export { Ami, amiApi, agi } from "ts-ami";
 
-import * as phoneNumberLibrary from "./phoneNumberLibrary";
+import * as utils from "./utils";
 
-export { phoneNumberLibrary };
+export { utils };
 
 import * as _private from "./private";
 export { _private };

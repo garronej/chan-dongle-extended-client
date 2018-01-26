@@ -1,6 +1,6 @@
 {
   "name": "chan-dongle-extended-client",
-  "version": "0.8.1",
+  "version": "0.9.0",
   "description": "client for chan-dongle-extended",
   "main": "./dist/lib/index.js",
   "types": "./dist/lib/index.d.ts",
@@ -30,7 +30,8 @@
     "ts-ami": "github:garronej/ts-ami",
     "ts-events-extended": "garronej/ts-events-extended",
     "imsi-grok": "^1.0.0",
-    "awesome-phonenumber": "^2.1.0"
+    "awesome-phonenumber": "^2.1.0",
+    "mccmnc.json": "^1.1.0"
   },
   "devDependencies": {
     "@types/js-base64": "^2.1.5",

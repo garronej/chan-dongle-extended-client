@@ -2,8 +2,6 @@ require("rejection-tracker").main(__dirname, "..", "..");
 
 import { DongleController as Dc } from "../lib";
 
-
-
 (async function initialize() {
 
     console.log("up");
@@ -52,7 +50,7 @@ import { DongleController as Dc } from "../lib";
     console.log(JSON.stringify({ messages }, null, 2));
 
 
-})();
+});
 
 (async function testGetMessages() {
 
@@ -97,18 +95,30 @@ import { DongleController as Dc } from "../lib";
 
 (function testSanityChecks() {
 
+
     let dongle = {
         "imei": "353762037478870",
         "isVoiceEnabled": true,
+        "manufacturer": "huawei",
+        "model": "E160X",
+        "firmwareVersion": "11.609.10.02.432",
         "sim": {
             "iccid": "8933150116110005978",
+            "country": {
+                "name": "France",
+                "iso": "FR",
+                "code": 33
+            },
             "imsi": "208150113995832",
             "serviceProvider": {
-                "fromImsi": "Lliad/FREE Mobile",
+                "fromImsi": "Free Mobile",
                 "fromNetwork": "Free"
             },
             "storage": {
-                "number": "+33769365812",
+                "number": {
+                    "asStored": "+33769365812",
+                    "localFormat": "0769365812"
+                },
                 "infos": {
                     "contactNameMaxLength": 14,
                     "numberMaxLength": 24,
@@ -143,7 +153,7 @@ import { DongleController as Dc } from "../lib";
         }
     };
 
-    console.assert( Dc.Dongle.sanityCheck(dongle) );
+    console.assert(Dc.Dongle.sanityCheck(dongle));
 
     console.log("PASS SANITY CHECKS");
 

@@ -2,6 +2,7 @@ import { SyncEvent } from "ts-events-extended";
 import { Ami, amiApi } from "ts-ami";
 import { TrackableMap } from "trackable-map";
 import * as md5 from "md5";
+import { SimCountry } from "./utils";
 
 import * as _private from "./private";
 import api= _private.api;
@@ -69,6 +70,7 @@ export class DongleController {
 
     }
 
+
     private async initialize() {
 
         let initializationResponse: api.initialize.Response;
@@ -96,7 +98,38 @@ export class DongleController {
         this.apiClient.evtEvent.attach(
             ({ name, event }) => {
 
-                if (name === api.Events.updateMap.name) {
+                let timer: NodeJS.Timer | undefined= undefined;
+                let serviceUpSince: number | undefined= undefined;
+
+                if (name === api.Events.periodicalSignal.name) {
+
+                    let { upSince }: api.Events.periodicalSignal.Data= event;
+
+                    if( timer ){
+                        clearTimeout(timer);
+                        timer= undefined;
+                    }
+
+                    if( !serviceUpSince ){
+                         serviceUpSince= upSince;
+                    }
+
+                    if( serviceUpSince !== upSince ){
+
+                        this.dongles.clear();
+                        serviceUpSince= upSince;
+
+                    }
+
+                    timer= setTimeout(()=> {
+
+                        this.dongles.clear();
+                        timer= undefined;
+                        serviceUpSince= undefined;
+
+                    }, api.Events.periodicalSignal.interval + 15000);
+
+                } else if (name === api.Events.updateMap.name) {
 
                     let { dongleImei, dongle }: api.Events.updateMap.Data = event;
 
@@ -125,6 +158,7 @@ export class DongleController {
                     });
 
                 }
+
 
             }
         );
@@ -204,7 +238,7 @@ export class DongleController {
 
         let [dongleImei, p2, p3] = inputs;
 
-        let dongle= this.lockedDongles.get(dongleImei);
+        let dongle = this.lockedDongles.get(dongleImei);
 
         if (!dongle) {
 
@@ -224,12 +258,12 @@ export class DongleController {
 
         }
 
-        let unlockResult: DongleController.UnlockResult= await this.apiClient.makeRequest(api.unlock.method, params, 30000);
+        let unlockResult: DongleController.UnlockResult = await this.apiClient.makeRequest(api.unlock.method, params, 30000);
 
-        if( !unlockResult.success ){
+        if (!unlockResult.success) {
 
-            dongle.sim.pinState= unlockResult.pinState;
-            dongle.sim.tryLeft= unlockResult.tryLeft;
+            dongle.sim.pinState = unlockResult.pinState;
+            dongle.sim.tryLeft = unlockResult.tryLeft;
 
         }
 
@@ -242,7 +276,7 @@ export class DongleController {
     ): Promise<api.getMessages.Response> {
 
         return this.apiClient.makeRequest(
-            api.getMessages.method, 
+            api.getMessages.method,
             params
         );
 
@@ -252,8 +286,8 @@ export class DongleController {
         params: { imsi: string; fromDate?: Date; toDate?: Date; flush?: boolean; }
     ): Promise<DongleController.Message[]> {
 
-        let messagesRecord: api.getMessages.Response= await this.apiClient.makeRequest(
-            api.getMessages.method, 
+        let messagesRecord: api.getMessages.Response = await this.apiClient.makeRequest(
+            api.getMessages.method,
             params
         );
 
@@ -266,17 +300,17 @@ export class DongleController {
 
 export namespace DongleController {
 
-    export const apiId= "dongle-extended";
+    export const apiId = "dongle-extended";
 
-    export function isImsiWellFormed(imsi: string){
+    export function isImsiWellFormed(imsi: string) {
         return typeof imsi === "string" && imsi.match(/^[0-9]{15}$/) !== null;
     }
 
-    export function isImeiWellFormed(imei: string){
+    export function isImeiWellFormed(imei: string) {
         return isImsiWellFormed(imei);
     }
 
-    export function isIccidWellFormed(iccid: string){
+    export function isIccidWellFormed(iccid: string) {
         return typeof iccid === "string" && iccid.match(/^[0-9]{6,22}$/) !== null;
     }
 
@@ -285,7 +319,7 @@ export namespace DongleController {
         defaults: typeof _private.defaultConfig['defaults'];
     };
 
-    export type StatusReport= {
+    export type StatusReport = {
         sendDate: Date;
         dischargeDate: Date;
         isDelivered: boolean;
@@ -293,13 +327,13 @@ export namespace DongleController {
         recipient: string;
     };
 
-    export type Message= {
+    export type Message = {
         number: string;
         date: Date;
         text: string;
     };
 
-    export type Contact= {
+    export type Contact = {
         readonly index: number;
         readonly name: {
             readonly asStored: string;
@@ -318,7 +352,7 @@ export namespace DongleController {
             return (
                 o instanceof Object &&
                 typeof o.index === "number" &&
-                o.name instanceof Object && 
+                o.name instanceof Object &&
                 typeof o.name.asStored === "string" &&
                 typeof o.name.full === "string" &&
                 o.number instanceof Object &&
@@ -331,7 +365,10 @@ export namespace DongleController {
     }
 
     export type SimStorage = {
-        number?: string;
+        number?: {
+            readonly asStored: string;
+            localFormat: string;
+        };
         infos: {
             contactNameMaxLength: number;
             numberMaxLength: number;
@@ -347,9 +384,12 @@ export namespace DongleController {
 
             if (!(
                 o instanceof Object && (
-                    typeof o.number === "string" ||
-                    o.number === undefined
-                ) && 
+                    o.number === undefined || (
+                        o.number instanceof Object &&
+                        typeof o.number.asStored === "string" &&
+                        typeof o.number.localFormat === "string"
+                    )
+                ) &&
                 o.infos instanceof Object &&
                 o.contacts instanceof Array
             )) return false;
@@ -364,7 +404,7 @@ export namespace DongleController {
 
             for (let contact of contacts) {
 
-                if (!Contact.sanityCheck(contact)){
+                if (!Contact.sanityCheck(contact)) {
                     return false;
                 }
 
@@ -445,6 +485,9 @@ export namespace DongleController {
 
     export interface LockedDongle {
         imei: string;
+        manufacturer: string;
+        model: string;
+        firmwareVersion: string;
         sim: {
             iccid?: string;
             pinState: LockedPinState;
@@ -463,6 +506,9 @@ export namespace DongleController {
             return (
                 o instanceof Object &&
                 isImeiWellFormed(o.imei) &&
+                typeof o.manufacturer === "string" &&
+                typeof o.model === "string" &&
+                typeof o.firmwareVersion === "string" &&
                 o.sim instanceof Object &&
                 (
                     (
@@ -479,10 +525,14 @@ export namespace DongleController {
 
     export interface ActiveDongle {
         imei: string;
+        manufacturer: string;
+        model: string;
+        firmwareVersion: string;
         isVoiceEnabled?: boolean;
         sim: {
             iccid: string;
             imsi: string;
+            country?: SimCountry;
             serviceProvider: {
                 fromImsi?: string;
                 fromNetwork?: string;
@@ -502,22 +552,25 @@ export namespace DongleController {
             return (
                 o instanceof Object &&
                 isImeiWellFormed(o.imei) &&
+                typeof o.manufacturer === "string" &&
+                typeof o.model === "string" &&
+                typeof o.firmwareVersion === "string" &&
                 (
                     typeof o.isVoiceEnabled === "boolean" ||
                     o.isVoiceEnabled === undefined
                 ) &&
                 o.sim instanceof Object &&
+                isIccidWellFormed(o.sim.iccid) &&
+                isImsiWellFormed(o.sim.imsi) && 
+                SimCountry.sanityCheck(o.sim.country) &&
                 (
-                    isIccidWellFormed(o.sim.iccid) &&
-                    isImsiWellFormed(o.sim.imsi) && (
-                        typeof o.sim.serviceProvider.fromImsi === "string" ||
-                        o.sim.serviceProvider.fromImsi === undefined
-                    ) && (
-                        typeof o.sim.serviceProvider.fromNetwork === "string" ||
-                        o.sim.serviceProvider.fromNetwork === undefined
-                    ) &&
-                    SimStorage.sanityCheck(o.sim.storage)
-                )
+                    typeof o.sim.serviceProvider.fromImsi === "string" ||
+                    o.sim.serviceProvider.fromImsi === undefined
+                ) && (
+                    typeof o.sim.serviceProvider.fromNetwork === "string" ||
+                    o.sim.serviceProvider.fromNetwork === undefined
+                ) &&
+                SimStorage.sanityCheck(o.sim.storage)
             );
 
         }

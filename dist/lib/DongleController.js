@@ -65,6 +65,7 @@ var ts_events_extended_1 = require("ts-events-extended");
 var ts_ami_1 = require("ts-ami");
 var trackable_map_1 = require("trackable-map");
 var md5 = require("md5");
+var utils_1 = require("./utils");
 var _private = require("./private");
 var api = _private.api;
 var DongleController = /** @class */ (function () {
@@ -135,7 +136,28 @@ var DongleController = /** @class */ (function () {
                         this.moduleConfiguration = moduleConfiguration;
                         this.apiClient.evtEvent.attach(function (_a) {
                             var name = _a.name, event = _a.event;
-                            if (name === api.Events.updateMap.name) {
+                            var timer = undefined;
+                            var serviceUpSince = undefined;
+                            if (name === api.Events.periodicalSignal.name) {
+                                var upSince = event.upSince;
+                                if (timer) {
+                                    clearTimeout(timer);
+                                    timer = undefined;
+                                }
+                                if (!serviceUpSince) {
+                                    serviceUpSince = upSince;
+                                }
+                                if (serviceUpSince !== upSince) {
+                                    _this.dongles.clear();
+                                    serviceUpSince = upSince;
+                                }
+                                timer = setTimeout(function () {
+                                    _this.dongles.clear();
+                                    timer = undefined;
+                                    serviceUpSince = undefined;
+                                }, api.Events.periodicalSignal.interval + 15000);
+                            }
+                            else if (name === api.Events.updateMap.name) {
                                 var dongleImei = event.dongleImei, dongle = event.dongle;
                                 if (!dongle) {
                                     _this.dongles.delete(dongleImei);
@@ -319,8 +341,9 @@ exports.DongleController = DongleController;
     var SimStorage;
     (function (SimStorage) {
         function sanityCheck(o) {
-            if (!(o instanceof Object && (typeof o.number === "string" ||
-                o.number === undefined) &&
+            if (!(o instanceof Object && (o.number === undefined || (o.number instanceof Object &&
+                typeof o.number.asStored === "string" &&
+                typeof o.number.localFormat === "string")) &&
                 o.infos instanceof Object &&
                 o.contacts instanceof Array))
                 return false;
@@ -394,6 +417,9 @@ exports.DongleController = DongleController;
         function sanityCheck(o) {
             return (o instanceof Object &&
                 isImeiWellFormed(o.imei) &&
+                typeof o.manufacturer === "string" &&
+                typeof o.model === "string" &&
+                typeof o.firmwareVersion === "string" &&
                 o.sim instanceof Object &&
                 ((o.sim.iccid === undefined ||
                     isIccidWellFormed(o.sim.iccid)) &&
@@ -411,14 +437,19 @@ exports.DongleController = DongleController;
         function sanityCheck(o) {
             return (o instanceof Object &&
                 isImeiWellFormed(o.imei) &&
+                typeof o.manufacturer === "string" &&
+                typeof o.model === "string" &&
+                typeof o.firmwareVersion === "string" &&
                 (typeof o.isVoiceEnabled === "boolean" ||
                     o.isVoiceEnabled === undefined) &&
                 o.sim instanceof Object &&
-                (isIccidWellFormed(o.sim.iccid) &&
-                    isImsiWellFormed(o.sim.imsi) && (typeof o.sim.serviceProvider.fromImsi === "string" ||
+                isIccidWellFormed(o.sim.iccid) &&
+                isImsiWellFormed(o.sim.imsi) &&
+                utils_1.SimCountry.sanityCheck(o.sim.country) &&
+                (typeof o.sim.serviceProvider.fromImsi === "string" ||
                     o.sim.serviceProvider.fromImsi === undefined) && (typeof o.sim.serviceProvider.fromNetwork === "string" ||
-                    o.sim.serviceProvider.fromNetwork === undefined) &&
-                    SimStorage.sanityCheck(o.sim.storage)));
+                o.sim.serviceProvider.fromNetwork === undefined) &&
+                SimStorage.sanityCheck(o.sim.storage));
         }
         ActiveDongle.sanityCheck = sanityCheck;
     })(ActiveDongle = DongleController.ActiveDongle || (DongleController.ActiveDongle = {}));

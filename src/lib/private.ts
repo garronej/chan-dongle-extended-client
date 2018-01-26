@@ -70,6 +70,18 @@ export namespace api {
 
         }
 
+        export namespace periodicalSignal {
+
+            export const name= "periodicalSignal";
+
+            export type Data= {
+                upSince: number;
+            };
+
+            export const interval= 15000;
+
+        }
+
     }
 
 

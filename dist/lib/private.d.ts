@@ -53,6 +53,13 @@ export declare namespace api {
                 statusReport: Dc.StatusReport;
             };
         }
+        namespace periodicalSignal {
+            const name = "periodicalSignal";
+            type Data = {
+                upSince: number;
+            };
+            const interval = 15000;
+        }
     }
     namespace initialize {
         const method = "initialize";

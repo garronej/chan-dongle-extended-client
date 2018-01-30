@@ -8,7 +8,7 @@ export declare class DongleController {
     private static instance;
     static readonly hasInstance: boolean;
     static getInstance(asteriskManagerCredential?: Ami.Credential): DongleController;
-    disconnect(): Promise<void>;
+    disconnect(error?: Error | undefined): Promise<void>;
     readonly dongles: TrackableMap<string, DongleController.Dongle>;
     moduleConfiguration: DongleController.ModuleConfiguration;
     readonly evtMessage: SyncEvent<{
@@ -19,8 +19,9 @@ export declare class DongleController {
         dongle: DongleController.ActiveDongle;
         statusReport: DongleController.StatusReport;
     }>;
-    readonly ami: Ami;
+    readonly evtDisconnect: SyncEvent<Error | undefined>;
     readonly initialization: Promise<void>;
+    readonly ami: Ami;
     private readonly apiClient;
     constructor(asteriskManagerCredential?: Ami.Credential);
     private initialize();

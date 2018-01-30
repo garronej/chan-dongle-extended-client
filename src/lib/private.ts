@@ -75,10 +75,10 @@ export namespace api {
             export const name= "periodicalSignal";
 
             export type Data= {
-                upSince: number;
+                serviceUpSince: number;
             };
 
-            export const interval= 15000;
+            export const interval= 6000;
 
         }
 
@@ -92,6 +92,7 @@ export namespace api {
         export type Response = {
             moduleConfiguration: Dc.ModuleConfiguration;
             dongles: Dc.Dongle[];
+            serviceUpSince: number;
         };
 
     }

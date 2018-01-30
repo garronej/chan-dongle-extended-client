@@ -73,6 +73,7 @@ var DongleController = /** @class */ (function () {
         this.dongles = new trackable_map_1.TrackableMap();
         this.evtMessage = new ts_events_extended_1.SyncEvent();
         this.evtStatusReport = new ts_events_extended_1.SyncEvent();
+        this.evtDisconnect = new ts_events_extended_1.SyncEvent();
         if (asteriskManagerCredential) {
             this.ami = new ts_ami_1.Ami(asteriskManagerCredential);
         }
@@ -96,16 +97,18 @@ var DongleController = /** @class */ (function () {
         this.instance = new this(asteriskManagerCredential);
         return this.instance;
     };
-    DongleController.prototype.disconnect = function () {
+    DongleController.prototype.disconnect = function (error) {
         if (DongleController.instance === this) {
             DongleController.instance = undefined;
         }
-        return this.ami.disconnect();
+        var prDisconnect = this.ami.disconnect();
+        this.evtDisconnect.post(error);
+        return prDisconnect;
     };
     DongleController.prototype.initialize = function () {
         return __awaiter(this, void 0, void 0, function () {
             var _this = this;
-            var initializationResponse, error_1, dongles, moduleConfiguration, dongles_1, dongles_1_1, dongle, e_1, _a;
+            var initializationResponse, error_1, dongles, moduleConfiguration, serviceUpSince, dongles_1, dongles_1_1, dongle, evtPeriodicalSignal, e_1, _a;
             return __generator(this, function (_b) {
                 switch (_b.label) {
                     case 0:
@@ -116,10 +119,11 @@ var DongleController = /** @class */ (function () {
                         return [3 /*break*/, 3];
                     case 2:
                         error_1 = _b.sent();
-                        this.disconnect();
+                        error_1.message = "DongleController initialization error: " + error_1.message;
+                        this.disconnect(error_1);
                         throw error_1;
                     case 3:
-                        dongles = initializationResponse.dongles, moduleConfiguration = initializationResponse.moduleConfiguration;
+                        dongles = initializationResponse.dongles, moduleConfiguration = initializationResponse.moduleConfiguration, serviceUpSince = initializationResponse.serviceUpSince;
                         try {
                             for (dongles_1 = __values(dongles), dongles_1_1 = dongles_1.next(); !dongles_1_1.done; dongles_1_1 = dongles_1.next()) {
                                 dongle = dongles_1_1.value;
@@ -134,28 +138,39 @@ var DongleController = /** @class */ (function () {
                             finally { if (e_1) throw e_1.error; }
                         }
                         this.moduleConfiguration = moduleConfiguration;
+                        evtPeriodicalSignal = new ts_events_extended_1.SyncEvent();
+                        (function () { return __awaiter(_this, void 0, void 0, function () {
+                            var newUpSince, _a;
+                            return __generator(this, function (_b) {
+                                switch (_b.label) {
+                                    case 0:
+                                        if (!true) return [3 /*break*/, 5];
+                                        newUpSince = undefined;
+                                        _b.label = 1;
+                                    case 1:
+                                        _b.trys.push([1, 3, , 4]);
+                                        return [4 /*yield*/, evtPeriodicalSignal.waitFor(api.Events.periodicalSignal.interval + 4000)];
+                                    case 2:
+                                        newUpSince = _b.sent();
+                                        return [3 /*break*/, 4];
+                                    case 3:
+                                        _a = _b.sent();
+                                        return [3 /*break*/, 4];
+                                    case 4:
+                                        if (newUpSince !== serviceUpSince) {
+                                            this.disconnect(new Error("DongleExtended service is no longer active"));
+                                            return [2 /*return*/];
+                                        }
+                                        return [3 /*break*/, 0];
+                                    case 5: return [2 /*return*/];
+                                }
+                            });
+                        }); })();
                         this.apiClient.evtEvent.attach(function (_a) {
                             var name = _a.name, event = _a.event;
-                            var timer = undefined;
-                            var serviceUpSince = undefined;
                             if (name === api.Events.periodicalSignal.name) {
-                                var upSince = event.upSince;
-                                if (timer) {
-                                    clearTimeout(timer);
-                                    timer = undefined;
-                                }
-                                if (!serviceUpSince) {
-                                    serviceUpSince = upSince;
-                                }
-                                if (serviceUpSince !== upSince) {
-                                    _this.dongles.clear();
-                                    serviceUpSince = upSince;
-                                }
-                                timer = setTimeout(function () {
-                                    _this.dongles.clear();
-                                    timer = undefined;
-                                    serviceUpSince = undefined;
-                                }, api.Events.periodicalSignal.interval + 15000);
+                                var serviceUpSince_1 = event.serviceUpSince;
+                                evtPeriodicalSignal.post(serviceUpSince_1);
                             }
                             else if (name === api.Events.updateMap.name) {
                                 var dongleImei = event.dongleImei, dongle = event.dongle;

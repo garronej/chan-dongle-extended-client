@@ -56,9 +56,9 @@ export declare namespace api {
         namespace periodicalSignal {
             const name = "periodicalSignal";
             type Data = {
-                upSince: number;
+                serviceUpSince: number;
             };
-            const interval = 15000;
+            const interval = 6000;
         }
     }
     namespace initialize {
@@ -66,6 +66,7 @@ export declare namespace api {
         type Response = {
             moduleConfiguration: Dc.ModuleConfiguration;
             dongles: Dc.Dongle[];
+            serviceUpSince: number;
         };
     }
     namespace sendMessage {

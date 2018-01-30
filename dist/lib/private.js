@@ -50,7 +50,7 @@ var api;
         var periodicalSignal;
         (function (periodicalSignal) {
             periodicalSignal.name = "periodicalSignal";
-            periodicalSignal.interval = 15000;
+            periodicalSignal.interval = 6000;
         })(periodicalSignal = Events.periodicalSignal || (Events.periodicalSignal = {}));
     })(Events = api.Events || (api.Events = {}));
     var initialize;

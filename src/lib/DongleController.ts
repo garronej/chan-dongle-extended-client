@@ -29,15 +29,20 @@ export class DongleController {
 
     }
 
-    public disconnect() {
+    public disconnect(error?: Error | undefined ) {
 
         if (DongleController.instance === this) {
             DongleController.instance = undefined;
         }
 
-        return this.ami.disconnect();
+        let prDisconnect= this.ami.disconnect();
+
+        this.evtDisconnect.post(error);
+
+        return prDisconnect;
 
     }
+
 
     public readonly dongles = new TrackableMap<string, DongleController.Dongle>();
     public moduleConfiguration: DongleController.ModuleConfiguration;
@@ -50,9 +55,11 @@ export class DongleController {
         statusReport: DongleController.StatusReport;
     }>();
 
-    public readonly ami: Ami;
+    public readonly evtDisconnect= new SyncEvent<Error | undefined>();
 
     public readonly initialization: Promise<void>;
+
+    public readonly ami: Ami;
 
     private readonly apiClient: amiApi.Client;
 
@@ -81,13 +88,15 @@ export class DongleController {
 
         } catch (error) {
 
-            this.disconnect();
+            error.message= `DongleController initialization error: ${error.message}`;
+
+            this.disconnect(error);
 
             throw error;
 
         }
 
-        let { dongles, moduleConfiguration } = initializationResponse;
+        let { dongles, moduleConfiguration, serviceUpSince } = initializationResponse;
 
         for (let dongle of dongles) {
             this.dongles.set(dongle.imei, dongle);
@@ -95,39 +104,44 @@ export class DongleController {
 
         this.moduleConfiguration = moduleConfiguration;
 
+        let evtPeriodicalSignal = new SyncEvent<number>();
+
+        (async () => {
+
+            while (true) {
+
+                let newUpSince: number | undefined = undefined;
+
+                try {
+
+                    newUpSince = await evtPeriodicalSignal.waitFor(
+                        api.Events.periodicalSignal.interval + 4000
+                    );
+
+                } catch{ }
+
+                if (newUpSince !== serviceUpSince) {
+
+                    this.disconnect(
+                        new Error("DongleExtended service is no longer active")
+                    );
+
+                    return;
+
+                }
+
+            }
+
+        })();
+
         this.apiClient.evtEvent.attach(
             ({ name, event }) => {
 
-                let timer: NodeJS.Timer | undefined= undefined;
-                let serviceUpSince: number | undefined= undefined;
-
                 if (name === api.Events.periodicalSignal.name) {
 
-                    let { upSince }: api.Events.periodicalSignal.Data= event;
+                    let { serviceUpSince }: api.Events.periodicalSignal.Data = event;
 
-                    if( timer ){
-                        clearTimeout(timer);
-                        timer= undefined;
-                    }
-
-                    if( !serviceUpSince ){
-                         serviceUpSince= upSince;
-                    }
-
-                    if( serviceUpSince !== upSince ){
-
-                        this.dongles.clear();
-                        serviceUpSince= upSince;
-
-                    }
-
-                    timer= setTimeout(()=> {
-
-                        this.dongles.clear();
-                        timer= undefined;
-                        serviceUpSince= undefined;
-
-                    }, api.Events.periodicalSignal.interval + 15000);
+                    evtPeriodicalSignal.post(serviceUpSince);
 
                 } else if (name === api.Events.updateMap.name) {
 
@@ -561,7 +575,7 @@ export namespace DongleController {
                 ) &&
                 o.sim instanceof Object &&
                 isIccidWellFormed(o.sim.iccid) &&
-                isImsiWellFormed(o.sim.imsi) && 
+                isImsiWellFormed(o.sim.imsi) &&
                 SimCountry.sanityCheck(o.sim.country) &&
                 (
                     typeof o.sim.serviceProvider.fromImsi === "string" ||

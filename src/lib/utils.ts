@@ -56,7 +56,9 @@ export namespace SimCountry {
 
             let { country_iso, country_name, country_code } = mccmnc[key];
 
-            setSanityCheck.add(`${country_iso}${country_name}${country_code || "US"}`);
+            country_iso= (country_iso || "US").toLowerCase();
+
+            setSanityCheck.add(`${country_iso}${country_name}${country_code}`);
 
         }
 
@@ -77,7 +79,7 @@ export namespace SimCountry {
 
         return imsiInfo ? ({
             "name": imsiInfo.country_name,
-            "iso": imsiInfo.country_iso || "US",
+            "iso": (imsiInfo.country_iso || "US").toLowerCase(),
             "code": parseInt(imsiInfo.country_code)
         }) : undefined;
 

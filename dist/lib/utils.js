@@ -27,7 +27,8 @@ var SimCountry;
     (function () {
         for (var key in mccmnc) {
             var _a = mccmnc[key], country_iso = _a.country_iso, country_name = _a.country_name, country_code = _a.country_code;
-            setSanityCheck.add("" + country_iso + country_name + (country_code || "US"));
+            country_iso = (country_iso || "US").toLowerCase();
+            setSanityCheck.add("" + country_iso + country_name + country_code);
         }
     })();
     function sanityCheck(country) {
@@ -39,7 +40,7 @@ var SimCountry;
         var imsiInfo = getImsiInfos(imsi);
         return imsiInfo ? ({
             "name": imsiInfo.country_name,
-            "iso": imsiInfo.country_iso || "US",
+            "iso": (imsiInfo.country_iso || "US").toLowerCase(),
             "code": parseInt(imsiInfo.country_code)
         }) : undefined;
     }

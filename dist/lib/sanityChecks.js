@@ -11,24 +11,35 @@ var __values = (this && this.__values) || function (o) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var misc = require("./misc");
-function imsi(imsi) {
-    return typeof imsi === "string" && imsi.match(/^[0-9]{15}$/) !== null;
+function string(str, regExp) {
+    return typeof str === "string" && !!str.match(regExp);
+}
+exports.string = string;
+function imsi(str) {
+    return string(str, /^[0-9]{15}$/);
 }
 exports.imsi = imsi;
 function imei(imei) {
     return imsi(imei);
 }
 exports.imei = imei;
-function iccid(iccid) {
-    return typeof iccid === "string" && iccid.match(/^[0-9]{6,22}$/) !== null;
+function iccid(str) {
+    return string(str, /^[0-9]{6,22}$/);
 }
 exports.iccid = iccid;
+function md5(str) {
+    return string(str, /^[0-9a-f]{32}$/);
+}
+exports.md5 = md5;
 function simStorage(o) {
-    if (!(o instanceof Object && (o.number === undefined || (o.number instanceof Object &&
-        typeof o.number.asStored === "string" &&
-        typeof o.number.localFormat === "string")) &&
+    if (!(o instanceof Object &&
+        (o.number === undefined ||
+            (o.number instanceof Object &&
+                typeof o.number.asStored === "string" &&
+                typeof o.number.localFormat === "string")) &&
         o.infos instanceof Object &&
-        o.contacts instanceof Array))
+        o.contacts instanceof Array &&
+        md5(o.digest)))
         return false;
     var infos = o.infos, contacts = o.contacts;
     if (!(typeof infos.contactNameMaxLength === "number" &&
@@ -86,6 +97,32 @@ function simContact(o) {
         typeof o.number.localFormat === "string");
 }
 exports.simContact = simContact;
+function simCountry(o, imsi) {
+    var expected;
+    try {
+        expected = misc.getSimCountry(imsi);
+    }
+    catch (_a) {
+        return false;
+    }
+    return (!!expected &&
+        o instanceof Object &&
+        o.code === expected.code &&
+        o.iso === expected.iso &&
+        o.name === expected.name);
+}
+exports.simCountry = simCountry;
+function sim(o) {
+    return (o instanceof Object &&
+        iccid(o.iccid) &&
+        imsi(o.imsi) &&
+        (o.country === undefined ||
+            simCountry(o.country, o.imsi)) && (o.serviceProvider.fromImsi === undefined ||
+        typeof o.serviceProvider.fromImsi === "string") && (o.serviceProvider.fromNetwork === undefined ||
+        typeof o.serviceProvider.fromNetwork === "string") &&
+        simStorage(o.storage));
+}
+exports.sim = sim;
 function dongleUsable(o) {
     return (o instanceof Object &&
         imei(o.imei) &&
@@ -94,14 +131,7 @@ function dongleUsable(o) {
         typeof o.firmwareVersion === "string" &&
         (typeof o.isVoiceEnabled === "boolean" ||
             o.isVoiceEnabled === undefined) &&
-        o.sim instanceof Object &&
-        iccid(o.sim.iccid) &&
-        imsi(o.sim.imsi) &&
-        misc.SimCountry.sanityCheck(o.sim.country) &&
-        (typeof o.sim.serviceProvider.fromImsi === "string" ||
-            o.sim.serviceProvider.fromImsi === undefined) && (typeof o.sim.serviceProvider.fromNetwork === "string" ||
-        o.sim.serviceProvider.fromNetwork === undefined) &&
-        simStorage(o.sim.storage));
+        sim(o.sim));
 }
 exports.dongleUsable = dongleUsable;
 function dongle(o) {

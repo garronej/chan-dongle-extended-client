@@ -1,97 +1,83 @@
 import PhoneNumber from "awesome-phonenumber";
-import { grok as imsiGrok } from "imsi-grok"
-const mccmnc = require("mccmnc.json");
 import * as types from "./types";
 import * as md5 from "md5";
+import * as sanityChecks from "./sanityChecks";
+import * as fs from "fs";
+import * as path from "path";
 
-export type ImsiInfos = {
-    mcc: string;
-    mnc: string;
-    country_iso: string | null;
-    country_name: string;
-    country_code: string;
-    network_name: string;
-    msin: string;
-};
+export const amiUser = "dongle_ext_user";
 
-export function getImsiInfos(imsi: string): ImsiInfos | undefined {
+export function getSimCountry(
+    imsi: string
+): types.Sim.Country | undefined {
 
-    if (getImsiInfo.cache.has(imsi)) {
-        return getImsiInfo.cache.get(imsi);
+    if (getSimCountry.cache.has(imsi)) {
+        return getSimCountry.cache.get(imsi);
     }
 
-    let imsiInfo: ImsiInfos | undefined = imsiGrok(imsi);
-
-    if (imsiInfo) {
-
-        if (imsiInfo.network_name === "Lliad/FREE Mobile") {
-            imsiInfo.network_name = "Free Mobile";
-        }
-
+    if (!sanityChecks.imsi(imsi)) {
+        throw new Error("imsi malformed");
     }
 
-    getImsiInfo.cache.set(imsi, imsiInfo);
+    let mccmnc = getSimCountry.getMccmnc();
 
-    return getImsiInfos(imsi);
+    let imsiInfos = mccmnc[imsi.substr(0, 6)] || mccmnc[imsi.substr(0, 5)];
+
+    getSimCountry.cache.set(imsi, 
+        imsiInfos ? ({
+            "name": imsiInfos.country_name,
+            "iso": (imsiInfos.country_iso || "US").toLowerCase(),
+            "code": parseInt(imsiInfos.country_code)
+        }) : undefined
+    );
+
+    return getSimCountry(imsi);
 
 }
 
-export namespace getImsiInfo {
+export namespace getSimCountry {
 
-    export const cache = new Map<string, ImsiInfos | undefined>();
+    export type ImsiInfos = {
+        mcc: string;
+        mnc: string;
+        country_iso: string | null;
+        country_name: string;
+        country_code: string;
+        network_name: string;
+    };
 
-}
+    let mccmnc: Record<string, ImsiInfos> | undefined = undefined;
 
+    export function getMccmnc(): Record<string, ImsiInfos> {
 
-export namespace SimCountry {
-
-    const setSanityCheck = new Set<string>();
-
-    (() => {
-
-        for (let key in mccmnc) {
-
-            let { country_iso, country_name, country_code } = mccmnc[key];
-
-            country_iso = (country_iso || "US").toLowerCase();
-
-            setSanityCheck.add(`${country_iso}${country_name}${country_code}`);
-
+        if (mccmnc) {
+            return mccmnc;
         }
 
-    })();
-
-    export function sanityCheck(country: types.Sim.Country | undefined): boolean {
-        return (
-            country instanceof Object &&
-            setSanityCheck.has(`${country.iso}${country.name}${country.code}`)
+        mccmnc = JSON.parse(
+            fs.readFileSync(
+                path.join(__dirname, "..", "..", "res", "mccmnc.json"),
+                "utf8"
+            )
         );
-    }
 
-    export function getFromImsi(
-        imsi: string
-    ): types.Sim.Country | undefined {
-
-        let imsiInfo = getImsiInfos(imsi);
-
-        return imsiInfo ? ({
-            "name": imsiInfo.country_name,
-            "iso": (imsiInfo.country_iso || "US").toLowerCase(),
-            "code": parseInt(imsiInfo.country_code)
-        }) : undefined;
+        return getMccmnc();
 
     }
+
+    export const cache = new Map<string, types.Sim.Country | undefined>();
 
 }
 
+/** Convert a number to national dry or return itself */
 export function toNationalNumber(
     number: string,
     imsi: string
 ): string {
 
-    let imsiInfo = getImsiInfos(imsi);
+    let simCountry= getSimCountry(imsi);
 
-    if (!imsiInfo || !imsiInfo.country_iso) {
+    if( !simCountry ){
         return number;
     }
 
@@ -99,9 +85,9 @@ export function toNationalNumber(
         return number;
     }
 
-    let pn = new PhoneNumber(number, imsiInfo.country_iso);
+    let pn = new PhoneNumber(number, simCountry.iso.toUpperCase());
 
-    if (!pn.isValid() || pn.getRegionCode() !== imsiInfo.country_iso) {
+    if (!pn.isValid() || (pn.getRegionCode() || "" ).toLowerCase() !== simCountry.iso) {
         return number;
     }
 
@@ -126,4 +112,3 @@ export function computeSimStorageDigest(
 
 }
 
-export const amiUser = "dongle_ext_user";

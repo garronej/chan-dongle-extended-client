@@ -1,30 +1,42 @@
 import * as types from "./types";
 import * as misc from "./misc";
 
-export function imsi(imsi: string): boolean {
-    return typeof imsi === "string" && imsi.match(/^[0-9]{15}$/) !== null;
+export function string(str: string, regExp: RegExp): boolean {
+    return typeof str === "string" && !!str.match(regExp);
+}
+
+export function imsi(str: string): boolean {
+    return string(str, /^[0-9]{15}$/);
 }
 
 export function imei(imei: string): boolean {
     return imsi(imei);
 }
 
-export function iccid(iccid: string): boolean {
-    return typeof iccid === "string" && iccid.match(/^[0-9]{6,22}$/) !== null;
+export function iccid(str: string): boolean {
+    return string(str, /^[0-9]{6,22}$/);
+}
+
+export function md5(str: string): boolean {
+    return string(str,/^[0-9a-f]{32}$/);
+
 }
 
 export function simStorage(o: types.Sim.Storage): boolean {
 
     if (!(
-        o instanceof Object && (
-            o.number === undefined || (
+        o instanceof Object &&
+        (
+            o.number === undefined ||
+            (
                 o.number instanceof Object &&
                 typeof o.number.asStored === "string" &&
                 typeof o.number.localFormat === "string"
             )
         ) &&
         o.infos instanceof Object &&
-        o.contacts instanceof Array
+        o.contacts instanceof Array &&
+        md5(o.digest)
     )) return false;
 
     let { infos, contacts } = o;
@@ -96,6 +108,54 @@ export function simContact(o: types.Sim.Contact): boolean {
 
 }
 
+export function simCountry(
+    o: types.Sim.Country,
+    imsi: string
+): boolean {
+
+    let expected: types.Sim.Country | undefined;
+
+    try {
+
+        expected = misc.getSimCountry(imsi);
+
+    } catch{
+
+        return false;
+
+    }
+
+    return (
+        !!expected &&
+        o instanceof Object &&
+        o.code === expected.code &&
+        o.iso === expected.iso &&
+        o.name === expected.name
+    );
+
+}
+
+export function sim(o: types.Sim): boolean {
+
+    return (
+        o instanceof Object &&
+        iccid(o.iccid) &&
+        imsi(o.imsi) &&
+        (
+            o.country === undefined ||
+            simCountry(o.country, o.imsi)
+        ) && (
+            o.serviceProvider.fromImsi === undefined ||
+            typeof o.serviceProvider.fromImsi === "string"
+        ) && (
+            o.serviceProvider.fromNetwork === undefined ||
+            typeof o.serviceProvider.fromNetwork === "string"
+        ) &&
+        simStorage(o.storage)
+    );
+
+}
+
 export function dongleUsable(o: types.Dongle.Usable): boolean {
 
     return (
@@ -108,18 +168,7 @@ export function dongleUsable(o: types.Dongle.Usable): boolean {
             typeof o.isVoiceEnabled === "boolean" ||
             o.isVoiceEnabled === undefined
         ) &&
-        o.sim instanceof Object &&
-        iccid(o.sim.iccid) &&
-        imsi(o.sim.imsi) &&
-        misc.SimCountry.sanityCheck(o.sim.country) &&
-        (
-            typeof o.sim.serviceProvider.fromImsi === "string" ||
-            o.sim.serviceProvider.fromImsi === undefined
-        ) && (
-            typeof o.sim.serviceProvider.fromNetwork === "string" ||
-            o.sim.serviceProvider.fromNetwork === undefined
-        ) &&
-        simStorage(o.sim.storage)
+        sim(o.sim)
     );
 
 }

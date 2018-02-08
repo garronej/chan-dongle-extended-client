@@ -107,7 +107,7 @@ import * as sanityChecks from "../lib/sanityChecks";
             "iccid": "8933150116110005978",
             "country": {
                 "name": "France",
-                "iso": "FR",
+                "iso": "fr",
                 "code": 33
             },
             "imsi": "208150113995832",

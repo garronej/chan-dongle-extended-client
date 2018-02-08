@@ -1,62 +1,51 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var awesome_phonenumber_1 = require("awesome-phonenumber");
-var imsi_grok_1 = require("imsi-grok");
-var mccmnc = require("mccmnc.json");
 var md5 = require("md5");
-function getImsiInfos(imsi) {
-    if (getImsiInfo.cache.has(imsi)) {
-        return getImsiInfo.cache.get(imsi);
+var sanityChecks = require("./sanityChecks");
+var fs = require("fs");
+var path = require("path");
+exports.amiUser = "dongle_ext_user";
+function getSimCountry(imsi) {
+    if (getSimCountry.cache.has(imsi)) {
+        return getSimCountry.cache.get(imsi);
     }
-    var imsiInfo = imsi_grok_1.grok(imsi);
-    if (imsiInfo) {
-        if (imsiInfo.network_name === "Lliad/FREE Mobile") {
-            imsiInfo.network_name = "Free Mobile";
-        }
+    if (!sanityChecks.imsi(imsi)) {
+        throw new Error("imsi malformed");
     }
-    getImsiInfo.cache.set(imsi, imsiInfo);
-    return getImsiInfos(imsi);
+    var mccmnc = getSimCountry.getMccmnc();
+    var imsiInfos = mccmnc[imsi.substr(0, 6)] || mccmnc[imsi.substr(0, 5)];
+    getSimCountry.cache.set(imsi, imsiInfos ? ({
+        "name": imsiInfos.country_name,
+        "iso": (imsiInfos.country_iso || "US").toLowerCase(),
+        "code": parseInt(imsiInfos.country_code)
+    }) : undefined);
+    return getSimCountry(imsi);
 }
-exports.getImsiInfos = getImsiInfos;
-var getImsiInfo;
-(function (getImsiInfo) {
-    getImsiInfo.cache = new Map();
-})(getImsiInfo = exports.getImsiInfo || (exports.getImsiInfo = {}));
-var SimCountry;
-(function (SimCountry) {
-    var setSanityCheck = new Set();
-    (function () {
-        for (var key in mccmnc) {
-            var _a = mccmnc[key], country_iso = _a.country_iso, country_name = _a.country_name, country_code = _a.country_code;
-            country_iso = (country_iso || "US").toLowerCase();
-            setSanityCheck.add("" + country_iso + country_name + country_code);
+exports.getSimCountry = getSimCountry;
+(function (getSimCountry) {
+    var mccmnc = undefined;
+    function getMccmnc() {
+        if (mccmnc) {
+            return mccmnc;
         }
-    })();
-    function sanityCheck(country) {
-        return (country instanceof Object &&
-            setSanityCheck.has("" + country.iso + country.name + country.code));
+        mccmnc = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "..", "res", "mccmnc.json"), "utf8"));
+        return getMccmnc();
     }
-    SimCountry.sanityCheck = sanityCheck;
-    function getFromImsi(imsi) {
-        var imsiInfo = getImsiInfos(imsi);
-        return imsiInfo ? ({
-            "name": imsiInfo.country_name,
-            "iso": (imsiInfo.country_iso || "US").toLowerCase(),
-            "code": parseInt(imsiInfo.country_code)
-        }) : undefined;
-    }
-    SimCountry.getFromImsi = getFromImsi;
-})(SimCountry = exports.SimCountry || (exports.SimCountry = {}));
+    getSimCountry.getMccmnc = getMccmnc;
+    getSimCountry.cache = new Map();
+})(getSimCountry = exports.getSimCountry || (exports.getSimCountry = {}));
+/** Convert a number to national dry or return itself */
 function toNationalNumber(number, imsi) {
-    var imsiInfo = getImsiInfos(imsi);
-    if (!imsiInfo || !imsiInfo.country_iso) {
+    var simCountry = getSimCountry(imsi);
+    if (!simCountry) {
         return number;
     }
     if (number.match(/[^\+0-9]/)) {
         return number;
     }
-    var pn = new awesome_phonenumber_1.default(number, imsiInfo.country_iso);
-    if (!pn.isValid() || pn.getRegionCode() !== imsiInfo.country_iso) {
+    var pn = new awesome_phonenumber_1.default(number, simCountry.iso.toUpperCase());
+    if (!pn.isValid() || (pn.getRegionCode() || "").toLowerCase() !== simCountry.iso) {
         return number;
     }
     return pn.getNumber("national").replace(/[^0-9]/g, "");
@@ -71,4 +60,3 @@ function computeSimStorageDigest(number, storageLeft, contacts) {
     return md5(strArr.join(""));
 }
 exports.computeSimStorageDigest = computeSimStorageDigest;
-exports.amiUser = "dongle_ext_user";

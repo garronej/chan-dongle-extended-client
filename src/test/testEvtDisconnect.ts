@@ -1,7 +1,6 @@
 require("rejection-tracker").main(__dirname, "..", "..");
 
 import { DongleController as Dc } from "../lib";
-import { exec } from "child_process";
 
 console.log("START TEST");
 

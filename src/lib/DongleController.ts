@@ -1,11 +1,9 @@
-import { SyncEvent } from "ts-events-extended";
 import { Ami, amiApi } from "ts-ami";
 import { TrackableMap } from "trackable-map";
-import * as md5 from "md5";
-import { SimCountry } from "./utils";
-
-import * as _private from "./private";
-import api= _private.api;
+import * as types from "./types";
+import { SyncEvent } from "ts-events-extended";
+import * as misc from "./misc";
+import * as api from "./apiDeclaration";
 
 export class DongleController {
 
@@ -43,16 +41,15 @@ export class DongleController {
 
     }
 
-
-    public readonly dongles = new TrackableMap<string, DongleController.Dongle>();
-    public moduleConfiguration: DongleController.ModuleConfiguration;
+    public readonly dongles = new TrackableMap<string, types.Dongle>();
+    public moduleConfiguration!: types.ModuleConfiguration;
     public readonly evtMessage = new SyncEvent<{
-        dongle: DongleController.ActiveDongle;
-        message: DongleController.Message
+        dongle: types.Dongle.Usable;
+        message: types.Message
     }>();
     public readonly evtStatusReport = new SyncEvent<{
-        dongle: DongleController.ActiveDongle;
-        statusReport: DongleController.StatusReport;
+        dongle: types.Dongle.Usable;
+        statusReport: types.StatusReport;
     }>();
 
     public readonly evtDisconnect= new SyncEvent<Error | undefined>();
@@ -68,10 +65,10 @@ export class DongleController {
         if (asteriskManagerCredential) {
             this.ami = new Ami(asteriskManagerCredential);
         } else {
-            this.ami = new Ami(_private.amiUser);
+            this.ami = new Ami(misc.amiUser);
         }
 
-        this.apiClient= this.ami.createApiClient(DongleController.apiId);
+        this.apiClient= this.ami.createApiClient(api.id);
 
         this.initialization = this.initialize();
 
@@ -123,7 +120,7 @@ export class DongleController {
                 if (newUpSince !== serviceUpSince) {
 
                     this.disconnect(
-                        new Error("DongleExtended service is no longer active")
+                        new Error("DongleExtended service is no longer usable")
                     );
 
                     return;
@@ -158,7 +155,7 @@ export class DongleController {
                     let { dongleImei, message }: api.Events.message.Data = event;
 
                     this.evtMessage.post({
-                        "dongle": this.activeDongles.get(dongleImei)!,
+                        "dongle": this.usableDongles.get(dongleImei)!,
                         message
                     });
 
@@ -167,7 +164,7 @@ export class DongleController {
                     let { dongleImei, statusReport }: api.Events.statusReport.Data = event;
 
                     this.evtStatusReport.post({
-                        "dongle": this.activeDongles.get(dongleImei)!,
+                        "dongle": this.usableDongles.get(dongleImei)!,
                         statusReport
                     });
 
@@ -183,11 +180,11 @@ export class DongleController {
 
     public get lockedDongles() {
 
-        let out = new Map<string, DongleController.LockedDongle>();
+        let out = new Map<string, types.Dongle.Locked>();
 
         for (let [imei, dongle] of this.dongles) {
 
-            if (!DongleController.LockedDongle.match(dongle)) continue;
+            if (!types.Dongle.Locked.match(dongle)) continue;
 
             out.set(imei, dongle);
 
@@ -197,13 +194,13 @@ export class DongleController {
 
     }
 
-    public get activeDongles() {
+    public get usableDongles() {
 
-        let out = new Map<string, DongleController.ActiveDongle>();
+        let out = new Map<string, types.Dongle.Usable>();
 
         for (let [imei, dongle] of this.dongles) {
 
-            if (!DongleController.ActiveDongle.match(dongle)) continue;
+            if (!types.Dongle.Usable.match(dongle)) continue;
 
             out.set(imei, dongle);
 
@@ -217,9 +214,9 @@ export class DongleController {
         viaDongleImei: string,
         toNumber: string,
         text: string
-    ): Promise<DongleController.SendMessageResult> {
+    ): Promise<types.SendMessageResult> {
 
-        if (!this.activeDongles.has(viaDongleImei)) {
+        if (!this.usableDongles.has(viaDongleImei)) {
 
             throw new Error("This dongle is not currently connected");
 
@@ -241,12 +238,12 @@ export class DongleController {
         dongleImei: string,
         puk: string,
         newPin: string
-    ): Promise<DongleController.UnlockResult>;
+    ): Promise<types.UnlockResult>;
 
     public unlock(
         dongleImei: string,
         pin: string
-    ): Promise<DongleController.UnlockResult>;
+    ): Promise<types.UnlockResult>;
 
     public async unlock(...inputs) {
 
@@ -272,7 +269,7 @@ export class DongleController {
 
         }
 
-        let unlockResult: DongleController.UnlockResult = await this.apiClient.makeRequest(api.unlock.method, params, 30000);
+        let unlockResult: types.UnlockResult = await this.apiClient.makeRequest(api.unlock.method, params, 30000);
 
         if (!unlockResult.success) {
 
@@ -298,7 +295,7 @@ export class DongleController {
 
     public async getMessagesOfSim(
         params: { imsi: string; fromDate?: Date; toDate?: Date; flush?: boolean; }
-    ): Promise<DongleController.Message[]> {
+    ): Promise<types.Message[]> {
 
         let messagesRecord: api.getMessages.Response = await this.apiClient.makeRequest(
             api.getMessages.method,
@@ -309,310 +306,5 @@ export class DongleController {
 
     }
 
-
 }
 
-export namespace DongleController {
-
-    export const apiId = "dongle-extended";
-
-    export function isImsiWellFormed(imsi: string) {
-        return typeof imsi === "string" && imsi.match(/^[0-9]{15}$/) !== null;
-    }
-
-    export function isImeiWellFormed(imei: string) {
-        return isImsiWellFormed(imei);
-    }
-
-    export function isIccidWellFormed(iccid: string) {
-        return typeof iccid === "string" && iccid.match(/^[0-9]{6,22}$/) !== null;
-    }
-
-    export type ModuleConfiguration = {
-        general: typeof _private.defaultConfig['general'];
-        defaults: typeof _private.defaultConfig['defaults'];
-    };
-
-    export type StatusReport = {
-        sendDate: Date;
-        dischargeDate: Date;
-        isDelivered: boolean;
-        status: string;
-        recipient: string;
-    };
-
-    export type Message = {
-        number: string;
-        date: Date;
-        text: string;
-    };
-
-    export type Contact = {
-        readonly index: number;
-        readonly name: {
-            readonly asStored: string;
-            full: string;
-        };
-        readonly number: {
-            readonly asStored: string;
-            localFormat: string;
-        };
-    }
-
-    export namespace Contact {
-
-        export function sanityCheck(o: Contact): boolean {
-
-            return (
-                o instanceof Object &&
-                typeof o.index === "number" &&
-                o.name instanceof Object &&
-                typeof o.name.asStored === "string" &&
-                typeof o.name.full === "string" &&
-                o.number instanceof Object &&
-                typeof o.number.asStored === "string" &&
-                typeof o.number.localFormat === "string"
-            );
-
-        }
-
-    }
-
-    export type SimStorage = {
-        number?: {
-            readonly asStored: string;
-            localFormat: string;
-        };
-        infos: {
-            contactNameMaxLength: number;
-            numberMaxLength: number;
-            storageLeft: number;
-        };
-        contacts: Contact[];
-        digest: string;
-    };
-
-    export namespace SimStorage {
-
-        export function sanityCheck(o: SimStorage): boolean {
-
-            if (!(
-                o instanceof Object && (
-                    o.number === undefined || (
-                        o.number instanceof Object &&
-                        typeof o.number.asStored === "string" &&
-                        typeof o.number.localFormat === "string"
-                    )
-                ) &&
-                o.infos instanceof Object &&
-                o.contacts instanceof Array
-            )) return false;
-
-            let { infos, contacts } = o;
-
-            if (!(
-                typeof infos.contactNameMaxLength === "number" &&
-                typeof infos.numberMaxLength === "number" &&
-                typeof infos.storageLeft === "number"
-            )) return false;
-
-            for (let contact of contacts) {
-
-                if (!Contact.sanityCheck(contact)) {
-                    return false;
-                }
-
-            }
-
-            return true;
-
-        }
-
-        export function computeDigest(
-            number: string | undefined,
-            storageLeft: number,
-            contacts: Contact[]
-        ): string {
-
-            let strArr = contacts
-                .sort((c1, c2) => c1.index - c2.index)
-                .map(c => `${c.index}${c.name.asStored}${c.number.asStored}`);
-
-            strArr.push(`${number}`);
-            strArr.push(`${storageLeft}`);
-
-            return md5(strArr.join(""));
-
-        }
-
-
-    }
-
-    export type LockedPinState = "SIM PIN" | "SIM PUK" | "SIM PIN2" | "SIM PUK2";
-
-    export namespace LockedPinState {
-
-        export function sanityCheck(o: LockedPinState): boolean {
-            return (
-                typeof o === "string" &&
-                (
-                    o === "SIM PIN" ||
-                    o === "SIM PUK" ||
-                    o === "SIM PIN2" ||
-                    o === "SIM PUK2"
-                )
-            );
-        }
-
-    }
-
-    export type UnlockResult = UnlockResult.Success | UnlockResult.Failed;
-
-    export namespace UnlockResult {
-
-        export type Success = { success: true; };
-        export type Failed = { success: false; pinState: LockedPinState; tryLeft: number; };
-
-        export function sanityCheck(o: UnlockResult): boolean {
-
-            if (!(
-                o instanceof Object &&
-                typeof o.success === "boolean"
-            )) return false;
-
-            if (o.success) {
-
-                return true;
-
-            } else {
-
-                return (
-                    LockedPinState.sanityCheck(o.pinState) &&
-                    typeof o.tryLeft === "number"
-                );
-
-            }
-
-        }
-
-    }
-
-    export interface LockedDongle {
-        imei: string;
-        manufacturer: string;
-        model: string;
-        firmwareVersion: string;
-        sim: {
-            iccid?: string;
-            pinState: LockedPinState;
-            tryLeft: number;
-        }
-    }
-
-    export namespace LockedDongle {
-
-        export function match(dongle: Dongle): dongle is LockedDongle {
-            return (dongle.sim as LockedDongle['sim']).pinState !== undefined;
-        }
-
-        export function sanityCheck(o: LockedDongle): boolean {
-
-            return (
-                o instanceof Object &&
-                isImeiWellFormed(o.imei) &&
-                typeof o.manufacturer === "string" &&
-                typeof o.model === "string" &&
-                typeof o.firmwareVersion === "string" &&
-                o.sim instanceof Object &&
-                (
-                    (
-                        o.sim.iccid === undefined ||
-                        isIccidWellFormed(o.sim.iccid)
-                    ) &&
-                    LockedPinState.sanityCheck(o.sim.pinState) &&
-                    typeof o.sim.tryLeft === "number"
-                )
-            );
-
-        }
-    }
-
-    export interface ActiveDongle {
-        imei: string;
-        manufacturer: string;
-        model: string;
-        firmwareVersion: string;
-        isVoiceEnabled?: boolean;
-        sim: {
-            iccid: string;
-            imsi: string;
-            country?: SimCountry;
-            serviceProvider: {
-                fromImsi?: string;
-                fromNetwork?: string;
-            },
-            storage: SimStorage;
-        }
-    }
-
-    export namespace ActiveDongle {
-
-        export function match(dongle: Dongle): dongle is ActiveDongle {
-            return !LockedDongle.match(dongle);
-        }
-
-        export function sanityCheck(o: ActiveDongle): boolean {
-
-            return (
-                o instanceof Object &&
-                isImeiWellFormed(o.imei) &&
-                typeof o.manufacturer === "string" &&
-                typeof o.model === "string" &&
-                typeof o.firmwareVersion === "string" &&
-                (
-                    typeof o.isVoiceEnabled === "boolean" ||
-                    o.isVoiceEnabled === undefined
-                ) &&
-                o.sim instanceof Object &&
-                isIccidWellFormed(o.sim.iccid) &&
-                isImsiWellFormed(o.sim.imsi) &&
-                SimCountry.sanityCheck(o.sim.country) &&
-                (
-                    typeof o.sim.serviceProvider.fromImsi === "string" ||
-                    o.sim.serviceProvider.fromImsi === undefined
-                ) && (
-                    typeof o.sim.serviceProvider.fromNetwork === "string" ||
-                    o.sim.serviceProvider.fromNetwork === undefined
-                ) &&
-                SimStorage.sanityCheck(o.sim.storage)
-            );
-
-        }
-
-    }
-
-    export type Dongle = LockedDongle | ActiveDongle;
-
-    export namespace Dongle {
-
-        export function sanityCheck(o: Dongle): boolean {
-
-            return (
-                LockedDongle.sanityCheck(o as LockedDongle) ||
-                ActiveDongle.sanityCheck(o as ActiveDongle)
-            );
-
-        }
-
-    }
-
-    export type SendMessageResult =
-        {
-            success: true;
-            sendDate: Date;
-        } | {
-            success: false;
-            reason: "DISCONNECT" | "CANNOT SEND"
-        };
-
-}

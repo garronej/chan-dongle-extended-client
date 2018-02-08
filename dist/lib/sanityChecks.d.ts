@@ -1,0 +1,11 @@
+import * as types from "./types";
+export declare function imsi(imsi: string): boolean;
+export declare function imei(imei: string): boolean;
+export declare function iccid(iccid: string): boolean;
+export declare function simStorage(o: types.Sim.Storage): boolean;
+export declare function lockedPinState(o: types.Dongle.Locked.PinState): boolean;
+export declare function dongleLocked(o: types.Dongle.Locked): boolean;
+export declare function simContact(o: types.Sim.Contact): boolean;
+export declare function dongleUsable(o: types.Dongle.Usable): boolean;
+export declare function dongle(o: types.Dongle): boolean;
+export declare function unlockResult(o: types.UnlockResult): boolean;

@@ -1,6 +1,8 @@
 import PhoneNumber from "awesome-phonenumber";
 import { grok as imsiGrok } from "imsi-grok"
 const mccmnc = require("mccmnc.json");
+import * as types from "./types";
+import * as md5 from "md5";
 
 export type ImsiInfos = {
     mcc: string;
@@ -14,16 +16,16 @@ export type ImsiInfos = {
 
 export function getImsiInfos(imsi: string): ImsiInfos | undefined {
 
-    if( getImsiInfo.cache.has(imsi) ){
+    if (getImsiInfo.cache.has(imsi)) {
         return getImsiInfo.cache.get(imsi);
     }
 
-    let imsiInfo: ImsiInfos | undefined= imsiGrok(imsi);
+    let imsiInfo: ImsiInfos | undefined = imsiGrok(imsi);
 
-    if( imsiInfo ){
+    if (imsiInfo) {
 
-        if( imsiInfo.network_name === "Lliad/FREE Mobile" ){
-            imsiInfo.network_name= "Free Mobile";
+        if (imsiInfo.network_name === "Lliad/FREE Mobile") {
+            imsiInfo.network_name = "Free Mobile";
         }
 
     }
@@ -36,15 +38,10 @@ export function getImsiInfos(imsi: string): ImsiInfos | undefined {
 
 export namespace getImsiInfo {
 
-    export const cache= new Map<string, ImsiInfos | undefined>();
+    export const cache = new Map<string, ImsiInfos | undefined>();
 
 }
 
-export type SimCountry = {
-    name: string;
-    iso: string;
-    code: number;
-};
 
 export namespace SimCountry {
 
@@ -56,7 +53,7 @@ export namespace SimCountry {
 
             let { country_iso, country_name, country_code } = mccmnc[key];
 
-            country_iso= (country_iso || "US").toLowerCase();
+            country_iso = (country_iso || "US").toLowerCase();
 
             setSanityCheck.add(`${country_iso}${country_name}${country_code}`);
 
@@ -64,7 +61,7 @@ export namespace SimCountry {
 
     })();
 
-    export function sanityCheck(country: SimCountry | undefined): boolean {
+    export function sanityCheck(country: types.Sim.Country | undefined): boolean {
         return (
             country instanceof Object &&
             setSanityCheck.has(`${country.iso}${country.name}${country.code}`)
@@ -73,7 +70,7 @@ export namespace SimCountry {
 
     export function getFromImsi(
         imsi: string
-    ): SimCountry | undefined {
+    ): types.Sim.Country | undefined {
 
         let imsiInfo = getImsiInfos(imsi);
 
@@ -112,3 +109,21 @@ export function toNationalNumber(
 
 }
 
+export function computeSimStorageDigest(
+    number: string | undefined,
+    storageLeft: number,
+    contacts: types.Sim.Contact[]
+): string {
+
+    let strArr = contacts
+        .sort((c1, c2) => c1.index - c2.index)
+        .map(c => `${c.index}${c.name.asStored}${c.number.asStored}`);
+
+    strArr.push(`${number}`);
+    strArr.push(`${storageLeft}`);
+
+    return md5(strArr.join(""));
+
+}
+
+export const amiUser = "dongle_ext_user";

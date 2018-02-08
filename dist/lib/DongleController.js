@@ -61,13 +61,12 @@ var __read = (this && this.__read) || function (o, n) {
     return ar;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var ts_events_extended_1 = require("ts-events-extended");
 var ts_ami_1 = require("ts-ami");
 var trackable_map_1 = require("trackable-map");
-var md5 = require("md5");
-var utils_1 = require("./utils");
-var _private = require("./private");
-var api = _private.api;
+var types = require("./types");
+var ts_events_extended_1 = require("ts-events-extended");
+var misc = require("./misc");
+var api = require("./apiDeclaration");
 var DongleController = /** @class */ (function () {
     function DongleController(asteriskManagerCredential) {
         this.dongles = new trackable_map_1.TrackableMap();
@@ -78,9 +77,9 @@ var DongleController = /** @class */ (function () {
             this.ami = new ts_ami_1.Ami(asteriskManagerCredential);
         }
         else {
-            this.ami = new ts_ami_1.Ami(_private.amiUser);
+            this.ami = new ts_ami_1.Ami(misc.amiUser);
         }
-        this.apiClient = this.ami.createApiClient(DongleController.apiId);
+        this.apiClient = this.ami.createApiClient(api.id);
         this.initialization = this.initialize();
     }
     Object.defineProperty(DongleController, "hasInstance", {
@@ -158,7 +157,7 @@ var DongleController = /** @class */ (function () {
                                         return [3 /*break*/, 4];
                                     case 4:
                                         if (newUpSince !== serviceUpSince) {
-                                            this.disconnect(new Error("DongleExtended service is no longer active"));
+                                            this.disconnect(new Error("DongleExtended service is no longer usable"));
                                             return [2 /*return*/];
                                         }
                                         return [3 /*break*/, 0];
@@ -184,14 +183,14 @@ var DongleController = /** @class */ (function () {
                             else if (name === api.Events.message.name) {
                                 var dongleImei = event.dongleImei, message = event.message;
                                 _this.evtMessage.post({
-                                    "dongle": _this.activeDongles.get(dongleImei),
+                                    "dongle": _this.usableDongles.get(dongleImei),
                                     message: message
                                 });
                             }
                             else if (name === api.Events.statusReport.name) {
                                 var dongleImei = event.dongleImei, statusReport = event.statusReport;
                                 _this.evtStatusReport.post({
-                                    "dongle": _this.activeDongles.get(dongleImei),
+                                    "dongle": _this.usableDongles.get(dongleImei),
                                     statusReport: statusReport
                                 });
                             }
@@ -212,7 +211,7 @@ var DongleController = /** @class */ (function () {
             try {
                 for (var _a = __values(this.dongles), _b = _a.next(); !_b.done; _b = _a.next()) {
                     var _c = __read(_b.value, 2), imei = _c[0], dongle = _c[1];
-                    if (!DongleController.LockedDongle.match(dongle))
+                    if (!types.Dongle.Locked.match(dongle))
                         continue;
                     out.set(imei, dongle);
                 }
@@ -230,13 +229,13 @@ var DongleController = /** @class */ (function () {
         enumerable: true,
         configurable: true
     });
-    Object.defineProperty(DongleController.prototype, "activeDongles", {
+    Object.defineProperty(DongleController.prototype, "usableDongles", {
         get: function () {
             var out = new Map();
             try {
                 for (var _a = __values(this.dongles), _b = _a.next(); !_b.done; _b = _a.next()) {
                     var _c = __read(_b.value, 2), imei = _c[0], dongle = _c[1];
-                    if (!DongleController.ActiveDongle.match(dongle))
+                    if (!types.Dongle.Usable.match(dongle))
                         continue;
                     out.set(imei, dongle);
                 }
@@ -260,7 +259,7 @@ var DongleController = /** @class */ (function () {
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        if (!this.activeDongles.has(viaDongleImei)) {
+                        if (!this.usableDongles.has(viaDongleImei)) {
                             throw new Error("This dongle is not currently connected");
                         }
                         params = { viaDongleImei: viaDongleImei, toNumber: toNumber, text: text };
@@ -324,157 +323,4 @@ var DongleController = /** @class */ (function () {
     DongleController.instance = undefined;
     return DongleController;
 }());
-exports.DongleController = DongleController;
-(function (DongleController) {
-    DongleController.apiId = "dongle-extended";
-    function isImsiWellFormed(imsi) {
-        return typeof imsi === "string" && imsi.match(/^[0-9]{15}$/) !== null;
-    }
-    DongleController.isImsiWellFormed = isImsiWellFormed;
-    function isImeiWellFormed(imei) {
-        return isImsiWellFormed(imei);
-    }
-    DongleController.isImeiWellFormed = isImeiWellFormed;
-    function isIccidWellFormed(iccid) {
-        return typeof iccid === "string" && iccid.match(/^[0-9]{6,22}$/) !== null;
-    }
-    DongleController.isIccidWellFormed = isIccidWellFormed;
-    var Contact;
-    (function (Contact) {
-        function sanityCheck(o) {
-            return (o instanceof Object &&
-                typeof o.index === "number" &&
-                o.name instanceof Object &&
-                typeof o.name.asStored === "string" &&
-                typeof o.name.full === "string" &&
-                o.number instanceof Object &&
-                typeof o.number.asStored === "string" &&
-                typeof o.number.localFormat === "string");
-        }
-        Contact.sanityCheck = sanityCheck;
-    })(Contact = DongleController.Contact || (DongleController.Contact = {}));
-    var SimStorage;
-    (function (SimStorage) {
-        function sanityCheck(o) {
-            if (!(o instanceof Object && (o.number === undefined || (o.number instanceof Object &&
-                typeof o.number.asStored === "string" &&
-                typeof o.number.localFormat === "string")) &&
-                o.infos instanceof Object &&
-                o.contacts instanceof Array))
-                return false;
-            var infos = o.infos, contacts = o.contacts;
-            if (!(typeof infos.contactNameMaxLength === "number" &&
-                typeof infos.numberMaxLength === "number" &&
-                typeof infos.storageLeft === "number"))
-                return false;
-            try {
-                for (var contacts_1 = __values(contacts), contacts_1_1 = contacts_1.next(); !contacts_1_1.done; contacts_1_1 = contacts_1.next()) {
-                    var contact = contacts_1_1.value;
-                    if (!Contact.sanityCheck(contact)) {
-                        return false;
-                    }
-                }
-            }
-            catch (e_4_1) { e_4 = { error: e_4_1 }; }
-            finally {
-                try {
-                    if (contacts_1_1 && !contacts_1_1.done && (_a = contacts_1.return)) _a.call(contacts_1);
-                }
-                finally { if (e_4) throw e_4.error; }
-            }
-            return true;
-            var e_4, _a;
-        }
-        SimStorage.sanityCheck = sanityCheck;
-        function computeDigest(number, storageLeft, contacts) {
-            var strArr = contacts
-                .sort(function (c1, c2) { return c1.index - c2.index; })
-                .map(function (c) { return "" + c.index + c.name.asStored + c.number.asStored; });
-            strArr.push("" + number);
-            strArr.push("" + storageLeft);
-            return md5(strArr.join(""));
-        }
-        SimStorage.computeDigest = computeDigest;
-    })(SimStorage = DongleController.SimStorage || (DongleController.SimStorage = {}));
-    var LockedPinState;
-    (function (LockedPinState) {
-        function sanityCheck(o) {
-            return (typeof o === "string" &&
-                (o === "SIM PIN" ||
-                    o === "SIM PUK" ||
-                    o === "SIM PIN2" ||
-                    o === "SIM PUK2"));
-        }
-        LockedPinState.sanityCheck = sanityCheck;
-    })(LockedPinState = DongleController.LockedPinState || (DongleController.LockedPinState = {}));
-    var UnlockResult;
-    (function (UnlockResult) {
-        function sanityCheck(o) {
-            if (!(o instanceof Object &&
-                typeof o.success === "boolean"))
-                return false;
-            if (o.success) {
-                return true;
-            }
-            else {
-                return (LockedPinState.sanityCheck(o.pinState) &&
-                    typeof o.tryLeft === "number");
-            }
-        }
-        UnlockResult.sanityCheck = sanityCheck;
-    })(UnlockResult = DongleController.UnlockResult || (DongleController.UnlockResult = {}));
-    var LockedDongle;
-    (function (LockedDongle) {
-        function match(dongle) {
-            return dongle.sim.pinState !== undefined;
-        }
-        LockedDongle.match = match;
-        function sanityCheck(o) {
-            return (o instanceof Object &&
-                isImeiWellFormed(o.imei) &&
-                typeof o.manufacturer === "string" &&
-                typeof o.model === "string" &&
-                typeof o.firmwareVersion === "string" &&
-                o.sim instanceof Object &&
-                ((o.sim.iccid === undefined ||
-                    isIccidWellFormed(o.sim.iccid)) &&
-                    LockedPinState.sanityCheck(o.sim.pinState) &&
-                    typeof o.sim.tryLeft === "number"));
-        }
-        LockedDongle.sanityCheck = sanityCheck;
-    })(LockedDongle = DongleController.LockedDongle || (DongleController.LockedDongle = {}));
-    var ActiveDongle;
-    (function (ActiveDongle) {
-        function match(dongle) {
-            return !LockedDongle.match(dongle);
-        }
-        ActiveDongle.match = match;
-        function sanityCheck(o) {
-            return (o instanceof Object &&
-                isImeiWellFormed(o.imei) &&
-                typeof o.manufacturer === "string" &&
-                typeof o.model === "string" &&
-                typeof o.firmwareVersion === "string" &&
-                (typeof o.isVoiceEnabled === "boolean" ||
-                    o.isVoiceEnabled === undefined) &&
-                o.sim instanceof Object &&
-                isIccidWellFormed(o.sim.iccid) &&
-                isImsiWellFormed(o.sim.imsi) &&
-                utils_1.SimCountry.sanityCheck(o.sim.country) &&
-                (typeof o.sim.serviceProvider.fromImsi === "string" ||
-                    o.sim.serviceProvider.fromImsi === undefined) && (typeof o.sim.serviceProvider.fromNetwork === "string" ||
-                o.sim.serviceProvider.fromNetwork === undefined) &&
-                SimStorage.sanityCheck(o.sim.storage));
-        }
-        ActiveDongle.sanityCheck = sanityCheck;
-    })(ActiveDongle = DongleController.ActiveDongle || (DongleController.ActiveDongle = {}));
-    var Dongle;
-    (function (Dongle) {
-        function sanityCheck(o) {
-            return (LockedDongle.sanityCheck(o) ||
-                ActiveDongle.sanityCheck(o));
-        }
-        Dongle.sanityCheck = sanityCheck;
-    })(Dongle = DongleController.Dongle || (DongleController.Dongle = {}));
-})(DongleController = exports.DongleController || (exports.DongleController = {}));
 exports.DongleController = DongleController;

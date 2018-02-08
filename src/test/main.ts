@@ -1,6 +1,7 @@
 require("rejection-tracker").main(__dirname, "..", "..");
 
 import { DongleController as Dc } from "../lib";
+import * as sanityChecks from "../lib/sanityChecks";
 
 (async function initialize() {
 
@@ -28,7 +29,7 @@ import { DongleController as Dc } from "../lib";
 
     for( let dongle of dc.dongles.valueSet() ){
 
-        console.assert( Dc.Dongle.sanityCheck(dongle), "sanity check failed" );
+        console.assert( sanityChecks.dongle(dongle), "sanity check failed" );
 
     }
 
@@ -58,7 +59,7 @@ import { DongleController as Dc } from "../lib";
 
     await dc.initialization;
 
-    for (let dongle of dc.activeDongles.values()) {
+    for (let dongle of dc.usableDongles.values()) {
 
         let messages = await dc.getMessagesOfSim({ "imsi": dongle.sim.imsi });
 
@@ -76,7 +77,7 @@ import { DongleController as Dc } from "../lib";
 
     try {
 
-        let messages = await dc.getMessagesOfSim({ "imsi": "42" });
+        await dc.getMessagesOfSim({ "imsi": "42" });
 
         console.log("Fail");
 
@@ -153,7 +154,7 @@ import { DongleController as Dc } from "../lib";
         }
     };
 
-    console.assert(Dc.Dongle.sanityCheck(dongle));
+    console.assert(sanityChecks.dongle(dongle));
 
     console.log("PASS SANITY CHECKS");
 

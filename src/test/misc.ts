@@ -31,7 +31,7 @@ class Ok {
 
     @duration
     public static getSimCountry(imsi: string){
-        return misc.getSimCountry(imsi);
+        return misc.getSimCountryAndSp(imsi);
     }
 
     @duration

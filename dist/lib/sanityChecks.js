@@ -98,9 +98,8 @@ function simContact(o) {
 }
 exports.simContact = simContact;
 function simCountry(o, imsi) {
-    var expected;
     try {
-        expected = misc.getSimCountry(imsi);
+        var expected = misc.getSimCountryAndSp(imsi);
     }
     catch (_a) {
         return false;

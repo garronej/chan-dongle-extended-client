@@ -6,24 +6,25 @@ var sanityChecks = require("./sanityChecks");
 var fs = require("fs");
 var path = require("path");
 exports.amiUser = "dongle_ext_user";
-function getSimCountry(imsi) {
-    if (getSimCountry.cache.has(imsi)) {
-        return getSimCountry.cache.get(imsi);
+function getSimCountryAndSp(imsi) {
+    if (getSimCountryAndSp.cache.has(imsi)) {
+        return getSimCountryAndSp.cache.get(imsi);
     }
     if (!sanityChecks.imsi(imsi)) {
         throw new Error("imsi malformed");
     }
-    var mccmnc = getSimCountry.getMccmnc();
+    var mccmnc = getSimCountryAndSp.getMccmnc();
     var imsiInfos = mccmnc[imsi.substr(0, 6)] || mccmnc[imsi.substr(0, 5)];
-    getSimCountry.cache.set(imsi, imsiInfos ? ({
+    getSimCountryAndSp.cache.set(imsi, imsiInfos ? ({
         "name": imsiInfos.country_name,
         "iso": (imsiInfos.country_iso || "US").toLowerCase(),
-        "code": parseInt(imsiInfos.country_code)
+        "code": parseInt(imsiInfos.country_code),
+        "serviceProvider": imsiInfos.network_name
     }) : undefined);
-    return getSimCountry(imsi);
+    return getSimCountryAndSp(imsi);
 }
-exports.getSimCountry = getSimCountry;
-(function (getSimCountry) {
+exports.getSimCountryAndSp = getSimCountryAndSp;
+(function (getSimCountryAndSp) {
     var mccmnc = undefined;
     function getMccmnc() {
         if (mccmnc) {
@@ -32,12 +33,12 @@ exports.getSimCountry = getSimCountry;
         mccmnc = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "..", "res", "mccmnc.json"), "utf8"));
         return getMccmnc();
     }
-    getSimCountry.getMccmnc = getMccmnc;
-    getSimCountry.cache = new Map();
-})(getSimCountry = exports.getSimCountry || (exports.getSimCountry = {}));
+    getSimCountryAndSp.getMccmnc = getMccmnc;
+    getSimCountryAndSp.cache = new Map();
+})(getSimCountryAndSp = exports.getSimCountryAndSp || (exports.getSimCountryAndSp = {}));
 /** Convert a number to national dry or return itself */
 function toNationalNumber(number, imsi) {
-    var simCountry = getSimCountry(imsi);
+    var simCountry = getSimCountryAndSp(imsi);
     if (!simCountry) {
         return number;
     }

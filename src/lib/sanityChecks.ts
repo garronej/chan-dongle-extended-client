@@ -113,11 +113,9 @@ export function simCountry(
     imsi: string
 ): boolean {
 
-    let expected: types.Sim.Country | undefined;
-
     try {
 
-        expected = misc.getSimCountry(imsi);
+        var expected = misc.getSimCountryAndSp(imsi);
 
     } catch{
 

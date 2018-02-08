@@ -7,35 +7,36 @@ import * as path from "path";
 
 export const amiUser = "dongle_ext_user";
 
-export function getSimCountry(
+export function getSimCountryAndSp(
     imsi: string
-): types.Sim.Country | undefined {
+): (types.Sim.Country & { serviceProvider: string; }) | undefined {
 
-    if (getSimCountry.cache.has(imsi)) {
-        return getSimCountry.cache.get(imsi);
+    if (getSimCountryAndSp.cache.has(imsi)) {
+        return getSimCountryAndSp.cache.get(imsi);
     }
 
     if (!sanityChecks.imsi(imsi)) {
         throw new Error("imsi malformed");
     }
 
-    let mccmnc = getSimCountry.getMccmnc();
+    let mccmnc = getSimCountryAndSp.getMccmnc();
 
     let imsiInfos = mccmnc[imsi.substr(0, 6)] || mccmnc[imsi.substr(0, 5)];
 
-    getSimCountry.cache.set(imsi, 
+    getSimCountryAndSp.cache.set(imsi, 
         imsiInfos ? ({
             "name": imsiInfos.country_name,
             "iso": (imsiInfos.country_iso || "US").toLowerCase(),
-            "code": parseInt(imsiInfos.country_code)
+            "code": parseInt(imsiInfos.country_code),
+            "serviceProvider": imsiInfos.network_name
         }) : undefined
     );
 
-    return getSimCountry(imsi);
+    return getSimCountryAndSp(imsi);
 
 }
 
-export namespace getSimCountry {
+export namespace getSimCountryAndSp {
 
     export type ImsiInfos = {
         mcc: string;
@@ -65,7 +66,7 @@ export namespace getSimCountry {
 
     }
 
-    export const cache = new Map<string, types.Sim.Country | undefined>();
+    export const cache = new Map<string, (types.Sim.Country & { serviceProvider: string; }) | undefined>();
 
 }
 
@@ -75,7 +76,7 @@ export function toNationalNumber(
     imsi: string
 ): string {
 
-    let simCountry= getSimCountry(imsi);
+    let simCountry= getSimCountryAndSp(imsi);
 
     if( !simCountry ){
         return number;

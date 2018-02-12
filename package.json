@@ -1,6 +1,6 @@
 {
   "name": "chan-dongle-extended-client",
-  "version": "0.11.2",
+  "version": "0.11.3",
   "description": "client for chan-dongle-extended",
   "main": "./dist/lib/index.js",
   "types": "./dist/lib/index.d.ts",
@@ -33,6 +33,6 @@
   },
   "devDependencies": {
     "@types/node": "^9.4.2",
-    "typescript": "^2.7.1"
+    "typescript": "2.7.1"
   }
 }

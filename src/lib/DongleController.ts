@@ -120,7 +120,7 @@ export class DongleController {
                 if (newUpSince !== serviceUpSince) {
 
                     this.disconnect(
-                        new Error("DongleExtended service is no longer usable")
+                        new Error(`DongleExtended service is no longer usable newUpSince: ${newUpSince}, serviceUpSince: ${serviceUpSince}`)
                     );
 
                     return;

@@ -33,6 +33,12 @@ console.log("START TEST");
 
     dc.dongles.evtDelete.attach(([dongle, imei])=> console.log("evtDelete", imei));
 
+    dc.evtMessage.attach(({ dongle, message })=> {
+
+        console.log({ message });
+
+    });
+
 })();
 
 

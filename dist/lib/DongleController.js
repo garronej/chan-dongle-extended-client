@@ -157,7 +157,7 @@ var DongleController = /** @class */ (function () {
                                         return [3 /*break*/, 4];
                                     case 4:
                                         if (newUpSince !== serviceUpSince) {
-                                            this.disconnect(new Error("DongleExtended service is no longer usable"));
+                                            this.disconnect(new Error("DongleExtended service is no longer usable newUpSince: " + newUpSince + ", serviceUpSince: " + serviceUpSince));
                                             return [2 /*return*/];
                                         }
                                         return [3 /*break*/, 0];

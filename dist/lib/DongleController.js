@@ -263,7 +263,7 @@ var DongleController = /** @class */ (function () {
                             throw new Error("This dongle is not currently connected");
                         }
                         params = { viaDongleImei: viaDongleImei, toNumber: toNumber, text: text };
-                        return [4 /*yield*/, this.apiClient.makeRequest(api.sendMessage.method, params, 240000)];
+                        return [4 /*yield*/, this.apiClient.makeRequest(api.sendMessage.method, params, 10800000)];
                     case 1:
                         returnValue = _a.sent();
                         return [2 /*return*/, returnValue];

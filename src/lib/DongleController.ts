@@ -227,7 +227,7 @@ export class DongleController {
         let returnValue: api.sendMessage.Response = await this.apiClient.makeRequest(
             api.sendMessage.method,
             params,
-            240000
+            10800000
         );
 
         return returnValue;

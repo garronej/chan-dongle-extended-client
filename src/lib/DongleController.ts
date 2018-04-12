@@ -46,6 +46,10 @@ export class DongleController {
         }
     );
 
+    public get isInitialized(): boolean {
+        return !!this.evtInitializationCompleted.postCount
+    }
+
     private readonly socket: sipLibrary.Socket;
 
     public constructor(

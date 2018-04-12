@@ -100,6 +100,13 @@ var DongleController = /** @class */ (function () {
             _this.evtClose.post();
         });
     }
+    Object.defineProperty(DongleController.prototype, "isInitialized", {
+        get: function () {
+            return !!this.evtInitializationCompleted.postCount;
+        },
+        enumerable: true,
+        configurable: true
+    });
     DongleController.prototype.destroy = function () {
         this.socket.destroy();
     };

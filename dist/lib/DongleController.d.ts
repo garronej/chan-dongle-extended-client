@@ -20,6 +20,7 @@ export declare class DongleController {
     private readonly evtInitializationCompleted;
     /** resolve when instance ready to be used; reject if initialization fail */
     readonly prInitialization: Promise<void>;
+    readonly isInitialized: boolean;
     private readonly socket;
     constructor(host: string, port: number);
     destroy(): void;

@@ -1,111 +1,116 @@
 import * as types from "./types";
 
-export const id = "dongle-extended";
+export namespace controller {
 
-export namespace Events {
+    export namespace notifyCurrentState {
+
+        export const methodName = "notifyCurrentState";
+
+        export type Params = {
+            staticModuleConfiguration: types.StaticModuleConfiguration;
+            dongles: types.Dongle[];
+        };
+
+        export type Response = undefined;
+
+    }
 
     export namespace updateMap {
 
-        export const name = "updateMap";
+        export const methodName = "updateMap";
 
-        export type Data = {
+        export type Params= {
             dongleImei: string;
             dongle: types.Dongle | undefined;
         };
 
+        export type Response= undefined;
+
     }
 
-    export namespace message {
+    export namespace notifyMessage {
 
-        export const name = "message";
+        export const methodName= "notifyMessage";
 
-        export type Data = {
+        export type Params= {
             dongleImei: string;
             message: types.Message;
         };
 
+        
+        export type Response= "SAVE MESSAGE" | "DO NOT SAVE MESSAGE";
+
     }
 
-    export namespace statusReport {
+    export namespace notifyStatusReport {
 
-        export const name = "statusReport";
+        export const methodName= "notifyStatusReport";
 
-        export type Data = {
+        export type Params ={
             dongleImei: string;
             statusReport: types.StatusReport;
         };
 
+        export type Response= undefined;
+
     }
 
-    export namespace periodicalSignal {
 
-        export const name = "periodicalSignal";
+}
 
-        export type Data = {
-            serviceUpSince: number;
+export namespace service {
+
+
+    export namespace sendMessage {
+
+        export const methodName = "sendMessage";
+
+        export type Params = {
+            viaDongleImei: string;
+            toNumber: string;
+            text: string;
         };
 
-        export const interval = 6000;
+        export type Response = types.SendMessageResult;
 
     }
 
-}
+    export namespace unlock {
 
+        export const methodName = "unlock";
 
-export namespace initialize {
+        export type Params = Params.Pin | Params.Puk;
 
-    export const method = "initialize";
+        export namespace Params {
+            export type Pin = { dongleImei: string; pin: string; };
+            export type Puk = { dongleImei: string; puk: string; newPin: string; };
+        }
 
-    export type Response = {
-        moduleConfiguration: types.ModuleConfiguration;
-        dongles: types.Dongle[];
-        serviceUpSince: number;
-    };
+        export function matchPin(p: Params): p is Params.Pin {
+            return !!(p as Params.Pin).pin;
+        }
 
-}
+        /** undefined when the dongle disconnect while unlocking */
+        export type Response = types.UnlockResult | undefined;
 
-export namespace sendMessage {
-
-    export const method = "sendMessage";
-
-    export type Params = {
-        viaDongleImei: string;
-        toNumber: string;
-        text: string;
-    };
-
-    export type Response = types.SendMessageResult;
-
-}
-
-export namespace unlock {
-
-    export const method = "unlock";
-
-    export type Pin = { dongleImei: string; pin: string; };
-    export type Puk = { dongleImei: string; puk: string; newPin: string; };
-
-    export type Params = Pin | Puk;
-
-    export function matchPin(p: Params): p is Pin {
-        return !!(p as Pin).pin;
     }
 
-    export type Response = types.UnlockResult;
+    export namespace getMessages {
+
+        export const methodName = "getMessages";
+
+        export type Params = {
+            imsi?: string;
+            fromDate?: Date;
+            toDate?: Date;
+            flush?: boolean;
+        };
+
+        export type Response = { [imsi: string]: types.Message[] };
+
+    }
+
 
 }
 
-export namespace getMessages {
 
-    export const method = "getMessages";
-
-    export type Params = {
-        imsi?: string;
-        fromDate?: Date;
-        toDate?: Date;
-        flush?: boolean;
-    };
-
-    export type Response = { [imsi: string]: types.Message[] };
-
-}

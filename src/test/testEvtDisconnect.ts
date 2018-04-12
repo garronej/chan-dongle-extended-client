@@ -8,22 +8,13 @@ console.log("START TEST");
 
     let dc = Dc.getInstance();
 
-    dc.evtDisconnect.attachOnce(error=> {
+    dc.evtClose.attachOnce(()=> {
 
-        if( error ){
-
-            console.log(error.message);
-
-        }else{
-
-            console.log("Disconnected no error");
-
-        }
-
+        console.log("");
 
     });
 
-    await dc.initialization;
+    await dc.prInitialization;
 
     console.log(`dc initialized, dongles size: ${dc.dongles.size}`);
 

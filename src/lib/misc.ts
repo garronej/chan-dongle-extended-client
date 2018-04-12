@@ -5,7 +5,8 @@ import * as sanityChecks from "./sanityChecks";
 import * as fs from "fs";
 import * as path from "path";
 
-export const amiUser = "dongle_ext_user";
+export const amiUser = "chan_dongle_extended";
+export const port = 48399;
 
 export function getSimCountryAndSp(
     imsi: string

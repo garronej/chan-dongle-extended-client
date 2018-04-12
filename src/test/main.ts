@@ -9,25 +9,22 @@ import * as sanityChecks from "../lib/sanityChecks";
 
     let dc = Dc.getInstance();
 
-    console.assert(!dc.isInitialized, "m1");
 
     try {
 
-        await dc.initialization;
+        await dc.prInitialization;
 
     } catch (error) {
 
         console.log(error);
 
-        return;
+        process.exit(-1);
 
     }
 
-    console.assert(dc.isInitialized, "m2");
-
     //console.log(JSON.stringify(dc.dongles.toObject(), null, 2));
 
-    for( let dongle of dc.dongles.valueSet() ){
+    for( let dongle of dc.dongles.values() ){
 
         console.assert( sanityChecks.dongle(dongle), "sanity check failed" );
 
@@ -57,7 +54,7 @@ import * as sanityChecks from "../lib/sanityChecks";
 
     let dc = Dc.getInstance();
 
-    await dc.initialization;
+    await dc.prInitialization;
 
     for (let dongle of dc.usableDongles.values()) {
 
@@ -73,7 +70,7 @@ import * as sanityChecks from "../lib/sanityChecks";
 
     let dc = Dc.getInstance();
 
-    await dc.initialization;
+    await dc.prInitialization;
 
     try {
 

@@ -79,9 +79,9 @@ export declare namespace UnlockResult {
         tryLeft: number;
     };
 }
-export declare type ModuleConfiguration = {
-    general: Record<"jbenable" | "jbmaxsize" | "jbimpl", string>;
-    defaults: Record<"context" | "group" | "rxgain" | "txgain" | "usecallingpres" | "callingpres" | "language" | "mindtmfgap" | "mindtmfduration" | "mindtmfinterval" | "callwaiting" | "initstate" | "exten" | "dtmf", string>;
+export declare type StaticModuleConfiguration = {
+    general: any;
+    defaults: any;
 };
 export declare type SendMessageResult = {
     success: true;

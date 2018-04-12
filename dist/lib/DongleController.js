@@ -61,150 +61,142 @@ var __read = (this && this.__read) || function (o, n) {
     return ar;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var ts_ami_1 = require("ts-ami");
 var trackable_map_1 = require("trackable-map");
 var types = require("./types");
 var ts_events_extended_1 = require("ts-events-extended");
+var net = require("net");
+var apiDeclaration_1 = require("./apiDeclaration");
+var sipLibrary = require("ts-sip");
 var misc = require("./misc");
-var api = require("./apiDeclaration");
 var DongleController = /** @class */ (function () {
-    function DongleController(asteriskManagerCredential) {
+    function DongleController(host, port) {
+        var _this = this;
         this.dongles = new trackable_map_1.TrackableMap();
         this.evtMessage = new ts_events_extended_1.SyncEvent();
         this.evtStatusReport = new ts_events_extended_1.SyncEvent();
-        this.evtDisconnect = new ts_events_extended_1.SyncEvent();
-        if (asteriskManagerCredential) {
-            this.ami = new ts_ami_1.Ami(asteriskManagerCredential);
-        }
-        else {
-            this.ami = new ts_ami_1.Ami(misc.amiUser);
-        }
-        this.apiClient = this.ami.createApiClient(api.id);
-        this.initialization = this.initialize();
+        /** evtData is hasError */
+        this.evtClose = new ts_events_extended_1.VoidSyncEvent();
+        /** post isSuccess */
+        this.evtInitializationCompleted = new ts_events_extended_1.SyncEvent();
+        /** resolve when instance ready to be used; reject if initialization fail */
+        this.prInitialization = new Promise(function (resolve, reject) {
+            var error = new Error("DongleController initialization error");
+            _this.evtInitializationCompleted.waitFor(3 * 1000)
+                .then(function (isSuccess) { return isSuccess ? resolve() : reject(error); })
+                .catch(function () { return reject(error); });
+        });
+        this.socket = new sipLibrary.Socket(net.connect({ host: host, port: port }));
+        (new sipLibrary.api.Server(this.makeLocalApiHandlers()))
+            .startListening(this.socket);
+        sipLibrary.api.client.enableKeepAlive(this.socket, 5 * 1000);
+        sipLibrary.api.client.enableErrorLogging(this.socket, sipLibrary.api.client.getDefaultErrorLogger({
+            "idString": "DongleController",
+            "log": DongleController.log
+        }));
+        this.socket.evtClose.attachOnce(function () {
+            if (!_this.evtInitializationCompleted.postCount) {
+                _this.evtInitializationCompleted.post(false);
+            }
+            _this.evtClose.post();
+        });
     }
-    Object.defineProperty(DongleController, "hasInstance", {
-        get: function () {
-            return !!this.instance;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    DongleController.getInstance = function (asteriskManagerCredential) {
-        if (this.instance) {
-            return this.instance;
-        }
-        this.instance = new this(asteriskManagerCredential);
-        return this.instance;
+    DongleController.prototype.destroy = function () {
+        this.socket.destroy();
     };
-    DongleController.prototype.disconnect = function (error) {
-        if (DongleController.instance === this) {
-            DongleController.instance = undefined;
-        }
-        var prDisconnect = this.ami.disconnect();
-        this.evtDisconnect.post(error);
-        return prDisconnect;
-    };
-    DongleController.prototype.initialize = function () {
+    DongleController.prototype.sendApiRequest = function (methodName, params) {
         return __awaiter(this, void 0, void 0, function () {
-            var _this = this;
-            var initializationResponse, error_1, dongles, moduleConfiguration, serviceUpSince, dongles_1, dongles_1_1, dongle, evtPeriodicalSignal, e_1, _a;
+            var _a;
             return __generator(this, function (_b) {
                 switch (_b.label) {
                     case 0:
                         _b.trys.push([0, 2, , 3]);
-                        return [4 /*yield*/, this.apiClient.makeRequest(api.initialize.method)];
-                    case 1:
-                        initializationResponse = _b.sent();
-                        return [3 /*break*/, 3];
+                        return [4 /*yield*/, sipLibrary.api.client.sendRequest(this.socket, methodName, params)];
+                    case 1: return [2 /*return*/, _b.sent()];
                     case 2:
-                        error_1 = _b.sent();
-                        error_1.message = "DongleController initialization error: " + error_1.message;
-                        this.disconnect(error_1);
-                        throw error_1;
-                    case 3:
-                        dongles = initializationResponse.dongles, moduleConfiguration = initializationResponse.moduleConfiguration, serviceUpSince = initializationResponse.serviceUpSince;
-                        try {
-                            for (dongles_1 = __values(dongles), dongles_1_1 = dongles_1.next(); !dongles_1_1.done; dongles_1_1 = dongles_1.next()) {
-                                dongle = dongles_1_1.value;
-                                this.dongles.set(dongle.imei, dongle);
-                            }
-                        }
-                        catch (e_1_1) { e_1 = { error: e_1_1 }; }
-                        finally {
-                            try {
-                                if (dongles_1_1 && !dongles_1_1.done && (_a = dongles_1.return)) _a.call(dongles_1);
-                            }
-                            finally { if (e_1) throw e_1.error; }
-                        }
-                        this.moduleConfiguration = moduleConfiguration;
-                        evtPeriodicalSignal = new ts_events_extended_1.SyncEvent();
-                        (function () { return __awaiter(_this, void 0, void 0, function () {
-                            var newUpSince, _a;
-                            return __generator(this, function (_b) {
-                                switch (_b.label) {
-                                    case 0:
-                                        if (!true) return [3 /*break*/, 5];
-                                        newUpSince = undefined;
-                                        _b.label = 1;
-                                    case 1:
-                                        _b.trys.push([1, 3, , 4]);
-                                        return [4 /*yield*/, evtPeriodicalSignal.waitFor(api.Events.periodicalSignal.interval + 4000)];
-                                    case 2:
-                                        newUpSince = _b.sent();
-                                        return [3 /*break*/, 4];
-                                    case 3:
-                                        _a = _b.sent();
-                                        return [3 /*break*/, 4];
-                                    case 4:
-                                        if (newUpSince !== serviceUpSince) {
-                                            this.disconnect(new Error("DongleExtended service is no longer usable newUpSince: " + newUpSince + ", serviceUpSince: " + serviceUpSince));
-                                            return [2 /*return*/];
-                                        }
-                                        return [3 /*break*/, 0];
-                                    case 5: return [2 /*return*/];
-                                }
-                            });
-                        }); })();
-                        this.apiClient.evtEvent.attach(function (_a) {
-                            var name = _a.name, event = _a.event;
-                            if (name === api.Events.periodicalSignal.name) {
-                                var serviceUpSince_1 = event.serviceUpSince;
-                                evtPeriodicalSignal.post(serviceUpSince_1);
-                            }
-                            else if (name === api.Events.updateMap.name) {
-                                var dongleImei = event.dongleImei, dongle = event.dongle;
-                                if (!dongle) {
-                                    _this.dongles.delete(dongleImei);
-                                }
-                                else {
-                                    _this.dongles.set(dongleImei, dongle);
-                                }
-                            }
-                            else if (name === api.Events.message.name) {
-                                var dongleImei = event.dongleImei, message = event.message;
-                                _this.evtMessage.post({
-                                    "dongle": _this.usableDongles.get(dongleImei),
-                                    message: message
-                                });
-                            }
-                            else if (name === api.Events.statusReport.name) {
-                                var dongleImei = event.dongleImei, statusReport = event.statusReport;
-                                _this.evtStatusReport.post({
-                                    "dongle": _this.usableDongles.get(dongleImei),
-                                    statusReport: statusReport
-                                });
-                            }
-                        });
-                        return [2 /*return*/];
+                        _a = _b.sent();
+                        return [2 /*return*/, new Promise(function (resolve) { })];
+                    case 3: return [2 /*return*/];
                 }
             });
         });
     };
-    Object.defineProperty(DongleController.prototype, "isInitialized", {
-        get: function () { return !!this.moduleConfiguration; },
-        enumerable: true,
-        configurable: true
-    });
+    DongleController.prototype.makeLocalApiHandlers = function () {
+        var _this = this;
+        var handlers = {};
+        (function () {
+            var methodName = apiDeclaration_1.controller.notifyCurrentState.methodName;
+            var handler = {
+                "handler": function (_a) {
+                    var staticModuleConfiguration = _a.staticModuleConfiguration, dongles = _a.dongles;
+                    try {
+                        for (var dongles_1 = __values(dongles), dongles_1_1 = dongles_1.next(); !dongles_1_1.done; dongles_1_1 = dongles_1.next()) {
+                            var dongle = dongles_1_1.value;
+                            _this.dongles.set(dongle.imei, dongle);
+                        }
+                    }
+                    catch (e_1_1) { e_1 = { error: e_1_1 }; }
+                    finally {
+                        try {
+                            if (dongles_1_1 && !dongles_1_1.done && (_b = dongles_1.return)) _b.call(dongles_1);
+                        }
+                        finally { if (e_1) throw e_1.error; }
+                    }
+                    _this.staticModuleConfiguration = _this.staticModuleConfiguration;
+                    _this.evtInitializationCompleted.post(true);
+                    return Promise.resolve(undefined);
+                    var e_1, _b;
+                }
+            };
+            handlers[methodName] = handler;
+        })();
+        (function () {
+            var methodName = apiDeclaration_1.controller.updateMap.methodName;
+            var handler = {
+                "handler": function (_a) {
+                    var dongleImei = _a.dongleImei, dongle = _a.dongle;
+                    if (!dongle) {
+                        _this.dongles.delete(dongleImei);
+                    }
+                    else {
+                        _this.dongles.set(dongleImei, dongle);
+                    }
+                    return Promise.resolve(undefined);
+                }
+            };
+            handlers[methodName] = handler;
+        })();
+        (function () {
+            var methodName = apiDeclaration_1.controller.notifyMessage.methodName;
+            var handler = {
+                "handler": function (_a) {
+                    var dongleImei = _a.dongleImei, message = _a.message;
+                    var pr = new Promise(function (resolve) { return resolve("SAVE MESSAGE"); });
+                    _this.evtMessage.post({
+                        "dongle": _this.usableDongles.get(dongleImei),
+                        message: message,
+                        "submitShouldSave": function (prShouldSave) { return pr = prShouldSave; }
+                    });
+                    return pr;
+                }
+            };
+            handlers[methodName] = handler;
+        })();
+        (function () {
+            var methodName = apiDeclaration_1.controller.notifyStatusReport.methodName;
+            var handler = {
+                "handler": function (_a) {
+                    var dongleImei = _a.dongleImei, statusReport = _a.statusReport;
+                    _this.evtStatusReport.post({
+                        "dongle": _this.usableDongles.get(dongleImei),
+                        statusReport: statusReport
+                    });
+                    return Promise.resolve(undefined);
+                }
+            };
+            handlers[methodName] = handler;
+        })();
+        return handlers;
+    };
     Object.defineProperty(DongleController.prototype, "lockedDongles", {
         get: function () {
             var out = new Map();
@@ -253,23 +245,10 @@ var DongleController = /** @class */ (function () {
         enumerable: true,
         configurable: true
     });
+    /** assert target dongle is connected */
     DongleController.prototype.sendMessage = function (viaDongleImei, toNumber, text) {
-        return __awaiter(this, void 0, void 0, function () {
-            var params, returnValue;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        if (!this.usableDongles.has(viaDongleImei)) {
-                            throw new Error("This dongle is not currently connected");
-                        }
-                        params = { viaDongleImei: viaDongleImei, toNumber: toNumber, text: text };
-                        return [4 /*yield*/, this.apiClient.makeRequest(api.sendMessage.method, params, 10800000)];
-                    case 1:
-                        returnValue = _a.sent();
-                        return [2 /*return*/, returnValue];
-                }
-            });
-        });
+        var methodName = apiDeclaration_1.service.sendMessage.methodName;
+        return this.sendApiRequest(methodName, { viaDongleImei: viaDongleImei, toNumber: toNumber, text: text });
     };
     DongleController.prototype.unlock = function () {
         var inputs = [];
@@ -277,27 +256,23 @@ var DongleController = /** @class */ (function () {
             inputs[_i] = arguments[_i];
         }
         return __awaiter(this, void 0, void 0, function () {
-            var _a, dongleImei, p2, p3, dongle, params, unlockResult;
+            var _a, dongleImei, p2, p3, dongle, methodName, params, unlockResult;
             return __generator(this, function (_b) {
                 switch (_b.label) {
                     case 0:
                         _a = __read(inputs, 3), dongleImei = _a[0], p2 = _a[1], p3 = _a[2];
                         dongle = this.lockedDongles.get(dongleImei);
-                        if (!dongle) {
-                            throw new Error("This dongle is not currently locked");
-                        }
-                        if (p3) {
-                            params = { dongleImei: dongleImei, "puk": p2, "newPin": p3 };
-                        }
-                        else {
-                            params = { dongleImei: dongleImei, "pin": p2 };
-                        }
-                        return [4 /*yield*/, this.apiClient.makeRequest(api.unlock.method, params, 30000)];
+                        methodName = apiDeclaration_1.service.unlock.methodName;
+                        params = (!!p3) ?
+                            ({ dongleImei: dongleImei, "puk": p2, "newPin": p3 }) : ({ dongleImei: dongleImei, "pin": p2 });
+                        return [4 /*yield*/, this.sendApiRequest(methodName, params)];
                     case 1:
                         unlockResult = _b.sent();
-                        if (!unlockResult.success) {
-                            dongle.sim.pinState = unlockResult.pinState;
-                            dongle.sim.tryLeft = unlockResult.tryLeft;
+                        if (unlockResult && !unlockResult.success) {
+                            if (dongle) {
+                                dongle.sim.pinState = unlockResult.pinState;
+                                dongle.sim.tryLeft = unlockResult.tryLeft;
+                            }
                         }
                         return [2 /*return*/, unlockResult];
                 }
@@ -305,14 +280,17 @@ var DongleController = /** @class */ (function () {
         });
     };
     DongleController.prototype.getMessages = function (params) {
-        return this.apiClient.makeRequest(api.getMessages.method, params);
+        var methodName = apiDeclaration_1.service.getMessages.methodName;
+        return this.sendApiRequest(methodName, params);
     };
     DongleController.prototype.getMessagesOfSim = function (params) {
         return __awaiter(this, void 0, void 0, function () {
-            var messagesRecord;
+            var methodName, messagesRecord;
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4 /*yield*/, this.apiClient.makeRequest(api.getMessages.method, params)];
+                    case 0:
+                        methodName = apiDeclaration_1.service.getMessages.methodName;
+                        return [4 /*yield*/, this.sendApiRequest(methodName, params)];
                     case 1:
                         messagesRecord = _a.sent();
                         return [2 /*return*/, messagesRecord[params.imsi] || []];
@@ -320,7 +298,28 @@ var DongleController = /** @class */ (function () {
             });
         });
     };
+    Object.defineProperty(DongleController, "hasInstance", {
+        get: function () {
+            return !!this.instance;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    DongleController.getInstance = function (host, port) {
+        var _this = this;
+        if (!!this.instance) {
+            return this.instance;
+        }
+        this.instance = new DongleController(host || "127.0.0.1", port || misc.port);
+        this.instance.socket.evtClose.attachOncePrepend(function () { return _this.instance = undefined; });
+        return this.instance;
+    };
+    //Static
     DongleController.instance = undefined;
     return DongleController;
 }());
+exports.DongleController = DongleController;
+(function (DongleController) {
+    DongleController.log = console.log;
+})(DongleController = exports.DongleController || (exports.DongleController = {}));
 exports.DongleController = DongleController;

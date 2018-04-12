@@ -1,76 +1,76 @@
 import * as types from "./types";
-export declare const id = "dongle-extended";
-export declare namespace Events {
+export declare namespace controller {
+    namespace notifyCurrentState {
+        const methodName = "notifyCurrentState";
+        type Params = {
+            staticModuleConfiguration: types.StaticModuleConfiguration;
+            dongles: types.Dongle[];
+        };
+        type Response = undefined;
+    }
     namespace updateMap {
-        const name = "updateMap";
-        type Data = {
+        const methodName = "updateMap";
+        type Params = {
             dongleImei: string;
             dongle: types.Dongle | undefined;
         };
+        type Response = undefined;
     }
-    namespace message {
-        const name = "message";
-        type Data = {
+    namespace notifyMessage {
+        const methodName = "notifyMessage";
+        type Params = {
             dongleImei: string;
             message: types.Message;
         };
+        type Response = "SAVE MESSAGE" | "DO NOT SAVE MESSAGE";
     }
-    namespace statusReport {
-        const name = "statusReport";
-        type Data = {
+    namespace notifyStatusReport {
+        const methodName = "notifyStatusReport";
+        type Params = {
             dongleImei: string;
             statusReport: types.StatusReport;
         };
+        type Response = undefined;
     }
-    namespace periodicalSignal {
-        const name = "periodicalSignal";
-        type Data = {
-            serviceUpSince: number;
+}
+export declare namespace service {
+    namespace sendMessage {
+        const methodName = "sendMessage";
+        type Params = {
+            viaDongleImei: string;
+            toNumber: string;
+            text: string;
         };
-        const interval = 6000;
+        type Response = types.SendMessageResult;
     }
-}
-export declare namespace initialize {
-    const method = "initialize";
-    type Response = {
-        moduleConfiguration: types.ModuleConfiguration;
-        dongles: types.Dongle[];
-        serviceUpSince: number;
-    };
-}
-export declare namespace sendMessage {
-    const method = "sendMessage";
-    type Params = {
-        viaDongleImei: string;
-        toNumber: string;
-        text: string;
-    };
-    type Response = types.SendMessageResult;
-}
-export declare namespace unlock {
-    const method = "unlock";
-    type Pin = {
-        dongleImei: string;
-        pin: string;
-    };
-    type Puk = {
-        dongleImei: string;
-        puk: string;
-        newPin: string;
-    };
-    type Params = Pin | Puk;
-    function matchPin(p: Params): p is Pin;
-    type Response = types.UnlockResult;
-}
-export declare namespace getMessages {
-    const method = "getMessages";
-    type Params = {
-        imsi?: string;
-        fromDate?: Date;
-        toDate?: Date;
-        flush?: boolean;
-    };
-    type Response = {
-        [imsi: string]: types.Message[];
-    };
+    namespace unlock {
+        const methodName = "unlock";
+        type Params = Params.Pin | Params.Puk;
+        namespace Params {
+            type Pin = {
+                dongleImei: string;
+                pin: string;
+            };
+            type Puk = {
+                dongleImei: string;
+                puk: string;
+                newPin: string;
+            };
+        }
+        function matchPin(p: Params): p is Params.Pin;
+        /** undefined when the dongle disconnect while unlocking */
+        type Response = types.UnlockResult | undefined;
+    }
+    namespace getMessages {
+        const methodName = "getMessages";
+        type Params = {
+            imsi?: string;
+            fromDate?: Date;
+            toDate?: Date;
+            flush?: boolean;
+        };
+        type Response = {
+            [imsi: string]: types.Message[];
+        };
+    }
 }

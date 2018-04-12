@@ -1,148 +1,148 @@
-import { Ami, amiApi } from "ts-ami";
 import { TrackableMap } from "trackable-map";
 import * as types from "./types";
-import { SyncEvent } from "ts-events-extended";
+import { SyncEvent, VoidSyncEvent } from "ts-events-extended";
+import * as net from "net";
+import { 
+    controller as localApiDeclaration, 
+    service as remoteApiDeclaration 
+} from "./apiDeclaration";
+import * as sipLibrary from "ts-sip";
 import * as misc from "./misc";
-import * as api from "./apiDeclaration";
 
 export class DongleController {
 
-    private static instance: DongleController | undefined = undefined;
-
-    public static get hasInstance(): boolean {
-        return !!this.instance;
-    }
-
-    public static getInstance(
-        asteriskManagerCredential?: Ami.Credential
-    ): DongleController {
-
-        if (this.instance){
-             return this.instance;
-        }
-
-        this.instance = new this(asteriskManagerCredential);
-
-        return this.instance;
-
-    }
-
-    public disconnect(error?: Error | undefined ) {
-
-        if (DongleController.instance === this) {
-            DongleController.instance = undefined;
-        }
-
-        let prDisconnect= this.ami.disconnect();
-
-        this.evtDisconnect.post(error);
-
-        return prDisconnect;
-
-    }
-
     public readonly dongles = new TrackableMap<string, types.Dongle>();
-    public moduleConfiguration!: types.ModuleConfiguration;
+
+    public staticModuleConfiguration!: types.StaticModuleConfiguration;
+
     public readonly evtMessage = new SyncEvent<{
         dongle: types.Dongle.Usable;
-        message: types.Message
+        message: types.Message;
+        submitShouldSave(prShouldSave: Promise<"SAVE MESSAGE" | "DO NOT SAVE MESSAGE">): void;
     }>();
+
     public readonly evtStatusReport = new SyncEvent<{
         dongle: types.Dongle.Usable;
         statusReport: types.StatusReport;
     }>();
 
-    public readonly evtDisconnect= new SyncEvent<Error | undefined>();
+    /** evtData is hasError */
+    public readonly evtClose = new VoidSyncEvent();
 
-    public readonly initialization: Promise<void>;
+    /** post isSuccess */
+    private readonly evtInitializationCompleted = new SyncEvent<boolean>();
 
-    public readonly ami: Ami;
+    /** resolve when instance ready to be used; reject if initialization fail */
+    public readonly prInitialization = new Promise<void>(
+        (resolve, reject) => {
 
-    private readonly apiClient: amiApi.Client;
+            let error = new Error("DongleController initialization error");
 
-    public constructor(asteriskManagerCredential?: Ami.Credential) {
+            this.evtInitializationCompleted.waitFor(3 * 1000)
+                .then(isSuccess => isSuccess ? resolve() : reject(error))
+                .catch(() => reject(error))
+                ;
 
-        if (asteriskManagerCredential) {
-            this.ami = new Ami(asteriskManagerCredential);
-        } else {
-            this.ami = new Ami(misc.amiUser);
         }
+    );
 
-        this.apiClient= this.ami.createApiClient(api.id);
+    private readonly socket: sipLibrary.Socket;
 
-        this.initialization = this.initialize();
+    public constructor(
+        host: string,
+        port: number
+    ) {
+
+        this.socket = new sipLibrary.Socket(
+            net.connect({ host, port })
+        );
+
+        (new sipLibrary.api.Server(this.makeLocalApiHandlers()))
+            .startListening(this.socket);
+
+        sipLibrary.api.client.enableKeepAlive(
+            this.socket, 5 * 1000
+        );
+
+        sipLibrary.api.client.enableErrorLogging(this.socket,
+            sipLibrary.api.client.getDefaultErrorLogger({
+                "idString": "DongleController",
+                "log": DongleController.log
+            })
+        );
+
+        this.socket.evtClose.attachOnce(() => {
+
+            if (!this.evtInitializationCompleted.postCount) {
+                this.evtInitializationCompleted.post(false);
+            }
+
+            this.evtClose.post()
+
+        });
 
     }
 
+    public destroy(): void {
+        this.socket.destroy();
+    }
 
-    private async initialize() {
-
-        let initializationResponse: api.initialize.Response;
+    private async sendApiRequest<Params, Response>(
+        methodName: string,
+        params: Params
+    ): Promise<Response> {
 
         try {
 
-            initializationResponse = await this.apiClient.makeRequest(api.initialize.method);
+            return await sipLibrary.api.client.sendRequest<Params, Response>(
+                this.socket, methodName, params
+            );
 
-        } catch (error) {
+        } catch{
 
-            error.message= `DongleController initialization error: ${error.message}`;
-
-            this.disconnect(error);
-
-            throw error;
+            return new Promise<any>(resolve => { });
 
         }
 
-        let { dongles, moduleConfiguration, serviceUpSince } = initializationResponse;
+    }
 
-        for (let dongle of dongles) {
-            this.dongles.set(dongle.imei, dongle);
-        }
+    private makeLocalApiHandlers(): sipLibrary.api.Server.Handlers {
 
-        this.moduleConfiguration = moduleConfiguration;
+        const handlers: sipLibrary.api.Server.Handlers = {};
 
-        let evtPeriodicalSignal = new SyncEvent<number>();
+        (() => {
 
-        (async () => {
+            const methodName = localApiDeclaration.notifyCurrentState.methodName;
+            type Params = localApiDeclaration.notifyCurrentState.Params;
 
-            while (true) {
+            let handler: sipLibrary.api.Server.Handler<Params, undefined> = {
+                "handler": ({ staticModuleConfiguration, dongles }) => {
 
-                let newUpSince: number | undefined = undefined;
+                    for (let dongle of dongles) {
+                        this.dongles.set(dongle.imei, dongle);
+                    }
 
-                try {
+                    this.staticModuleConfiguration = this.staticModuleConfiguration;
 
-                    newUpSince = await evtPeriodicalSignal.waitFor(
-                        api.Events.periodicalSignal.interval + 4000
-                    );
+                    this.evtInitializationCompleted.post(true);
 
-                } catch{ }
-
-                if (newUpSince !== serviceUpSince) {
-
-                    this.disconnect(
-                        new Error(`DongleExtended service is no longer usable newUpSince: ${newUpSince}, serviceUpSince: ${serviceUpSince}`)
-                    );
-
-                    return;
+                    return Promise.resolve(undefined);
 
                 }
+            };
 
-            }
+            handlers[methodName] = handler;
 
         })();
 
-        this.apiClient.evtEvent.attach(
-            ({ name, event }) => {
+        (() => {
 
-                if (name === api.Events.periodicalSignal.name) {
+            const methodName = localApiDeclaration.updateMap.methodName;
+            type Params = localApiDeclaration.updateMap.Params;
+            type Response = localApiDeclaration.updateMap.Response;
 
-                    let { serviceUpSince }: api.Events.periodicalSignal.Data = event;
-
-                    evtPeriodicalSignal.post(serviceUpSince);
-
-                } else if (name === api.Events.updateMap.name) {
-
-                    let { dongleImei, dongle }: api.Events.updateMap.Data = event;
+            let handler: sipLibrary.api.Server.Handler<Params, Response> = {
+                "handler": ({ dongleImei, dongle }) => {
 
                     if (!dongle) {
                         this.dongles.delete(dongleImei);
@@ -150,33 +150,68 @@ export class DongleController {
                         this.dongles.set(dongleImei, dongle);
                     }
 
-                } else if (name === api.Events.message.name) {
+                    return Promise.resolve(undefined);
 
-                    let { dongleImei, message }: api.Events.message.Data = event;
+                }
+            };
+
+            handlers[methodName] = handler;
+
+        })();
+
+        (() => {
+
+            const methodName = localApiDeclaration.notifyMessage.methodName;
+            type Params = localApiDeclaration.notifyMessage.Params;
+            type Response = localApiDeclaration.notifyMessage.Response;
+
+            let handler: sipLibrary.api.Server.Handler<Params, Response> = {
+                "handler": ({ dongleImei, message }) => {
+
+                    let pr= new Promise<Response>(resolve=> resolve("SAVE MESSAGE"));
 
                     this.evtMessage.post({
                         "dongle": this.usableDongles.get(dongleImei)!,
-                        message
+                        message,
+                        "submitShouldSave": (prShouldSave)=> pr= prShouldSave
                     });
 
-                } else if (name === api.Events.statusReport.name) {
+                    return pr;
 
-                    let { dongleImei, statusReport }: api.Events.statusReport.Data = event;
+                }
+            };
+
+            handlers[methodName] = handler;
+
+        })();
+
+        (() => {
+
+            const methodName = localApiDeclaration.notifyStatusReport.methodName;
+            type Params = localApiDeclaration.notifyStatusReport.Params;
+            type Response = localApiDeclaration.notifyStatusReport.Response;
+
+            let handler: sipLibrary.api.Server.Handler<Params, Response> = {
+                "handler": ({ dongleImei, statusReport }) => {
 
                     this.evtStatusReport.post({
                         "dongle": this.usableDongles.get(dongleImei)!,
                         statusReport
                     });
 
+                    return Promise.resolve(undefined);
+
                 }
+            };
 
+            handlers[methodName] = handler;
 
-            }
-        );
+        })();
+
+        return handlers;
 
     }
 
-    public get isInitialized(): boolean { return !!this.moduleConfiguration; }
 
     public get lockedDongles() {
 
@@ -210,71 +245,52 @@ export class DongleController {
 
     }
 
-    public async sendMessage(
+    /** assert target dongle is connected */
+    public sendMessage(
         viaDongleImei: string,
         toNumber: string,
         text: string
     ): Promise<types.SendMessageResult> {
 
-        if (!this.usableDongles.has(viaDongleImei)) {
+        const methodName = remoteApiDeclaration.sendMessage.methodName;
+        type Params = remoteApiDeclaration.sendMessage.Params;
+        type Response = remoteApiDeclaration.sendMessage.Response;
 
-            throw new Error("This dongle is not currently connected");
-
-        }
-
-        let params: api.sendMessage.Params = { viaDongleImei, toNumber, text };
-
-        let returnValue: api.sendMessage.Response = await this.apiClient.makeRequest(
-            api.sendMessage.method,
-            params,
-            10800000
+        return this.sendApiRequest<Params, Response>(
+            methodName,
+            { viaDongleImei, toNumber, text }
         );
-
-        return returnValue;
 
     }
 
-    public unlock(
-        dongleImei: string,
-        puk: string,
-        newPin: string
-    ): Promise<types.UnlockResult>;
-
-    public unlock(
-        dongleImei: string,
-        pin: string
-    ): Promise<types.UnlockResult>;
-
+    /** assert target dongle is connected when calling this */
+    public unlock(dongleImei: string, puk: string, newPin: string): Promise<types.UnlockResult>;
+    public unlock(dongleImei: string, pin: string): Promise<types.UnlockResult>;
     public async unlock(...inputs) {
 
         let [dongleImei, p2, p3] = inputs;
 
         let dongle = this.lockedDongles.get(dongleImei);
 
-        if (!dongle) {
+        const methodName = remoteApiDeclaration.unlock.methodName;
+        type Params = remoteApiDeclaration.unlock.Params;
+        type Response = remoteApiDeclaration.unlock.Response;
 
-            throw new Error("This dongle is not currently locked");
+        let params: Params = (!!p3) ?
+            ({ dongleImei, "puk": p2, "newPin": p3 }) : ({ dongleImei, "pin": p2 });
 
-        }
+        let unlockResult = await this.sendApiRequest<Params, Response>(
+            methodName, params
+        );
 
-        let params: api.unlock.Params;
+        if (unlockResult && !unlockResult.success) {
 
-        if (p3) {
+            if (dongle) {
 
-            params = { dongleImei, "puk": p2, "newPin": p3 };
+                dongle.sim.pinState = unlockResult.pinState;
+                dongle.sim.tryLeft = unlockResult.tryLeft;
 
-        } else {
-
-            params = { dongleImei, "pin": p2 };
-
-        }
-
-        let unlockResult: types.UnlockResult = await this.apiClient.makeRequest(api.unlock.method, params, 30000);
-
-        if (!unlockResult.success) {
-
-            dongle.sim.pinState = unlockResult.pinState;
-            dongle.sim.tryLeft = unlockResult.tryLeft;
+            }
 
         }
 
@@ -284,11 +300,14 @@ export class DongleController {
 
     public getMessages(
         params: { fromDate?: Date; toDate?: Date; flush?: boolean; }
-    ): Promise<api.getMessages.Response> {
+    ) {
 
-        return this.apiClient.makeRequest(
-            api.getMessages.method,
-            params
+        const methodName = remoteApiDeclaration.getMessages.methodName;
+        type Params = remoteApiDeclaration.getMessages.Params;
+        type Response = remoteApiDeclaration.getMessages.Response;
+
+        return this.sendApiRequest<Params, Response>(
+            methodName, params
         );
 
     }
@@ -297,14 +316,48 @@ export class DongleController {
         params: { imsi: string; fromDate?: Date; toDate?: Date; flush?: boolean; }
     ): Promise<types.Message[]> {
 
-        let messagesRecord: api.getMessages.Response = await this.apiClient.makeRequest(
-            api.getMessages.method,
-            params
+        const methodName = remoteApiDeclaration.getMessages.methodName;
+        type Params = remoteApiDeclaration.getMessages.Params;
+        type Response = remoteApiDeclaration.getMessages.Response;
+
+        let messagesRecord = await this.sendApiRequest<Params, Response>(
+            methodName, params
         );
 
         return messagesRecord[params.imsi] || [];
 
     }
 
+    //Static
+
+    private static instance: DongleController | undefined = undefined;
+
+    public static get hasInstance(): boolean {
+        return !!this.instance;
+    }
+
+    public static getInstance(): DongleController;
+    public static getInstance(host: string, port: number): DongleController;
+    public static getInstance(host?: string, port?: number): DongleController {
+
+        if (!!this.instance) {
+            return this.instance;
+        }
+
+        this.instance = new DongleController( host || "127.0.0.1", port || misc.port);
+
+        this.instance.socket.evtClose.attachOncePrepend(
+            () => this.instance = undefined
+        );
+
+        return this.instance;
+
+    }
+
 }
 
+export namespace DongleController {
+
+    export let log = console.log;
+
+}

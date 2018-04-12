@@ -92,7 +92,10 @@ export namespace Sim {
 
 //From here return type of DongleController methods
 
-export type UnlockResult = UnlockResult.Success | UnlockResult.Failed;
+export type UnlockResult =
+    UnlockResult.Success |
+    UnlockResult.Failed;
+
 
 export namespace UnlockResult {
 
@@ -101,15 +104,7 @@ export namespace UnlockResult {
 
 }
 
-export type ModuleConfiguration = {
-    general: Record<"jbenable" | "jbmaxsize" | "jbimpl", string>;
-    defaults: Record<
-    "context" | "group" | "rxgain" | "txgain" |
-    "usecallingpres" | "callingpres" | "language" |
-    "mindtmfgap" | "mindtmfduration" | "mindtmfinterval" |
-    "callwaiting" | "initstate" | "exten" | "dtmf"
-    , string>
-};
+export type StaticModuleConfiguration = { general: any; defaults: any; };
 
 export type SendMessageResult =
     {

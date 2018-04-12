@@ -1,5 +1,6 @@
 import * as types from "./types";
-export declare const amiUser = "dongle_ext_user";
+export declare const amiUser = "chan_dongle_extended";
+export declare const port = 48399;
 export declare function getSimCountryAndSp(imsi: string): (types.Sim.Country & {
     serviceProvider: string;
 }) | undefined;

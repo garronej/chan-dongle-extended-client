@@ -362,6 +362,6 @@ export class DongleController {
 
 export namespace DongleController {
 
-    export let log = console.log;
+    export let log = console.log.bind(console);
 
 }

@@ -50,5 +50,5 @@ export declare class DongleController {
     static getInstance(host: string, port: number): DongleController;
 }
 export declare namespace DongleController {
-    let log: (message?: any, ...optionalParams: any[]) => void;
+    let log: any;
 }

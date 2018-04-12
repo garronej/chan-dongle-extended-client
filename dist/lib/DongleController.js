@@ -327,6 +327,6 @@ var DongleController = /** @class */ (function () {
 }());
 exports.DongleController = DongleController;
 (function (DongleController) {
-    DongleController.log = console.log;
+    DongleController.log = console.log.bind(console);
 })(DongleController = exports.DongleController || (exports.DongleController = {}));
 exports.DongleController = DongleController;

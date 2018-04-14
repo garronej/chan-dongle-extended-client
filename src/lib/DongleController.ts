@@ -126,7 +126,7 @@ export class DongleController {
                         this.dongles.set(dongle.imei, dongle);
                     }
 
-                    this.staticModuleConfiguration = this.staticModuleConfiguration;
+                    this.staticModuleConfiguration = staticModuleConfiguration;
 
                     this.evtInitializationCompleted.post(true);
 

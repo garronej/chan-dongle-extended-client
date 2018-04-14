@@ -148,7 +148,7 @@ var DongleController = /** @class */ (function () {
                         }
                         finally { if (e_1) throw e_1.error; }
                     }
-                    _this.staticModuleConfiguration = _this.staticModuleConfiguration;
+                    _this.staticModuleConfiguration = staticModuleConfiguration;
                     _this.evtInitializationCompleted.post(true);
                     return Promise.resolve(undefined);
                     var e_1, _b;

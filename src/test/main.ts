@@ -22,6 +22,8 @@ import * as sanityChecks from "../lib/sanityChecks";
 
     }
 
+    console.log( dc.staticModuleConfiguration );
+
     //console.log(JSON.stringify(dc.dongles.toObject(), null, 2));
 
     for( let dongle of dc.dongles.values() ){

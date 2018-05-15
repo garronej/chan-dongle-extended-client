@@ -5,7 +5,6 @@ var md5 = require("md5");
 var sanityChecks = require("./sanityChecks");
 var fs = require("fs");
 var path = require("path");
-exports.amiUser = "chan_dongle_extended";
 exports.port = 48399;
 function getSimCountryAndSp(imsi) {
     if (getSimCountryAndSp.cache.has(imsi)) {

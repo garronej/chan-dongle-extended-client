@@ -13,9 +13,6 @@ export declare namespace getSimCountryAndSp {
         network_name: string;
     };
     function getMccmnc(): Record<string, ImsiInfos>;
-    const cache: Map<string, (types.Sim.Country & {
-        serviceProvider: string;
-    }) | undefined>;
 }
 /** Convert a number to national dry or return itself */
 export declare function toNationalNumber(number: string, imsi: string): string;

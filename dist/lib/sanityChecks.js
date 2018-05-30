@@ -33,10 +33,7 @@ function md5(str) {
 exports.md5 = md5;
 function simStorage(o) {
     if (!(o instanceof Object &&
-        (o.number === undefined ||
-            (o.number instanceof Object &&
-                typeof o.number.asStored === "string" &&
-                typeof o.number.localFormat === "string")) &&
+        (typeof o.number === "string" || o.number === undefined) &&
         o.infos instanceof Object &&
         o.contacts instanceof Array &&
         md5(o.digest)))
@@ -89,14 +86,11 @@ exports.dongleLocked = dongleLocked;
 function simContact(o) {
     return (o instanceof Object &&
         typeof o.index === "number" &&
-        o.name instanceof Object &&
-        typeof o.name.asStored === "string" &&
-        typeof o.name.full === "string" &&
-        o.number instanceof Object &&
-        typeof o.number.asStored === "string" &&
-        typeof o.number.localFormat === "string");
+        typeof o.name === "string" &&
+        typeof o.number === "string");
 }
 exports.simContact = simContact;
+//TODO: maybe this check is not worth it.
 function simCountry(o, imsi) {
     try {
         var expected = misc.getSimCountryAndSp(imsi);

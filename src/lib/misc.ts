@@ -11,10 +11,6 @@ export function getSimCountryAndSp(
     imsi: string
 ): (types.Sim.Country & { serviceProvider: string; }) | undefined {
 
-    if (getSimCountryAndSp.cache.has(imsi)) {
-        return getSimCountryAndSp.cache.get(imsi);
-    }
-
     if (!sanityChecks.imsi(imsi)) {
         throw new Error("imsi malformed");
     }
@@ -23,16 +19,13 @@ export function getSimCountryAndSp(
 
     let imsiInfos = mccmnc[imsi.substr(0, 6)] || mccmnc[imsi.substr(0, 5)];
 
-    getSimCountryAndSp.cache.set(imsi, 
-        imsiInfos ? ({
-            "name": imsiInfos.country_name,
-            "iso": (imsiInfos.country_iso || "US").toLowerCase(),
-            "code": parseInt(imsiInfos.country_code),
-            "serviceProvider": imsiInfos.network_name
-        }) : undefined
-    );
+    return imsiInfos ? ({
+        "name": imsiInfos.country_name,
+        "iso": (imsiInfos.country_iso || "US").toLowerCase(),
+        "code": parseInt(imsiInfos.country_code),
+        "serviceProvider": imsiInfos.network_name
+    }) : undefined
 
-    return getSimCountryAndSp(imsi);
 
 }
 
@@ -66,8 +59,6 @@ export namespace getSimCountryAndSp {
 
     }
 
-    export const cache = new Map<string, (types.Sim.Country & { serviceProvider: string; }) | undefined>();
-
 }
 
 /** Convert a number to national dry or return itself */
@@ -76,9 +67,9 @@ export function toNationalNumber(
     imsi: string
 ): string {
 
-    let simCountry= getSimCountryAndSp(imsi);
+    let simCountry = getSimCountryAndSp(imsi);
 
-    if( !simCountry ){
+    if (!simCountry) {
         return number;
     }
 
@@ -88,7 +79,7 @@ export function toNationalNumber(
 
     let pn = new PhoneNumber(number, simCountry.iso.toUpperCase());
 
-    if (!pn.isValid() || (pn.getRegionCode() || "" ).toLowerCase() !== simCountry.iso) {
+    if (!pn.isValid() || (pn.getRegionCode() || "").toLowerCase() !== simCountry.iso) {
         return number;
     }
 
@@ -104,7 +95,7 @@ export function computeSimStorageDigest(
 
     let strArr = contacts
         .sort((c1, c2) => c1.index - c2.index)
-        .map(c => `${c.index}${c.name.asStored}${c.number.asStored}`);
+        .map(c => `${c.index}${c.name}${c.number}`);
 
     strArr.push(`${number}`);
     strArr.push(`${storageLeft}`);

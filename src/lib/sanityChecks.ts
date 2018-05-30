@@ -26,14 +26,7 @@ export function simStorage(o: types.Sim.Storage): boolean {
 
     if (!(
         o instanceof Object &&
-        (
-            o.number === undefined ||
-            (
-                o.number instanceof Object &&
-                typeof o.number.asStored === "string" &&
-                typeof o.number.localFormat === "string"
-            )
-        ) &&
+        ( typeof o.number === "string" || o.number===undefined ) &&
         o.infos instanceof Object &&
         o.contacts instanceof Array &&
         md5(o.digest)
@@ -98,16 +91,13 @@ export function simContact(o: types.Sim.Contact): boolean {
     return (
         o instanceof Object &&
         typeof o.index === "number" &&
-        o.name instanceof Object &&
-        typeof o.name.asStored === "string" &&
-        typeof o.name.full === "string" &&
-        o.number instanceof Object &&
-        typeof o.number.asStored === "string" &&
-        typeof o.number.localFormat === "string"
+        typeof o.name === "string" &&
+        typeof o.number === "string"
     );
 
 }
 
+//TODO: maybe this check is not worth it.
 export function simCountry(
     o: types.Sim.Country,
     imsi: string

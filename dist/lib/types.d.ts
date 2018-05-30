@@ -15,14 +15,14 @@ export declare namespace Dongle {
         type PinState = "SIM PIN" | "SIM PUK" | "SIM PIN2" | "SIM PUK2";
         function match(dongle: Dongle): dongle is Locked;
     }
-    interface Usable {
+    type Usable = {
         imei: string;
         manufacturer: string;
         model: string;
         firmwareVersion: string;
         isVoiceEnabled?: boolean;
         sim: Sim;
-    }
+    };
     namespace Usable {
         function match(dongle: Dongle): dongle is Usable;
     }
@@ -44,10 +44,7 @@ export declare namespace Sim {
         code: number;
     };
     type Storage = {
-        number?: {
-            readonly asStored: string;
-            localFormat: string;
-        };
+        number?: string;
         infos: {
             contactNameMaxLength: number;
             numberMaxLength: number;
@@ -57,15 +54,9 @@ export declare namespace Sim {
         digest: string;
     };
     type Contact = {
-        readonly index: number;
-        readonly name: {
-            readonly asStored: string;
-            full: string;
-        };
-        readonly number: {
-            readonly asStored: string;
-            localFormat: string;
-        };
+        index: number;
+        name: string;
+        number: string;
     };
 }
 export declare type UnlockResult = UnlockResult.Success | UnlockResult.Failed;

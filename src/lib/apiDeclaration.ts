@@ -106,7 +106,7 @@ export namespace service {
             flush?: boolean;
         };
 
-        export type Response = { [imsi: string]: types.Message[] };
+        export type Response = (types.Message & { imsi: string; })[] ;
 
     }
 

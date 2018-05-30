@@ -24,14 +24,14 @@ export namespace Dongle {
 
     }
 
-    export interface Usable {
+    export type Usable = {
         imei: string;
         manufacturer: string;
         model: string;
         firmwareVersion: string;
         isVoiceEnabled?: boolean;
         sim: Sim;
-    }
+    };
 
     export namespace Usable {
 
@@ -63,10 +63,7 @@ export namespace Sim {
     };
 
     export type Storage = {
-        number?: {
-            readonly asStored: string;
-            localFormat: string;
-        };
+        number?: string;
         infos: {
             contactNameMaxLength: number;
             numberMaxLength: number;
@@ -77,16 +74,10 @@ export namespace Sim {
     };
 
     export type Contact = {
-        readonly index: number;
-        readonly name: {
-            readonly asStored: string;
-            full: string;
-        };
-        readonly number: {
-            readonly asStored: string;
-            localFormat: string;
-        };
-    }
+        index: number;
+        name: string;
+        number: string;
+    };
 
 }
 

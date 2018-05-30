@@ -69,8 +69,8 @@ export declare namespace service {
             toDate?: Date;
             flush?: boolean;
         };
-        type Response = {
-            [imsi: string]: types.Message[];
-        };
+        type Response = (types.Message & {
+            imsi: string;
+        })[];
     }
 }

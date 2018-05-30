@@ -115,10 +115,7 @@ import * as sanityChecks from "../lib/sanityChecks";
                 "fromNetwork": "Free"
             },
             "storage": {
-                "number": {
-                    "asStored": "+33769365812",
-                    "localFormat": "0769365812"
-                },
+                "number": "+33769365812",
                 "infos": {
                     "contactNameMaxLength": 14,
                     "numberMaxLength": 24,
@@ -127,25 +124,13 @@ import * as sanityChecks from "../lib/sanityChecks";
                 "contacts": [
                     {
                         "index": 1,
-                        "name": {
-                            "asStored": "Joseph Garrone",
-                            "full": "Joseph Garrone"
-                        },
-                        "number": {
-                            "asStored": "0636786385",
-                            "localFormat": "0636786385"
-                        }
+                        "name": "Joseph Garrone",
+                        "number": "0636786385"
                     },
                     {
                         "index": 7,
-                        "name": {
-                            "asStored": "Sienna",
-                            "full": "Sienna"
-                        },
-                        "number": {
-                            "asStored": "0782397709",
-                            "localFormat": "0782397709"
-                        }
+                        "name": "Sienna",
+                        "number": "0782397709"
                     }
                 ],
                 "digest": "133f4ab5a08e6a30c04e78c0016d1551"

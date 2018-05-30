@@ -1,6 +1,6 @@
 {
   "name": "chan-dongle-extended-client",
-  "version": "0.11.6",
+  "version": "0.12.0",
   "description": "client for chan-dongle-extended",
   "main": "./dist/lib/index.js",
   "types": "./dist/lib/index.d.ts",
@@ -25,7 +25,6 @@
   "license": "SEE LICENSE IN LICENSE",
   "dependencies": {
     "md5": "^2.2.1",
-    "rejection-tracker": "garronej/rejection-tracker",
     "trackable-map": "github:garronej/trackable-map",
     "ts-events-extended": "garronej/ts-events-extended",
     "awesome-phonenumber": "^2.1.0",

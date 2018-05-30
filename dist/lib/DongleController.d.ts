@@ -1,7 +1,6 @@
 import { TrackableMap } from "trackable-map";
 import * as types from "./types";
 import { SyncEvent, VoidSyncEvent } from "ts-events-extended";
-import { service as remoteApiDeclaration } from "./apiDeclaration";
 export declare class DongleController {
     readonly dongles: TrackableMap<string, types.Dongle>;
     staticModuleConfiguration: types.StaticModuleConfiguration;
@@ -37,7 +36,9 @@ export declare class DongleController {
         fromDate?: Date;
         toDate?: Date;
         flush?: boolean;
-    }): Promise<remoteApiDeclaration.getMessages.Response>;
+    }): Promise<(types.Message & {
+        imsi: string;
+    })[]>;
     getMessagesOfSim(params: {
         imsi: string;
         fromDate?: Date;

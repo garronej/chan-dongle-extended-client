@@ -7,21 +7,17 @@ var fs = require("fs");
 var path = require("path");
 exports.port = 48399;
 function getSimCountryAndSp(imsi) {
-    if (getSimCountryAndSp.cache.has(imsi)) {
-        return getSimCountryAndSp.cache.get(imsi);
-    }
     if (!sanityChecks.imsi(imsi)) {
         throw new Error("imsi malformed");
     }
     var mccmnc = getSimCountryAndSp.getMccmnc();
     var imsiInfos = mccmnc[imsi.substr(0, 6)] || mccmnc[imsi.substr(0, 5)];
-    getSimCountryAndSp.cache.set(imsi, imsiInfos ? ({
+    return imsiInfos ? ({
         "name": imsiInfos.country_name,
         "iso": (imsiInfos.country_iso || "US").toLowerCase(),
         "code": parseInt(imsiInfos.country_code),
         "serviceProvider": imsiInfos.network_name
-    }) : undefined);
-    return getSimCountryAndSp(imsi);
+    }) : undefined;
 }
 exports.getSimCountryAndSp = getSimCountryAndSp;
 (function (getSimCountryAndSp) {
@@ -34,7 +30,6 @@ exports.getSimCountryAndSp = getSimCountryAndSp;
         return getMccmnc();
     }
     getSimCountryAndSp.getMccmnc = getMccmnc;
-    getSimCountryAndSp.cache = new Map();
 })(getSimCountryAndSp = exports.getSimCountryAndSp || (exports.getSimCountryAndSp = {}));
 /** Convert a number to national dry or return itself */
 function toNationalNumber(number, imsi) {
@@ -55,7 +50,7 @@ exports.toNationalNumber = toNationalNumber;
 function computeSimStorageDigest(number, storageLeft, contacts) {
     var strArr = contacts
         .sort(function (c1, c2) { return c1.index - c2.index; })
-        .map(function (c) { return "" + c.index + c.name.asStored + c.number.asStored; });
+        .map(function (c) { return "" + c.index + c.name + c.number; });
     strArr.push("" + number);
     strArr.push("" + storageLeft);
     return md5(strArr.join(""));

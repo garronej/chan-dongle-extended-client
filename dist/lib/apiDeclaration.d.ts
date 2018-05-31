@@ -61,6 +61,54 @@ export declare namespace service {
         /** undefined when the dongle disconnect while unlocking */
         type Response = types.UnlockResult | undefined;
     }
+    namespace createContact {
+        const methodName = "createContact";
+        type Params = {
+            imsi: string;
+            number: string;
+            name: string;
+        };
+        type Response = Response.Success | Response.Failure;
+        namespace Response {
+            type Success = {
+                isSuccess: true;
+                contact: types.Sim.Contact;
+            };
+            type Failure = {
+                isSuccess: false;
+            };
+        }
+    }
+    namespace updateContact {
+        const methodName = "updateContact";
+        /** assert new_name and new_number are not both null */
+        type Params = {
+            imsi: string;
+            index: number;
+            new_name?: string;
+            new_number?: string;
+        };
+        type Response = Response.Success | Response.Failure;
+        namespace Response {
+            type Success = {
+                isSuccess: true;
+                contact: types.Sim.Contact;
+            };
+            type Failure = {
+                isSuccess: false;
+            };
+        }
+    }
+    namespace deleteContact {
+        const methodName = "deleteContact";
+        type Params = {
+            imsi: string;
+            index: number;
+        };
+        type Response = {
+            isSuccess: boolean;
+        };
+    }
     namespace getMessages {
         const methodName = "getMessages";
         type Params = {

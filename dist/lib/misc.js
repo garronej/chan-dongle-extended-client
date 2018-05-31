@@ -56,3 +56,7 @@ function computeSimStorageDigest(number, storageLeft, contacts) {
     return md5(strArr.join(""));
 }
 exports.computeSimStorageDigest = computeSimStorageDigest;
+function updateStorageDigest(dongle) {
+    dongle.sim.storage.digest = computeSimStorageDigest(dongle.sim.storage.number, dongle.sim.storage.infos.storageLeft, dongle.sim.storage.contacts);
+}
+exports.updateStorageDigest = updateStorageDigest;

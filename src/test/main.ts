@@ -9,7 +9,6 @@ import * as sanityChecks from "../lib/sanityChecks";
 
     let dc = Dc.getInstance();
 
-
     try {
 
         await dc.prInitialization;
@@ -60,7 +59,7 @@ import * as sanityChecks from "../lib/sanityChecks";
 
     for (let dongle of dc.usableDongles.values()) {
 
-        let messages = await dc.getMessagesOfSim({ "imsi": dongle.sim.imsi });
+        const messages = await dc.getMessages({ "imsi": dongle.sim.imsi });
 
         console.log(messages);
 
@@ -76,7 +75,7 @@ import * as sanityChecks from "../lib/sanityChecks";
 
     try {
 
-        await dc.getMessagesOfSim({ "imsi": "42" });
+        await dc.getMessages({ "imsi": "42" });
 
         console.log("Fail");
 
@@ -95,8 +94,7 @@ import * as sanityChecks from "../lib/sanityChecks";
 
 (function testSanityChecks() {
 
-
-    let dongle = {
+    const dongle = {
         "imei": "353762037478870",
         "isVoiceEnabled": true,
         "manufacturer": "huawei",

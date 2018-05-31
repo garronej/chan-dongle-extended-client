@@ -81,12 +81,7 @@ export namespace Sim {
 
 }
 
-//From here return type of DongleController methods
-
-export type UnlockResult =
-    UnlockResult.Success |
-    UnlockResult.Failed;
-
+export type UnlockResult = UnlockResult.Success | UnlockResult.Failed;
 
 export namespace UnlockResult {
 

@@ -249,7 +249,13 @@ export class DongleController {
 
     }
 
-    /** assert target dongle is connected */
+    /** 
+     * assert target dongle is connected 
+     * 
+     *  throws: 
+     *  (sip-library api client) SendRequestError
+     * 
+     * */
     public sendMessage(
         viaDongleImei: string,
         toNumber: string,
@@ -267,10 +273,18 @@ export class DongleController {
 
     }
 
-    /** assert target dongle is connected when calling this */
-    public unlock(dongleImei: string, puk: string, newPin: string): Promise<types.UnlockResult>;
-    public unlock(dongleImei: string, pin: string): Promise<types.UnlockResult>;
-    public async unlock(...inputs) {
+    /** 
+     * assert target dongle is connected when calling this 
+     * 
+     * Return undefined if dongle disconnect while unlocking.
+     * 
+     *  throws: 
+     *  (sip-library api client) SendRequestError
+     * 
+     * */
+    public unlock(dongleImei: string, puk: string, newPin: string): Promise<types.UnlockResult | undefined>;
+    public unlock(dongleImei: string, pin: string): Promise<types.UnlockResult | undefined>;
+    public async unlock(...inputs): Promise<types.UnlockResult | undefined > {
 
         let [dongleImei, p2, p3] = inputs;
 
@@ -302,9 +316,14 @@ export class DongleController {
 
     }
 
-    public getMessages(
-        params: { fromDate?: Date; toDate?: Date; flush?: boolean; }
-    ) {
+
+    /** 
+     * 
+     *  throws: 
+     *  (sip-library api client) SendRequestError
+     * 
+     * */
+    public getMessages( params: remoteApiDeclaration.getMessages.Params) {
 
         const methodName = remoteApiDeclaration.getMessages.methodName;
         type Params = remoteApiDeclaration.getMessages.Params;
@@ -316,19 +335,207 @@ export class DongleController {
 
     }
 
-    public async getMessagesOfSim(
-        params: { imsi: string; fromDate?: Date; toDate?: Date; flush?: boolean; }
-    ): Promise<types.Message[]> {
+    /** 
+     * 
+     *  throws that can be anticipated: 
+     *  no dongle with imsi, 
+     *  phone number too long, 
+     *  no space left on SIM storage
+     * 
+     *  throw that can't be anticipated:
+     *  (sip-library api client) SendRequestError
+     *  Modem disconnect
+     *  Unexpected error
+     * 
+     * */
+    public async createContact(
+        imsi: string, 
+        number: string, 
+        name: string
+    ): Promise<types.Sim.Contact> {
 
-        const methodName = remoteApiDeclaration.getMessages.methodName;
-        type Params = remoteApiDeclaration.getMessages.Params;
-        type Response = remoteApiDeclaration.getMessages.Response;
+        const methodName = remoteApiDeclaration.createContact.methodName;
+        type Params = remoteApiDeclaration.createContact.Params;
+        type Response = remoteApiDeclaration.createContact.Response;
 
-        let messagesRecord = await this.sendApiRequest<Params, Response>(
-            methodName, params
+
+        const dongle = Array.from(this.usableDongles.values())
+            .find(({ sim }) => sim.imsi === imsi)
+            ;
+
+        if( !dongle ){
+
+            throw new Error(`No dongle with SIM imsi: ${imsi}`);
+
+        }
+
+        if( number.length > dongle.sim.storage.infos.numberMaxLength ) {
+
+            throw new Error(`Phone number too long`);
+
+        }
+
+        if( dongle.sim.storage.infos.storageLeft === 0 ){
+
+            throw new Error("No space left on SIM internal storage");
+
+        }
+
+        const resp = await this.sendApiRequest<Params, Response>(
+            methodName, { imsi, number, name }
         );
 
-        return messagesRecord[params.imsi] || [];
+        if (resp.isSuccess) {
+
+            dongle.sim.storage.infos.storageLeft--;
+
+            dongle.sim.storage.contacts.push(resp.contact);
+
+            misc.updateStorageDigest(dongle);
+
+        }else{
+
+            throw new Error("Dongle disconnect or unexpected error");
+
+        }
+
+        return resp.contact;
+
+    }
+
+    /** 
+     * 
+     *  throws that can be anticipated: 
+     *  no dongle with imsi, 
+     *  new_number too long, 
+     *  no contact at index,
+     *  new_name and new_number are both undefined
+     * 
+     *  throw that can't be anticipated:
+     *  (sip-library api client) SendRequestError
+     *  Modem disconnect
+     *  Unexpected error
+     * 
+     * */
+    public async updateContact(
+        imsi: string,
+        index: number,
+        new_name: string | undefined,
+        new_number: string | undefined
+    ): Promise<types.Sim.Contact> {
+
+        const methodName = remoteApiDeclaration.updateContact.methodName;
+        type Params = remoteApiDeclaration.updateContact.Params;
+        type Response = remoteApiDeclaration.updateContact.Response;
+
+        if( new_name === undefined && new_number === undefined ){
+            throw new Error("New name and new number can't be both undefined");
+        }
+
+        const dongle = Array.from(this.usableDongles.values())
+            .find(({ sim }) => sim.imsi === imsi)
+            ;
+
+        if (!dongle) {
+
+            throw new Error(`No dongle with SIM imsi: ${imsi}`);
+
+        }
+
+        if( 
+            new_number !== undefined && 
+            new_number.length > dongle.sim.storage.infos.numberMaxLength 
+        ) {
+
+            throw new Error(`Phone number too long`);
+
+        }
+
+        const updated_contact = dongle.sim.storage.contacts
+            .find(c => c.index === index)
+            ;
+        
+        if( !updated_contact ){
+
+            throw new Error(`There is no contact at index: ${index} in SIM`);
+
+        }
+
+        const resp = await this.sendApiRequest<Params, Response>(
+            methodName, { imsi, index, new_name, new_number }
+        );
+
+        if( resp.isSuccess ){
+
+            updated_contact.name= resp.contact.name;
+            updated_contact.number= resp.contact.number;
+
+            misc.updateStorageDigest(dongle);
+
+        }else{
+
+            throw new Error("Dongle disconnect or unexpected error");
+
+        }
+
+        return resp.contact;
+
+    }
+
+    /** 
+     * 
+     *  throws that can be anticipated: 
+     *  no dongle with imsi, 
+     *  no contact at index.
+     * 
+     *  throw that can't be anticipated:
+     *  (sip-library api client) SendRequestError
+     *  Modem disconnect
+     *  Unexpected error
+     * 
+     * */
+    public async deleteContact(imsi: string, index: number): Promise<void> {
+
+        const methodName = remoteApiDeclaration.deleteContact.methodName;
+        type Params = remoteApiDeclaration.deleteContact.Params;
+        type Response = remoteApiDeclaration.deleteContact.Response;
+
+        const dongle = Array.from(this.usableDongles.values())
+            .find(({ sim }) => sim.imsi === imsi)
+            ;
+
+        if (!dongle) {
+
+            throw new Error(`No dongle with SIM imsi: ${imsi}`);
+
+        }
+
+        const contact_to_delete = dongle.sim.storage.contacts
+            .find(c => c.index === index)
+            ;
+        
+        if( !contact_to_delete ){
+
+            throw new Error(`There is no contact at index: ${index} in SIM`);
+
+        }
+
+        const resp = await this.sendApiRequest<Params, Response>(
+            methodName, { imsi, index }
+        );
+
+        if( resp.isSuccess ){
+
+            dongle.sim.storage.infos.storageLeft++;
+
+            misc.updateStorageDigest(dongle);
+
+        }else{
+
+            throw new Error("Dongle disconnect or unexpected error");
+
+        }
+
 
     }
 
@@ -348,7 +555,7 @@ export class DongleController {
             return this.instance;
         }
 
-        this.instance = new DongleController( host || "127.0.0.1", port || misc.port);
+        this.instance = new DongleController(host || "127.0.0.1", port || misc.port);
 
         this.instance.socket.evtClose.attachOncePrepend(
             () => this.instance = undefined

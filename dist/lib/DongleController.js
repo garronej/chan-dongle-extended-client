@@ -252,7 +252,13 @@ var DongleController = /** @class */ (function () {
         enumerable: true,
         configurable: true
     });
-    /** assert target dongle is connected */
+    /**
+     * assert target dongle is connected
+     *
+     *  throws:
+     *  (sip-library api client) SendRequestError
+     *
+     * */
     DongleController.prototype.sendMessage = function (viaDongleImei, toNumber, text) {
         var methodName = apiDeclaration_1.service.sendMessage.methodName;
         return this.sendApiRequest(methodName, { viaDongleImei: viaDongleImei, toNumber: toNumber, text: text });
@@ -286,21 +292,166 @@ var DongleController = /** @class */ (function () {
             });
         });
     };
+    /**
+     *
+     *  throws:
+     *  (sip-library api client) SendRequestError
+     *
+     * */
     DongleController.prototype.getMessages = function (params) {
         var methodName = apiDeclaration_1.service.getMessages.methodName;
         return this.sendApiRequest(methodName, params);
     };
-    DongleController.prototype.getMessagesOfSim = function (params) {
+    /**
+     *
+     *  throws that can be anticipated:
+     *  no dongle with imsi,
+     *  phone number too long,
+     *  no space left on SIM storage
+     *
+     *  throw that can't be anticipated:
+     *  (sip-library api client) SendRequestError
+     *  Modem disconnect
+     *  Unexpected error
+     *
+     * */
+    DongleController.prototype.createContact = function (imsi, number, name) {
         return __awaiter(this, void 0, void 0, function () {
-            var methodName, messagesRecord;
+            var methodName, dongle, resp;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        methodName = apiDeclaration_1.service.getMessages.methodName;
-                        return [4 /*yield*/, this.sendApiRequest(methodName, params)];
+                        methodName = apiDeclaration_1.service.createContact.methodName;
+                        dongle = Array.from(this.usableDongles.values())
+                            .find(function (_a) {
+                            var sim = _a.sim;
+                            return sim.imsi === imsi;
+                        });
+                        if (!dongle) {
+                            throw new Error("No dongle with SIM imsi: " + imsi);
+                        }
+                        if (number.length > dongle.sim.storage.infos.numberMaxLength) {
+                            throw new Error("Phone number too long");
+                        }
+                        if (dongle.sim.storage.infos.storageLeft === 0) {
+                            throw new Error("No space left on SIM internal storage");
+                        }
+                        return [4 /*yield*/, this.sendApiRequest(methodName, { imsi: imsi, number: number, name: name })];
                     case 1:
-                        messagesRecord = _a.sent();
-                        return [2 /*return*/, messagesRecord[params.imsi] || []];
+                        resp = _a.sent();
+                        if (resp.isSuccess) {
+                            dongle.sim.storage.infos.storageLeft--;
+                            dongle.sim.storage.contacts.push(resp.contact);
+                            misc.updateStorageDigest(dongle);
+                        }
+                        else {
+                            throw new Error("Dongle disconnect or unexpected error");
+                        }
+                        return [2 /*return*/, resp.contact];
+                }
+            });
+        });
+    };
+    /**
+     *
+     *  throws that can be anticipated:
+     *  no dongle with imsi,
+     *  new_number too long,
+     *  no contact at index,
+     *  new_name and new_number are both undefined
+     *
+     *  throw that can't be anticipated:
+     *  (sip-library api client) SendRequestError
+     *  Modem disconnect
+     *  Unexpected error
+     *
+     * */
+    DongleController.prototype.updateContact = function (imsi, index, new_name, new_number) {
+        return __awaiter(this, void 0, void 0, function () {
+            var methodName, dongle, updated_contact, resp;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        methodName = apiDeclaration_1.service.updateContact.methodName;
+                        if (new_name === undefined && new_number === undefined) {
+                            throw new Error("New name and new number can't be both undefined");
+                        }
+                        dongle = Array.from(this.usableDongles.values())
+                            .find(function (_a) {
+                            var sim = _a.sim;
+                            return sim.imsi === imsi;
+                        });
+                        if (!dongle) {
+                            throw new Error("No dongle with SIM imsi: " + imsi);
+                        }
+                        if (new_number !== undefined &&
+                            new_number.length > dongle.sim.storage.infos.numberMaxLength) {
+                            throw new Error("Phone number too long");
+                        }
+                        updated_contact = dongle.sim.storage.contacts
+                            .find(function (c) { return c.index === index; });
+                        if (!updated_contact) {
+                            throw new Error("There is no contact at index: " + index + " in SIM");
+                        }
+                        return [4 /*yield*/, this.sendApiRequest(methodName, { imsi: imsi, index: index, new_name: new_name, new_number: new_number })];
+                    case 1:
+                        resp = _a.sent();
+                        if (resp.isSuccess) {
+                            updated_contact.name = resp.contact.name;
+                            updated_contact.number = resp.contact.number;
+                            misc.updateStorageDigest(dongle);
+                        }
+                        else {
+                            throw new Error("Dongle disconnect or unexpected error");
+                        }
+                        return [2 /*return*/, resp.contact];
+                }
+            });
+        });
+    };
+    /**
+     *
+     *  throws that can be anticipated:
+     *  no dongle with imsi,
+     *  no contact at index.
+     *
+     *  throw that can't be anticipated:
+     *  (sip-library api client) SendRequestError
+     *  Modem disconnect
+     *  Unexpected error
+     *
+     * */
+    DongleController.prototype.deleteContact = function (imsi, index) {
+        return __awaiter(this, void 0, void 0, function () {
+            var methodName, dongle, contact_to_delete, resp;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        methodName = apiDeclaration_1.service.deleteContact.methodName;
+                        dongle = Array.from(this.usableDongles.values())
+                            .find(function (_a) {
+                            var sim = _a.sim;
+                            return sim.imsi === imsi;
+                        });
+                        if (!dongle) {
+                            throw new Error("No dongle with SIM imsi: " + imsi);
+                        }
+                        contact_to_delete = dongle.sim.storage.contacts
+                            .find(function (c) { return c.index === index; });
+                        if (!contact_to_delete) {
+                            throw new Error("There is no contact at index: " + index + " in SIM");
+                        }
+                        return [4 /*yield*/, this.sendApiRequest(methodName, { imsi: imsi, index: index })];
+                    case 1:
+                        resp = _a.sent();
+                        if (resp.isSuccess) {
+                            dongle.sim.storage.infos.storageLeft++;
+                            misc.updateStorageDigest(dongle);
+                        }
+                        else {
+                            throw new Error("Dongle disconnect or unexpected error");
+                        }
+                        return [2 /*return*/];
                 }
             });
         });

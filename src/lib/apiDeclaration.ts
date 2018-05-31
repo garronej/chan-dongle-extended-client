@@ -95,6 +95,69 @@ export namespace service {
 
     }
 
+    export namespace createContact {
+
+        export const methodName = "createContact";
+
+        export type Params = { imsi: string; number: string; name: string; };
+
+        export type Response = Response.Success | Response.Failure;
+
+        export namespace Response {
+
+            export type Success = {
+                isSuccess: true;
+                contact: types.Sim.Contact;
+            };
+
+            export type Failure = {
+                isSuccess: false;
+            };
+
+        }
+
+    }
+
+    export namespace updateContact {
+
+        export const methodName = "updateContact"; 
+
+        /** assert new_name and new_number are not both null */
+        export type Params = { 
+                imsi: string; 
+                index: number; 
+                new_name?: string; 
+                new_number?: string; 
+            } 
+            ;
+
+        export type Response = Response.Success | Response.Failure;
+
+        export namespace Response {
+
+            export type Success = {
+                isSuccess: true;
+                contact: types.Sim.Contact;
+            };
+
+            export type Failure = {
+                isSuccess: false;
+            };
+
+        }
+
+    }
+
+    export namespace deleteContact {
+
+        export const methodName = "deleteContact"; 
+
+        export type Params = { imsi: string; index: number; };
+
+        export type Response = { isSuccess: boolean; };
+
+    }
+
     export namespace getMessages {
 
         export const methodName = "getMessages";
@@ -106,11 +169,8 @@ export namespace service {
             flush?: boolean;
         };
 
-        export type Response = (types.Message & { imsi: string; })[] ;
+        export type Response = (types.Message & { imsi: string; })[];
 
     }
 
-
 }
-
-

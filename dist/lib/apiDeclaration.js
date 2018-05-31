@@ -33,6 +33,18 @@ var service;
         }
         unlock.matchPin = matchPin;
     })(unlock = service.unlock || (service.unlock = {}));
+    var createContact;
+    (function (createContact) {
+        createContact.methodName = "createContact";
+    })(createContact = service.createContact || (service.createContact = {}));
+    var updateContact;
+    (function (updateContact) {
+        updateContact.methodName = "updateContact";
+    })(updateContact = service.updateContact || (service.updateContact = {}));
+    var deleteContact;
+    (function (deleteContact) {
+        deleteContact.methodName = "deleteContact";
+    })(deleteContact = service.deleteContact || (service.deleteContact = {}));
     var getMessages;
     (function (getMessages) {
         getMessages.methodName = "getMessages";

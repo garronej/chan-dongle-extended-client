@@ -17,4 +17,4 @@ export declare namespace getSimCountryAndSp {
 /** Convert a number to national dry or return itself */
 export declare function toNationalNumber(number: string, imsi: string): string;
 export declare function computeSimStorageDigest(number: string | undefined, storageLeft: number, contacts: types.Sim.Contact[]): string;
-export declare function updateStorageDigest(dongle: types.Dongle.Usable): void;
+export declare function updateStorageDigest(storage: types.Sim.Storage): void;

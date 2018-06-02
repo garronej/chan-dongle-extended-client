@@ -105,13 +105,13 @@ export function computeSimStorageDigest(
 }
 
 export function updateStorageDigest(
-    dongle: types.Dongle.Usable
+    storage: types.Sim.Storage
 ): void {
 
-    dongle.sim.storage.digest = computeSimStorageDigest(
-        dongle.sim.storage.number,
-        dongle.sim.storage.infos.storageLeft,
-        dongle.sim.storage.contacts
+    storage.digest = computeSimStorageDigest(
+        storage.number,
+        storage.infos.storageLeft,
+        storage.contacts
     );
 
 }

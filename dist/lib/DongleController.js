@@ -342,7 +342,7 @@ var DongleController = /** @class */ (function () {
                         if (resp.isSuccess) {
                             dongle.sim.storage.infos.storageLeft--;
                             dongle.sim.storage.contacts.push(resp.contact);
-                            misc.updateStorageDigest(dongle);
+                            misc.updateStorageDigest(dongle.sim.storage);
                         }
                         else {
                             throw new Error("Dongle disconnect or unexpected error");
@@ -399,7 +399,7 @@ var DongleController = /** @class */ (function () {
                         if (resp.isSuccess) {
                             updated_contact.name = resp.contact.name;
                             updated_contact.number = resp.contact.number;
-                            misc.updateStorageDigest(dongle);
+                            misc.updateStorageDigest(dongle.sim.storage);
                         }
                         else {
                             throw new Error("Dongle disconnect or unexpected error");
@@ -446,7 +446,7 @@ var DongleController = /** @class */ (function () {
                         resp = _a.sent();
                         if (resp.isSuccess) {
                             dongle.sim.storage.infos.storageLeft++;
-                            misc.updateStorageDigest(dongle);
+                            misc.updateStorageDigest(dongle.sim.storage);
                         }
                         else {
                             throw new Error("Dongle disconnect or unexpected error");

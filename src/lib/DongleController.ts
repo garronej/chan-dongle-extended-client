@@ -391,7 +391,7 @@ export class DongleController {
 
             dongle.sim.storage.contacts.push(resp.contact);
 
-            misc.updateStorageDigest(dongle);
+            misc.updateStorageDigest(dongle.sim.storage);
 
         }else{
 
@@ -470,7 +470,7 @@ export class DongleController {
             updated_contact.name= resp.contact.name;
             updated_contact.number= resp.contact.number;
 
-            misc.updateStorageDigest(dongle);
+            misc.updateStorageDigest(dongle.sim.storage);
 
         }else{
 
@@ -528,7 +528,7 @@ export class DongleController {
 
             dongle.sim.storage.infos.storageLeft++;
 
-            misc.updateStorageDigest(dongle);
+            misc.updateStorageDigest(dongle.sim.storage);
 
         }else{
 

@@ -26,7 +26,6 @@ export class DongleController {
         statusReport: types.StatusReport;
     }>();
 
-    /** evtData is hasError */
     public readonly evtClose = new VoidSyncEvent();
 
     /** post isSuccess */

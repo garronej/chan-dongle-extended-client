@@ -74,7 +74,6 @@ var DongleController = /** @class */ (function () {
         this.dongles = new trackable_map_1.TrackableMap();
         this.evtMessage = new ts_events_extended_1.SyncEvent();
         this.evtStatusReport = new ts_events_extended_1.SyncEvent();
-        /** evtData is hasError */
         this.evtClose = new ts_events_extended_1.VoidSyncEvent();
         /** post isSuccess */
         this.evtInitializationCompleted = new ts_events_extended_1.SyncEvent();

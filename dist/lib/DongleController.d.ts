@@ -14,7 +14,6 @@ export declare class DongleController {
         dongle: types.Dongle.Usable;
         statusReport: types.StatusReport;
     }>;
-    /** evtData is hasError */
     readonly evtClose: VoidSyncEvent;
     /** post isSuccess */
     private readonly evtInitializationCompleted;

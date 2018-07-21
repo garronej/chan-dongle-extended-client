@@ -32,6 +32,7 @@ function md5(str) {
 }
 exports.md5 = md5;
 function simStorage(o) {
+    var e_1, _a;
     if (!(o instanceof Object &&
         (typeof o.number === "string" || o.number === undefined) &&
         o.infos instanceof Object &&
@@ -59,7 +60,6 @@ function simStorage(o) {
         finally { if (e_1) throw e_1.error; }
     }
     return true;
-    var e_1, _a;
 }
 exports.simStorage = simStorage;
 function lockedPinState(o) {

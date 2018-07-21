@@ -14,8 +14,8 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     function step(op) {
         if (f) throw new TypeError("Generator is already executing.");
         while (_) try {
-            if (f = 1, y && (t = y[op[0] & 2 ? "return" : op[0] ? "throw" : "next"]) && !(t = t.call(y, op[1])).done) return t;
-            if (y = 0, t) op = [0, t.value];
+            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
+            if (y = 0, t) op = [op[0] & 2, t.value];
             switch (op[0]) {
                 case 0: case 1: t = op; break;
                 case 4: _.label++; return { value: op[1], done: false };
@@ -134,6 +134,7 @@ var DongleController = /** @class */ (function () {
             var handler = {
                 "handler": function (_a) {
                     var staticModuleConfiguration = _a.staticModuleConfiguration, dongles = _a.dongles;
+                    var e_1, _b;
                     try {
                         for (var dongles_1 = __values(dongles), dongles_1_1 = dongles_1.next(); !dongles_1_1.done; dongles_1_1 = dongles_1.next()) {
                             var dongle = dongles_1_1.value;
@@ -150,7 +151,6 @@ var DongleController = /** @class */ (function () {
                     _this.staticModuleConfiguration = staticModuleConfiguration;
                     _this.evtInitializationCompleted.post(true);
                     return Promise.resolve(undefined);
-                    var e_1, _b;
                 }
             };
             handlers[methodName] = handler;
@@ -205,10 +205,11 @@ var DongleController = /** @class */ (function () {
     };
     Object.defineProperty(DongleController.prototype, "lockedDongles", {
         get: function () {
+            var e_2, _a;
             var out = new Map();
             try {
-                for (var _a = __values(this.dongles), _b = _a.next(); !_b.done; _b = _a.next()) {
-                    var _c = __read(_b.value, 2), imei = _c[0], dongle = _c[1];
+                for (var _b = __values(this.dongles), _c = _b.next(); !_c.done; _c = _b.next()) {
+                    var _d = __read(_c.value, 2), imei = _d[0], dongle = _d[1];
                     if (!types.Dongle.Locked.match(dongle))
                         continue;
                     out.set(imei, dongle);
@@ -217,22 +218,22 @@ var DongleController = /** @class */ (function () {
             catch (e_2_1) { e_2 = { error: e_2_1 }; }
             finally {
                 try {
-                    if (_b && !_b.done && (_d = _a.return)) _d.call(_a);
+                    if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
                 }
                 finally { if (e_2) throw e_2.error; }
             }
             return out;
-            var e_2, _d;
         },
         enumerable: true,
         configurable: true
     });
     Object.defineProperty(DongleController.prototype, "usableDongles", {
         get: function () {
+            var e_3, _a;
             var out = new Map();
             try {
-                for (var _a = __values(this.dongles), _b = _a.next(); !_b.done; _b = _a.next()) {
-                    var _c = __read(_b.value, 2), imei = _c[0], dongle = _c[1];
+                for (var _b = __values(this.dongles), _c = _b.next(); !_c.done; _c = _b.next()) {
+                    var _d = __read(_c.value, 2), imei = _d[0], dongle = _d[1];
                     if (!types.Dongle.Usable.match(dongle))
                         continue;
                     out.set(imei, dongle);
@@ -241,12 +242,11 @@ var DongleController = /** @class */ (function () {
             catch (e_3_1) { e_3 = { error: e_3_1 }; }
             finally {
                 try {
-                    if (_b && !_b.done && (_d = _a.return)) _d.call(_a);
+                    if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
                 }
                 finally { if (e_3) throw e_3.error; }
             }
             return out;
-            var e_3, _d;
         },
         enumerable: true,
         configurable: true
@@ -287,6 +287,33 @@ var DongleController = /** @class */ (function () {
                             }
                         }
                         return [2 /*return*/, unlockResult];
+                }
+            });
+        });
+    };
+    /**
+     *
+     *  throws that can be anticipated:
+     *  no dongle with imsi,
+     *
+     *  throw that can't be anticipated:
+     *  (sip-library api client) SendRequestError
+     *
+     * */
+    DongleController.prototype.rebootDongle = function (imei) {
+        return __awaiter(this, void 0, void 0, function () {
+            var methodName;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        methodName = apiDeclaration_1.service.rebootDongle.methodName;
+                        if (!this.dongles.has(imei)) {
+                            throw new Error("Dongle imei: " + imei + " is not currently connected");
+                        }
+                        return [4 /*yield*/, this.sendApiRequest(methodName, { imei: imei })];
+                    case 1:
+                        _a.sent();
+                        return [2 /*return*/];
                 }
             });
         });

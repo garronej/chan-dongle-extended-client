@@ -23,8 +23,8 @@ export declare class DongleController {
     private readonly socket;
     constructor(host: string, port: number);
     destroy(): void;
-    private sendApiRequest<Params, Response>(methodName, params);
-    private makeLocalApiHandlers();
+    private sendApiRequest;
+    private makeLocalApiHandlers;
     readonly lockedDongles: Map<string, types.Dongle.Locked>;
     readonly usableDongles: Map<string, types.Dongle.Usable>;
     /**
@@ -46,6 +46,16 @@ export declare class DongleController {
      * */
     unlock(dongleImei: string, puk: string, newPin: string): Promise<types.UnlockResult | undefined>;
     unlock(dongleImei: string, pin: string): Promise<types.UnlockResult | undefined>;
+    /**
+     *
+     *  throws that can be anticipated:
+     *  no dongle with imsi,
+     *
+     *  throw that can't be anticipated:
+     *  (sip-library api client) SendRequestError
+     *
+     * */
+    rebootDongle(imei: string): Promise<void>;
     /**
      *
      *  throws:

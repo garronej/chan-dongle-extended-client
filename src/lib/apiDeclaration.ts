@@ -95,6 +95,16 @@ export namespace service {
 
     }
 
+    export namespace rebootDongle {
+
+        export const methodName = "rebootDongle";
+
+        export type Params = { imei: string; };
+
+        export type Response= undefined;
+
+    }
+
     export namespace createContact {
 
         export const methodName = "createContact";

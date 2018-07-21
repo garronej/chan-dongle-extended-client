@@ -315,6 +315,34 @@ export class DongleController {
 
     }
 
+    /** 
+     * 
+     *  throws that can be anticipated: 
+     *  no dongle with imsi, 
+     * 
+     *  throw that can't be anticipated:
+     *  (sip-library api client) SendRequestError
+     * 
+     * */
+    public async rebootDongle( imei: string): Promise<void> {
+
+        const methodName = remoteApiDeclaration.rebootDongle.methodName;
+        type Params = remoteApiDeclaration.rebootDongle.Params;
+        type Response = remoteApiDeclaration.rebootDongle.Response;
+
+        if( !this.dongles.has(imei) ){
+
+            throw new Error(`Dongle imei: ${imei} is not currently connected`);
+            
+        }
+
+        await this.sendApiRequest<Params, Response>(
+            methodName, { imei }
+        );
+
+
+    }
+
 
     /** 
      * 

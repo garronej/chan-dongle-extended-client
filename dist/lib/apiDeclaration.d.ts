@@ -61,6 +61,13 @@ export declare namespace service {
         /** undefined when the dongle disconnect while unlocking */
         type Response = types.UnlockResult | undefined;
     }
+    namespace rebootDongle {
+        const methodName = "rebootDongle";
+        type Params = {
+            imei: string;
+        };
+        type Response = undefined;
+    }
     namespace createContact {
         const methodName = "createContact";
         type Params = {

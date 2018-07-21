@@ -33,6 +33,10 @@ var service;
         }
         unlock.matchPin = matchPin;
     })(unlock = service.unlock || (service.unlock = {}));
+    var rebootDongle;
+    (function (rebootDongle) {
+        rebootDongle.methodName = "rebootDongle";
+    })(rebootDongle = service.rebootDongle || (service.rebootDongle = {}));
     var createContact;
     (function (createContact) {
         createContact.methodName = "createContact";

@@ -57,7 +57,8 @@ export class DongleController {
     ) {
 
         this.socket = new sipLibrary.Socket(
-            net.connect({ host, port })
+            net.connect({ host, port }),
+            true
         );
 
         (new sipLibrary.api.Server(this.makeLocalApiHandlers()))

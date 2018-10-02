@@ -84,7 +84,7 @@ var DongleController = /** @class */ (function () {
                 .then(function (isSuccess) { return isSuccess ? resolve() : reject(error); })
                 .catch(function () { return reject(error); });
         });
-        this.socket = new sipLibrary.Socket(net.connect({ host: host, port: port }));
+        this.socket = new sipLibrary.Socket(net.connect({ host: host, port: port }), true);
         (new sipLibrary.api.Server(this.makeLocalApiHandlers()))
             .startListening(this.socket);
         sipLibrary.api.client.enableKeepAlive(this.socket, 5 * 1000);

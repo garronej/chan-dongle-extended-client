@@ -1,4 +1,3 @@
-import PhoneNumber from "awesome-phonenumber";
 import * as types from "./types";
 import * as md5 from "md5";
 import * as sanityChecks from "./sanityChecks";
@@ -58,32 +57,6 @@ export namespace getSimCountryAndSp {
         return getMccmnc();
 
     }
-
-}
-
-/** Convert a number to national dry or return itself */
-export function toNationalNumber(
-    number: string,
-    imsi: string
-): string {
-
-    let simCountry = getSimCountryAndSp(imsi);
-
-    if (!simCountry) {
-        return number;
-    }
-
-    if (number.match(/[^\+0-9]/)) {
-        return number;
-    }
-
-    let pn = new PhoneNumber(number, simCountry.iso.toUpperCase());
-
-    if (!pn.isValid() || (pn.getRegionCode() || "").toLowerCase() !== simCountry.iso) {
-        return number;
-    }
-
-    return pn.getNumber("national").replace(/[^0-9]/g, "");
 
 }
 

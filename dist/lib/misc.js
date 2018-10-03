@@ -1,6 +1,5 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-var awesome_phonenumber_1 = require("awesome-phonenumber");
 var md5 = require("md5");
 var sanityChecks = require("./sanityChecks");
 var fs = require("fs");
@@ -31,22 +30,6 @@ exports.getSimCountryAndSp = getSimCountryAndSp;
     }
     getSimCountryAndSp.getMccmnc = getMccmnc;
 })(getSimCountryAndSp = exports.getSimCountryAndSp || (exports.getSimCountryAndSp = {}));
-/** Convert a number to national dry or return itself */
-function toNationalNumber(number, imsi) {
-    var simCountry = getSimCountryAndSp(imsi);
-    if (!simCountry) {
-        return number;
-    }
-    if (number.match(/[^\+0-9]/)) {
-        return number;
-    }
-    var pn = new awesome_phonenumber_1.default(number, simCountry.iso.toUpperCase());
-    if (!pn.isValid() || (pn.getRegionCode() || "").toLowerCase() !== simCountry.iso) {
-        return number;
-    }
-    return pn.getNumber("national").replace(/[^0-9]/g, "");
-}
-exports.toNationalNumber = toNationalNumber;
 function computeSimStorageDigest(number, storageLeft, contacts) {
     var strArr = contacts
         .sort(function (c1, c2) { return c1.index - c2.index; })

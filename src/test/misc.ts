@@ -34,21 +34,11 @@ class Ok {
         return misc.getSimCountryAndSp(imsi);
     }
 
-    @duration
-    public static toNationalNumber(number: string, iso: string): string {
-        return misc.toNationalNumber(number, iso);
-    }
-
-
 }
-
-
-Ok.toNationalNumber("+33636786385", "208150113995832");
 
 Ok.getSimCountry("208150113995832");
 Ok.getSimCountry("208150113995822");
 Ok.getSimCountry("208150113995832");
 
-Ok.toNationalNumber("+33636786344", "208150113995832");
 
 

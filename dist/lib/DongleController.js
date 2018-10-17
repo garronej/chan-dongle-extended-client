@@ -471,6 +471,7 @@ var DongleController = /** @class */ (function () {
                     case 1:
                         resp = _a.sent();
                         if (resp.isSuccess) {
+                            dongle.sim.storage.contacts.splice(dongle.sim.storage.contacts.indexOf(contact_to_delete), 1);
                             dongle.sim.storage.infos.storageLeft++;
                             misc.updateStorageDigest(dongle.sim.storage);
                         }

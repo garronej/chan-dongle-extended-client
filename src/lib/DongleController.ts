@@ -541,8 +541,8 @@ export class DongleController {
         const contact_to_delete = dongle.sim.storage.contacts
             .find(c => c.index === index)
             ;
-        
-        if( !contact_to_delete ){
+
+        if (!contact_to_delete) {
 
             throw new Error(`There is no contact at index: ${index} in SIM`);
 
@@ -552,13 +552,18 @@ export class DongleController {
             methodName, { imsi, index }
         );
 
-        if( resp.isSuccess ){
+        if (resp.isSuccess) {
+
+            dongle.sim.storage.contacts.splice(
+                dongle.sim.storage.contacts.indexOf(contact_to_delete),
+                1
+            );
 
             dongle.sim.storage.infos.storageLeft++;
 
             misc.updateStorageDigest(dongle.sim.storage);
 
-        }else{
+        } else {
 
             throw new Error("Dongle disconnect or unexpected error");
 

@@ -1,12 +1,11 @@
 {
   "name": "chan-dongle-extended-client",
-  "version": "0.15.1",
+  "version": "0.16.0",
   "description": "client for chan-dongle-extended",
   "main": "./dist/lib/index.js",
   "types": "./dist/lib/index.d.ts",
   "scripts": {
     "tsc": "node ./node_modules/typescript/bin/tsc -p ./tsconfig.json",
-    "tsc-w": "node ./node_modules/typescript/bin/tsc -w -p ./tsconfig.json",
     "test": "node ./dist/test/main"
   },
   "repository": {
@@ -31,6 +30,6 @@
   },
   "devDependencies": {
     "@types/node": "^9.4.2",
-    "typescript": "^3.0.1"
+    "typescript": "^3.5.3"
   }
 }

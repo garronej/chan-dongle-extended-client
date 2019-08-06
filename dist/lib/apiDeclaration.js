@@ -18,6 +18,10 @@ var controller;
     (function (notifyStatusReport) {
         notifyStatusReport.methodName = "notifyStatusReport";
     })(notifyStatusReport = controller.notifyStatusReport || (controller.notifyStatusReport = {}));
+    var notifyNetworkRegistrationStateChanged;
+    (function (notifyNetworkRegistrationStateChanged) {
+        notifyNetworkRegistrationStateChanged.methodName = "notifyNetworkRegistrationStateChanged";
+    })(notifyNetworkRegistrationStateChanged = controller.notifyNetworkRegistrationStateChanged || (controller.notifyNetworkRegistrationStateChanged = {}));
 })(controller = exports.controller || (exports.controller = {}));
 var service;
 (function (service) {

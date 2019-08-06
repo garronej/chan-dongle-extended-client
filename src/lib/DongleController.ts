@@ -13,6 +13,11 @@ export class DongleController {
 
     public readonly dongles = new TrackableMap<string, types.Dongle>();
 
+    public readonly evtDongleNetworkRegistrationStateChange= new SyncEvent<{
+        dongle: types.Dongle.Usable;
+        previousNetworkRegistrationState: types.Dongle.Usable.NetworkRegistrationState;
+    }>();
+
     public staticModuleConfiguration!: types.StaticModuleConfiguration;
 
     public readonly evtMessage = new SyncEvent<{
@@ -114,12 +119,13 @@ export class DongleController {
 
         const handlers: sipLibrary.api.Server.Handlers = {};
 
-        (() => {
+        {
 
-            const methodName = localApiDeclaration.notifyCurrentState.methodName;
+            const { methodName } = localApiDeclaration.notifyCurrentState;
             type Params = localApiDeclaration.notifyCurrentState.Params;
+            type Response = localApiDeclaration.notifyCurrentState.Response;
 
-            let handler: sipLibrary.api.Server.Handler<Params, undefined> = {
+            const handler: sipLibrary.api.Server.Handler<Params, Response> = {
                 "handler": ({ staticModuleConfiguration, dongles }) => {
 
                     for (let dongle of dongles) {
@@ -137,15 +143,15 @@ export class DongleController {
 
             handlers[methodName] = handler;
 
-        })();
+        }
 
-        (() => {
+        {
 
-            const methodName = localApiDeclaration.updateMap.methodName;
+            const { methodName } = localApiDeclaration.updateMap;
             type Params = localApiDeclaration.updateMap.Params;
             type Response = localApiDeclaration.updateMap.Response;
 
-            let handler: sipLibrary.api.Server.Handler<Params, Response> = {
+            const handler: sipLibrary.api.Server.Handler<Params, Response> = {
                 "handler": ({ dongleImei, dongle }) => {
 
                     if (!dongle) {
@@ -161,15 +167,15 @@ export class DongleController {
 
             handlers[methodName] = handler;
 
-        })();
+        }
 
-        (() => {
+        {
 
-            const methodName = localApiDeclaration.notifyMessage.methodName;
+            const { methodName } = localApiDeclaration.notifyMessage;
             type Params = localApiDeclaration.notifyMessage.Params;
             type Response = localApiDeclaration.notifyMessage.Response;
 
-            let handler: sipLibrary.api.Server.Handler<Params, Response> = {
+            const handler: sipLibrary.api.Server.Handler<Params, Response> = {
                 "handler": ({ dongleImei, message }) => {
 
                     let pr= new Promise<Response>(resolve=> resolve("SAVE MESSAGE"));
@@ -187,15 +193,15 @@ export class DongleController {
 
             handlers[methodName] = handler;
 
-        })();
+        }
 
-        (() => {
+        {
 
-            const methodName = localApiDeclaration.notifyStatusReport.methodName;
+            const { methodName } = localApiDeclaration.notifyStatusReport;
             type Params = localApiDeclaration.notifyStatusReport.Params;
             type Response = localApiDeclaration.notifyStatusReport.Response;
 
-            let handler: sipLibrary.api.Server.Handler<Params, Response> = {
+            const handler: sipLibrary.api.Server.Handler<Params, Response> = {
                 "handler": ({ dongleImei, statusReport }) => {
 
                     this.evtStatusReport.post({
@@ -210,7 +216,36 @@ export class DongleController {
 
             handlers[methodName] = handler;
 
-        })();
+        }
+
+        {
+
+            const { methodName } = localApiDeclaration.notifyNetworkRegistrationStateChanged;
+            type Params = localApiDeclaration.notifyNetworkRegistrationStateChanged.Params;
+            type Response = localApiDeclaration.notifyNetworkRegistrationStateChanged.Response;
+
+            const handler: sipLibrary.api.Server.Handler<Params, Response> = {
+                "handler": ({ dongleImei, networkRegistrationState }) => {
+
+                    const dongle = this.usableDongles.get(dongleImei)!;
+
+                    const previousNetworkRegistrationState= dongle.networkRegistrationState;
+
+                    dongle.networkRegistrationState = networkRegistrationState;
+
+                    this.evtDongleNetworkRegistrationStateChange.post({ 
+                        dongle, 
+                        previousNetworkRegistrationState 
+                    });
+
+                    return Promise.resolve(undefined);
+
+                }
+            };
+
+            handlers[methodName] = handler;
+
+        }
 
         return handlers;
 

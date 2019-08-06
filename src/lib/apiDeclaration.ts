@@ -36,7 +36,6 @@ export namespace controller {
             dongleImei: string;
             message: types.Message;
         };
-
         
         export type Response= "SAVE MESSAGE" | "DO NOT SAVE MESSAGE";
 
@@ -49,6 +48,19 @@ export namespace controller {
         export type Params ={
             dongleImei: string;
             statusReport: types.StatusReport;
+        };
+
+        export type Response= undefined;
+
+    }
+
+    export namespace notifyNetworkRegistrationStateChanged {
+
+        export const methodName= "notifyNetworkRegistrationStateChanged";
+
+        export type Params ={
+            dongleImei: string;
+            networkRegistrationState: types.Dongle.Usable.NetworkRegistrationState;
         };
 
         export type Response= undefined;

@@ -31,6 +31,7 @@ export namespace Dongle {
         firmwareVersion: string;
         isVoiceEnabled?: boolean;
         sim: Sim;
+        networkRegistrationState: Usable.NetworkRegistrationState;
     };
 
     export namespace Usable {
@@ -38,6 +39,15 @@ export namespace Dongle {
         export function match(dongle: Dongle): dongle is Usable {
             return !Locked.match(dongle);
         }
+
+        export type NetworkRegistrationState =
+            "NOT REGISTERED AND NOT SEARCHING" |
+            "REGISTERED HOME NETWORK" |
+            "NOT REGISTERED BUT SEARCHING" |
+            "REGISTRATION DENIED" |
+            "UNKNOWN" |
+            "REGISTERED ROAMING"
+            ;
 
     }
 

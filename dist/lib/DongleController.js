@@ -72,6 +72,7 @@ var DongleController = /** @class */ (function () {
     function DongleController(host, port) {
         var _this = this;
         this.dongles = new trackable_map_1.TrackableMap();
+        this.evtDongleNetworkRegistrationStateChange = new ts_events_extended_1.SyncEvent();
         this.evtMessage = new ts_events_extended_1.SyncEvent();
         this.evtStatusReport = new ts_events_extended_1.SyncEvent();
         this.evtClose = new ts_events_extended_1.VoidSyncEvent();
@@ -129,12 +130,12 @@ var DongleController = /** @class */ (function () {
     DongleController.prototype.makeLocalApiHandlers = function () {
         var _this = this;
         var handlers = {};
-        (function () {
+        {
             var methodName = apiDeclaration_1.controller.notifyCurrentState.methodName;
             var handler = {
                 "handler": function (_a) {
-                    var staticModuleConfiguration = _a.staticModuleConfiguration, dongles = _a.dongles;
                     var e_1, _b;
+                    var staticModuleConfiguration = _a.staticModuleConfiguration, dongles = _a.dongles;
                     try {
                         for (var dongles_1 = __values(dongles), dongles_1_1 = dongles_1.next(); !dongles_1_1.done; dongles_1_1 = dongles_1.next()) {
                             var dongle = dongles_1_1.value;
@@ -154,8 +155,8 @@ var DongleController = /** @class */ (function () {
                 }
             };
             handlers[methodName] = handler;
-        })();
-        (function () {
+        }
+        {
             var methodName = apiDeclaration_1.controller.updateMap.methodName;
             var handler = {
                 "handler": function (_a) {
@@ -170,8 +171,8 @@ var DongleController = /** @class */ (function () {
                 }
             };
             handlers[methodName] = handler;
-        })();
-        (function () {
+        }
+        {
             var methodName = apiDeclaration_1.controller.notifyMessage.methodName;
             var handler = {
                 "handler": function (_a) {
@@ -186,8 +187,8 @@ var DongleController = /** @class */ (function () {
                 }
             };
             handlers[methodName] = handler;
-        })();
-        (function () {
+        }
+        {
             var methodName = apiDeclaration_1.controller.notifyStatusReport.methodName;
             var handler = {
                 "handler": function (_a) {
@@ -200,7 +201,24 @@ var DongleController = /** @class */ (function () {
                 }
             };
             handlers[methodName] = handler;
-        })();
+        }
+        {
+            var methodName = apiDeclaration_1.controller.notifyNetworkRegistrationStateChanged.methodName;
+            var handler = {
+                "handler": function (_a) {
+                    var dongleImei = _a.dongleImei, networkRegistrationState = _a.networkRegistrationState;
+                    var dongle = _this.usableDongles.get(dongleImei);
+                    var previousNetworkRegistrationState = dongle.networkRegistrationState;
+                    dongle.networkRegistrationState = networkRegistrationState;
+                    _this.evtDongleNetworkRegistrationStateChange.post({
+                        dongle: dongle,
+                        previousNetworkRegistrationState: previousNetworkRegistrationState
+                    });
+                    return Promise.resolve(undefined);
+                }
+            };
+            handlers[methodName] = handler;
+        }
         return handlers;
     };
     Object.defineProperty(DongleController.prototype, "lockedDongles", {

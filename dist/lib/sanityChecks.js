@@ -124,7 +124,8 @@ function dongleUsable(o) {
         typeof o.firmwareVersion === "string" &&
         (typeof o.isVoiceEnabled === "boolean" ||
             o.isVoiceEnabled === undefined) &&
-        sim(o.sim));
+        sim(o.sim) &&
+        typeof o.networkRegistrationState === "string");
 }
 exports.dongleUsable = dongleUsable;
 function dongle(o) {

@@ -22,9 +22,11 @@ export declare namespace Dongle {
         firmwareVersion: string;
         isVoiceEnabled?: boolean;
         sim: Sim;
+        networkRegistrationState: Usable.NetworkRegistrationState;
     };
     namespace Usable {
         function match(dongle: Dongle): dongle is Usable;
+        type NetworkRegistrationState = "NOT REGISTERED AND NOT SEARCHING" | "REGISTERED HOME NETWORK" | "NOT REGISTERED BUT SEARCHING" | "REGISTRATION DENIED" | "UNKNOWN" | "REGISTERED ROAMING";
     }
 }
 export declare type Sim = {

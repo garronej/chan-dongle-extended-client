@@ -32,6 +32,14 @@ export declare namespace controller {
         };
         type Response = undefined;
     }
+    namespace notifyNetworkRegistrationStateChanged {
+        const methodName = "notifyNetworkRegistrationStateChanged";
+        type Params = {
+            dongleImei: string;
+            networkRegistrationState: types.Dongle.Usable.NetworkRegistrationState;
+        };
+        type Response = undefined;
+    }
 }
 export declare namespace service {
     namespace sendMessage {

@@ -133,7 +133,8 @@ import * as sanityChecks from "../lib/sanityChecks";
                 ],
                 "digest": "133f4ab5a08e6a30c04e78c0016d1551"
             }
-        }
+        },
+        "networkRegistrationState": "REGISTERED ROAMING" as const
     };
 
     console.assert(sanityChecks.dongle(dongle));

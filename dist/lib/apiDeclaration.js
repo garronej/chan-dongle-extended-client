@@ -18,10 +18,14 @@ var controller;
     (function (notifyStatusReport) {
         notifyStatusReport.methodName = "notifyStatusReport";
     })(notifyStatusReport = controller.notifyStatusReport || (controller.notifyStatusReport = {}));
-    var notifyNetworkRegistrationStateChanged;
-    (function (notifyNetworkRegistrationStateChanged) {
-        notifyNetworkRegistrationStateChanged.methodName = "notifyNetworkRegistrationStateChanged";
-    })(notifyNetworkRegistrationStateChanged = controller.notifyNetworkRegistrationStateChanged || (controller.notifyNetworkRegistrationStateChanged = {}));
+    var notifyGsmConnectivityChange;
+    (function (notifyGsmConnectivityChange) {
+        notifyGsmConnectivityChange.methodName = "notifyGsmConnectivityChange";
+    })(notifyGsmConnectivityChange = controller.notifyGsmConnectivityChange || (controller.notifyGsmConnectivityChange = {}));
+    var notifyCellSignalStrengthChange;
+    (function (notifyCellSignalStrengthChange) {
+        notifyCellSignalStrengthChange.methodName = "notifyCellSignalStrengthChange";
+    })(notifyCellSignalStrengthChange = controller.notifyCellSignalStrengthChange || (controller.notifyCellSignalStrengthChange = {}));
 })(controller = exports.controller || (exports.controller = {}));
 var service;
 (function (service) {

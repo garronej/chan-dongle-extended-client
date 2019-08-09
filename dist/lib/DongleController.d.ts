@@ -4,9 +4,9 @@ import { SyncEvent, VoidSyncEvent } from "ts-events-extended";
 import { service as remoteApiDeclaration } from "./apiDeclaration";
 export declare class DongleController {
     readonly dongles: TrackableMap<string, types.Dongle>;
-    readonly evtDongleNetworkRegistrationStateChange: SyncEvent<{
-        dongle: types.Dongle.Usable;
-        previousNetworkRegistrationState: types.Dongle.Usable.NetworkRegistrationState;
+    readonly evtGsmConnectivityChange: VoidSyncEvent;
+    readonly evtCellSignalStrengthChange: SyncEvent<{
+        previousCellSignalStrength: types.Dongle.Usable.CellSignalStrength;
     }>;
     staticModuleConfiguration: types.StaticModuleConfiguration;
     readonly evtMessage: SyncEvent<{

@@ -22,11 +22,13 @@ export declare namespace Dongle {
         firmwareVersion: string;
         isVoiceEnabled?: boolean;
         sim: Sim;
-        networkRegistrationState: Usable.NetworkRegistrationState;
+        isGsmConnectivityOk: boolean;
+        cellSignalStrength: Usable.CellSignalStrength;
     };
     namespace Usable {
         function match(dongle: Dongle): dongle is Usable;
         type NetworkRegistrationState = "NOT REGISTERED AND NOT SEARCHING" | "REGISTERED HOME NETWORK" | "NOT REGISTERED BUT SEARCHING" | "REGISTRATION DENIED" | "UNKNOWN" | "REGISTERED ROAMING";
+        type CellSignalStrength = "NULL" | "VERY WEAK" | "WEAK" | "GOOD" | "EXCELLENT";
     }
 }
 export declare type Sim = {

@@ -31,7 +31,8 @@ export namespace Dongle {
         firmwareVersion: string;
         isVoiceEnabled?: boolean;
         sim: Sim;
-        networkRegistrationState: Usable.NetworkRegistrationState;
+        isGsmConnectivityOk: boolean;
+        cellSignalStrength: Usable.CellSignalStrength;
     };
 
     export namespace Usable {
@@ -48,6 +49,9 @@ export namespace Dongle {
             "UNKNOWN" |
             "REGISTERED ROAMING"
             ;
+
+        export type CellSignalStrength = "NULL" | "VERY WEAK" | "WEAK" | "GOOD" | "EXCELLENT";
+
 
     }
 

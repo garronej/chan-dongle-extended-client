@@ -72,7 +72,8 @@ var DongleController = /** @class */ (function () {
     function DongleController(host, port) {
         var _this = this;
         this.dongles = new trackable_map_1.TrackableMap();
-        this.evtDongleNetworkRegistrationStateChange = new ts_events_extended_1.SyncEvent();
+        this.evtGsmConnectivityChange = new ts_events_extended_1.VoidSyncEvent();
+        this.evtCellSignalStrengthChange = new ts_events_extended_1.SyncEvent();
         this.evtMessage = new ts_events_extended_1.SyncEvent();
         this.evtStatusReport = new ts_events_extended_1.SyncEvent();
         this.evtClose = new ts_events_extended_1.VoidSyncEvent();
@@ -203,17 +204,27 @@ var DongleController = /** @class */ (function () {
             handlers[methodName] = handler;
         }
         {
-            var methodName = apiDeclaration_1.controller.notifyNetworkRegistrationStateChanged.methodName;
+            var methodName = apiDeclaration_1.controller.notifyGsmConnectivityChange.methodName;
             var handler = {
                 "handler": function (_a) {
-                    var dongleImei = _a.dongleImei, networkRegistrationState = _a.networkRegistrationState;
+                    var dongleImei = _a.dongleImei;
                     var dongle = _this.usableDongles.get(dongleImei);
-                    var previousNetworkRegistrationState = dongle.networkRegistrationState;
-                    dongle.networkRegistrationState = networkRegistrationState;
-                    _this.evtDongleNetworkRegistrationStateChange.post({
-                        dongle: dongle,
-                        previousNetworkRegistrationState: previousNetworkRegistrationState
-                    });
+                    dongle.isGsmConnectivityOk = !dongle.isGsmConnectivityOk;
+                    _this.evtGsmConnectivityChange.post();
+                    return Promise.resolve(undefined);
+                }
+            };
+            handlers[methodName] = handler;
+        }
+        {
+            var methodName = apiDeclaration_1.controller.notifyCellSignalStrengthChange.methodName;
+            var handler = {
+                "handler": function (_a) {
+                    var dongleImei = _a.dongleImei, cellSignalStrength = _a.cellSignalStrength;
+                    var dongle = _this.usableDongles.get(dongleImei);
+                    var previousCellSignalStrength = dongle.cellSignalStrength;
+                    dongle.cellSignalStrength = cellSignalStrength;
+                    _this.evtCellSignalStrengthChange.post({ previousCellSignalStrength: previousCellSignalStrength });
                     return Promise.resolve(undefined);
                 }
             };

@@ -13,9 +13,10 @@ export class DongleController {
 
     public readonly dongles = new TrackableMap<string, types.Dongle>();
 
-    public readonly evtDongleNetworkRegistrationStateChange= new SyncEvent<{
-        dongle: types.Dongle.Usable;
-        previousNetworkRegistrationState: types.Dongle.Usable.NetworkRegistrationState;
+    public readonly evtGsmConnectivityChange = new VoidSyncEvent();
+
+    public readonly evtCellSignalStrengthChange = new SyncEvent<{
+        previousCellSignalStrength: types.Dongle.Usable.CellSignalStrength;
     }>();
 
     public staticModuleConfiguration!: types.StaticModuleConfiguration;
@@ -178,12 +179,12 @@ export class DongleController {
             const handler: sipLibrary.api.Server.Handler<Params, Response> = {
                 "handler": ({ dongleImei, message }) => {
 
-                    let pr= new Promise<Response>(resolve=> resolve("SAVE MESSAGE"));
+                    let pr = new Promise<Response>(resolve => resolve("SAVE MESSAGE"));
 
                     this.evtMessage.post({
                         "dongle": this.usableDongles.get(dongleImei)!,
                         message,
-                        "submitShouldSave": (prShouldSave)=> pr= prShouldSave
+                        "submitShouldSave": (prShouldSave) => pr = prShouldSave
                     });
 
                     return pr;
@@ -220,23 +221,44 @@ export class DongleController {
 
         {
 
-            const { methodName } = localApiDeclaration.notifyNetworkRegistrationStateChanged;
-            type Params = localApiDeclaration.notifyNetworkRegistrationStateChanged.Params;
-            type Response = localApiDeclaration.notifyNetworkRegistrationStateChanged.Response;
+            const { methodName } = localApiDeclaration.notifyGsmConnectivityChange;
+            type Params = localApiDeclaration.notifyGsmConnectivityChange.Params;
+            type Response = localApiDeclaration.notifyGsmConnectivityChange.Response;
 
             const handler: sipLibrary.api.Server.Handler<Params, Response> = {
-                "handler": ({ dongleImei, networkRegistrationState }) => {
+                "handler": ({ dongleImei }) => {
 
                     const dongle = this.usableDongles.get(dongleImei)!;
 
-                    const previousNetworkRegistrationState= dongle.networkRegistrationState;
+                    dongle.isGsmConnectivityOk = !dongle.isGsmConnectivityOk;
 
-                    dongle.networkRegistrationState = networkRegistrationState;
+                    this.evtGsmConnectivityChange.post();
 
-                    this.evtDongleNetworkRegistrationStateChange.post({ 
-                        dongle, 
-                        previousNetworkRegistrationState 
-                    });
+                    return Promise.resolve(undefined);
+
+                }
+            };
+
+            handlers[methodName] = handler;
+
+        }
+
+        {
+
+            const { methodName } = localApiDeclaration.notifyCellSignalStrengthChange;
+            type Params = localApiDeclaration.notifyCellSignalStrengthChange.Params;
+            type Response = localApiDeclaration.notifyCellSignalStrengthChange.Response;
+
+            const handler: sipLibrary.api.Server.Handler<Params, Response> = {
+                "handler": ({ dongleImei, cellSignalStrength }) => {
+
+                    const dongle = this.usableDongles.get(dongleImei)!;
+
+                    const previousCellSignalStrength= dongle.cellSignalStrength;
+
+                    dongle.cellSignalStrength = cellSignalStrength;
+
+                    this.evtCellSignalStrengthChange.post({ previousCellSignalStrength });
 
                     return Promise.resolve(undefined);
 
@@ -319,7 +341,7 @@ export class DongleController {
      * */
     public unlock(dongleImei: string, puk: string, newPin: string): Promise<types.UnlockResult | undefined>;
     public unlock(dongleImei: string, pin: string): Promise<types.UnlockResult | undefined>;
-    public async unlock(...inputs): Promise<types.UnlockResult | undefined > {
+    public async unlock(...inputs): Promise<types.UnlockResult | undefined> {
 
         let [dongleImei, p2, p3] = inputs;
 
@@ -360,16 +382,16 @@ export class DongleController {
      *  (sip-library api client) SendRequestError
      * 
      * */
-    public async rebootDongle( imei: string): Promise<void> {
+    public async rebootDongle(imei: string): Promise<void> {
 
         const methodName = remoteApiDeclaration.rebootDongle.methodName;
         type Params = remoteApiDeclaration.rebootDongle.Params;
         type Response = remoteApiDeclaration.rebootDongle.Response;
 
-        if( !this.dongles.has(imei) ){
+        if (!this.dongles.has(imei)) {
 
             throw new Error(`Dongle imei: ${imei} is not currently connected`);
-            
+
         }
 
         await this.sendApiRequest<Params, Response>(
@@ -386,7 +408,7 @@ export class DongleController {
      *  (sip-library api client) SendRequestError
      * 
      * */
-    public getMessages( params: remoteApiDeclaration.getMessages.Params) {
+    public getMessages(params: remoteApiDeclaration.getMessages.Params) {
 
         const methodName = remoteApiDeclaration.getMessages.methodName;
         type Params = remoteApiDeclaration.getMessages.Params;
@@ -412,8 +434,8 @@ export class DongleController {
      * 
      * */
     public async createContact(
-        imsi: string, 
-        number: string, 
+        imsi: string,
+        number: string,
         name: string
     ): Promise<types.Sim.Contact> {
 
@@ -426,19 +448,19 @@ export class DongleController {
             .find(({ sim }) => sim.imsi === imsi)
             ;
 
-        if( !dongle ){
+        if (!dongle) {
 
             throw new Error(`No dongle with SIM imsi: ${imsi}`);
 
         }
 
-        if( number.length > dongle.sim.storage.infos.numberMaxLength ) {
+        if (number.length > dongle.sim.storage.infos.numberMaxLength) {
 
             throw new Error(`Phone number too long`);
 
         }
 
-        if( dongle.sim.storage.infos.storageLeft === 0 ){
+        if (dongle.sim.storage.infos.storageLeft === 0) {
 
             throw new Error("No space left on SIM internal storage");
 
@@ -456,7 +478,7 @@ export class DongleController {
 
             misc.updateStorageDigest(dongle.sim.storage);
 
-        }else{
+        } else {
 
             throw new Error("Dongle disconnect or unexpected error");
 
@@ -491,7 +513,7 @@ export class DongleController {
         type Params = remoteApiDeclaration.updateContact.Params;
         type Response = remoteApiDeclaration.updateContact.Response;
 
-        if( new_name === undefined && new_number === undefined ){
+        if (new_name === undefined && new_number === undefined) {
             throw new Error("New name and new number can't be both undefined");
         }
 
@@ -505,9 +527,9 @@ export class DongleController {
 
         }
 
-        if( 
-            new_number !== undefined && 
-            new_number.length > dongle.sim.storage.infos.numberMaxLength 
+        if (
+            new_number !== undefined &&
+            new_number.length > dongle.sim.storage.infos.numberMaxLength
         ) {
 
             throw new Error(`Phone number too long`);
@@ -517,8 +539,8 @@ export class DongleController {
         const updated_contact = dongle.sim.storage.contacts
             .find(c => c.index === index)
             ;
-        
-        if( !updated_contact ){
+
+        if (!updated_contact) {
 
             throw new Error(`There is no contact at index: ${index} in SIM`);
 
@@ -528,14 +550,14 @@ export class DongleController {
             methodName, { imsi, index, new_name, new_number }
         );
 
-        if( resp.isSuccess ){
+        if (resp.isSuccess) {
 
-            updated_contact.name= resp.contact.name;
-            updated_contact.number= resp.contact.number;
+            updated_contact.name = resp.contact.name;
+            updated_contact.number = resp.contact.number;
 
             misc.updateStorageDigest(dongle.sim.storage);
 
-        }else{
+        } else {
 
             throw new Error("Dongle disconnect or unexpected error");
 

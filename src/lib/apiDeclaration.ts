@@ -54,16 +54,28 @@ export namespace controller {
 
     }
 
-    export namespace notifyNetworkRegistrationStateChanged {
+    export namespace notifyGsmConnectivityChange {
 
-        export const methodName= "notifyNetworkRegistrationStateChanged";
+        export const methodName= "notifyGsmConnectivityChange";
 
         export type Params ={
             dongleImei: string;
-            networkRegistrationState: types.Dongle.Usable.NetworkRegistrationState;
         };
 
         export type Response= undefined;
+
+    }
+
+    export namespace notifyCellSignalStrengthChange {
+
+        export const methodName= "notifyCellSignalStrengthChange";
+
+        export type Params = {
+            dongleImei: string;
+            cellSignalStrength: types.Dongle.Usable.CellSignalStrength;
+        };
+
+        export type Response = undefined;
 
     }
 

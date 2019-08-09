@@ -32,11 +32,18 @@ export declare namespace controller {
         };
         type Response = undefined;
     }
-    namespace notifyNetworkRegistrationStateChanged {
-        const methodName = "notifyNetworkRegistrationStateChanged";
+    namespace notifyGsmConnectivityChange {
+        const methodName = "notifyGsmConnectivityChange";
         type Params = {
             dongleImei: string;
-            networkRegistrationState: types.Dongle.Usable.NetworkRegistrationState;
+        };
+        type Response = undefined;
+    }
+    namespace notifyCellSignalStrengthChange {
+        const methodName = "notifyCellSignalStrengthChange";
+        type Params = {
+            dongleImei: string;
+            cellSignalStrength: types.Dongle.Usable.CellSignalStrength;
         };
         type Response = undefined;
     }

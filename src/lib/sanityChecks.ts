@@ -157,7 +157,8 @@ export function dongleUsable(o: types.Dongle.Usable): boolean {
             o.isVoiceEnabled === undefined
         ) &&
         sim(o.sim) &&
-        typeof o.networkRegistrationState === "string"
+        typeof o.isGsmConnectivityOk === "boolean" &&
+        typeof o.cellSignalStrength === "string"
     );
 
 }

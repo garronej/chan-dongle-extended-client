@@ -72,7 +72,7 @@ var DongleController = /** @class */ (function () {
     function DongleController(host, port) {
         var _this = this;
         this.dongles = new trackable_map_1.TrackableMap();
-        this.evtGsmConnectivityChange = new ts_events_extended_1.VoidSyncEvent();
+        this.evtGsmConnectivityChange = new ts_events_extended_1.SyncEvent();
         this.evtCellSignalStrengthChange = new ts_events_extended_1.SyncEvent();
         this.evtMessage = new ts_events_extended_1.SyncEvent();
         this.evtStatusReport = new ts_events_extended_1.SyncEvent();
@@ -210,7 +210,7 @@ var DongleController = /** @class */ (function () {
                     var dongleImei = _a.dongleImei;
                     var dongle = _this.usableDongles.get(dongleImei);
                     dongle.isGsmConnectivityOk = !dongle.isGsmConnectivityOk;
-                    _this.evtGsmConnectivityChange.post();
+                    _this.evtGsmConnectivityChange.post({ dongle: dongle });
                     return Promise.resolve(undefined);
                 }
             };
@@ -224,7 +224,7 @@ var DongleController = /** @class */ (function () {
                     var dongle = _this.usableDongles.get(dongleImei);
                     var previousCellSignalStrength = dongle.cellSignalStrength;
                     dongle.cellSignalStrength = cellSignalStrength;
-                    _this.evtCellSignalStrengthChange.post({ previousCellSignalStrength: previousCellSignalStrength });
+                    _this.evtCellSignalStrengthChange.post({ dongle: dongle, previousCellSignalStrength: previousCellSignalStrength });
                     return Promise.resolve(undefined);
                 }
             };

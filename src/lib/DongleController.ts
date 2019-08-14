@@ -13,9 +13,10 @@ export class DongleController {
 
     public readonly dongles = new TrackableMap<string, types.Dongle>();
 
-    public readonly evtGsmConnectivityChange = new VoidSyncEvent();
+    public readonly evtGsmConnectivityChange = new SyncEvent<{ dongle: types.Dongle.Usable }>();
 
     public readonly evtCellSignalStrengthChange = new SyncEvent<{
+        dongle: types.Dongle.Usable;
         previousCellSignalStrength: types.Dongle.Usable.CellSignalStrength;
     }>();
 
@@ -232,7 +233,7 @@ export class DongleController {
 
                     dongle.isGsmConnectivityOk = !dongle.isGsmConnectivityOk;
 
-                    this.evtGsmConnectivityChange.post();
+                    this.evtGsmConnectivityChange.post({dongle});
 
                     return Promise.resolve(undefined);
 
@@ -258,7 +259,7 @@ export class DongleController {
 
                     dongle.cellSignalStrength = cellSignalStrength;
 
-                    this.evtCellSignalStrengthChange.post({ previousCellSignalStrength });
+                    this.evtCellSignalStrengthChange.post({ dongle, previousCellSignalStrength });
 
                     return Promise.resolve(undefined);
 

@@ -1,27 +1,27 @@
 import { TrackableMap } from "trackable-map";
 import * as types from "./types";
-import { SyncEvent, VoidSyncEvent } from "ts-events-extended";
+import { Evt, VoidEvt } from "ts-evt";
 import { service as remoteApiDeclaration } from "./apiDeclaration";
 export declare class DongleController {
     readonly dongles: TrackableMap<string, types.Dongle>;
-    readonly evtGsmConnectivityChange: SyncEvent<{
+    readonly evtGsmConnectivityChange: Evt<{
         dongle: types.Dongle.Usable;
     }>;
-    readonly evtCellSignalStrengthChange: SyncEvent<{
+    readonly evtCellSignalStrengthChange: Evt<{
         dongle: types.Dongle.Usable;
         previousCellSignalStrength: types.Dongle.Usable.CellSignalStrength;
     }>;
     staticModuleConfiguration: types.StaticModuleConfiguration;
-    readonly evtMessage: SyncEvent<{
+    readonly evtMessage: Evt<{
         dongle: types.Dongle.Usable;
         message: types.Message;
         submitShouldSave(prShouldSave: Promise<"SAVE MESSAGE" | "DO NOT SAVE MESSAGE">): void;
     }>;
-    readonly evtStatusReport: SyncEvent<{
+    readonly evtStatusReport: Evt<{
         dongle: types.Dongle.Usable;
         statusReport: types.StatusReport;
     }>;
-    readonly evtClose: VoidSyncEvent;
+    readonly evtClose: VoidEvt;
     /** post isSuccess */
     private readonly evtInitializationCompleted;
     /** resolve when instance ready to be used; reject if initialization fail */

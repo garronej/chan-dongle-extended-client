@@ -1,6 +1,6 @@
 import { TrackableMap } from "trackable-map";
 import * as types from "./types";
-import { SyncEvent, VoidSyncEvent } from "ts-events-extended";
+import { Evt, VoidEvt } from "ts-evt";
 import * as net from "net";
 import { 
     controller as localApiDeclaration, 
@@ -13,30 +13,30 @@ export class DongleController {
 
     public readonly dongles = new TrackableMap<string, types.Dongle>();
 
-    public readonly evtGsmConnectivityChange = new SyncEvent<{ dongle: types.Dongle.Usable }>();
+    public readonly evtGsmConnectivityChange = new Evt<{ dongle: types.Dongle.Usable }>();
 
-    public readonly evtCellSignalStrengthChange = new SyncEvent<{
+    public readonly evtCellSignalStrengthChange = new Evt<{
         dongle: types.Dongle.Usable;
         previousCellSignalStrength: types.Dongle.Usable.CellSignalStrength;
     }>();
 
     public staticModuleConfiguration!: types.StaticModuleConfiguration;
 
-    public readonly evtMessage = new SyncEvent<{
+    public readonly evtMessage = new Evt<{
         dongle: types.Dongle.Usable;
         message: types.Message;
         submitShouldSave(prShouldSave: Promise<"SAVE MESSAGE" | "DO NOT SAVE MESSAGE">): void;
     }>();
 
-    public readonly evtStatusReport = new SyncEvent<{
+    public readonly evtStatusReport = new Evt<{
         dongle: types.Dongle.Usable;
         statusReport: types.StatusReport;
     }>();
 
-    public readonly evtClose = new VoidSyncEvent();
+    public readonly evtClose = new VoidEvt();
 
     /** post isSuccess */
-    private readonly evtInitializationCompleted = new SyncEvent<boolean>();
+    private readonly evtInitializationCompleted = new Evt<boolean>();
 
     /** resolve when instance ready to be used; reject if initialization fail */
     public readonly prInitialization = new Promise<void>(

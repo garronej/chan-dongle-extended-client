@@ -63,7 +63,7 @@ var __read = (this && this.__read) || function (o, n) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var trackable_map_1 = require("trackable-map");
 var types = require("./types");
-var ts_events_extended_1 = require("ts-events-extended");
+var ts_evt_1 = require("ts-evt");
 var net = require("net");
 var apiDeclaration_1 = require("./apiDeclaration");
 var sipLibrary = require("ts-sip");
@@ -72,13 +72,13 @@ var DongleController = /** @class */ (function () {
     function DongleController(host, port) {
         var _this = this;
         this.dongles = new trackable_map_1.TrackableMap();
-        this.evtGsmConnectivityChange = new ts_events_extended_1.SyncEvent();
-        this.evtCellSignalStrengthChange = new ts_events_extended_1.SyncEvent();
-        this.evtMessage = new ts_events_extended_1.SyncEvent();
-        this.evtStatusReport = new ts_events_extended_1.SyncEvent();
-        this.evtClose = new ts_events_extended_1.VoidSyncEvent();
+        this.evtGsmConnectivityChange = new ts_evt_1.Evt();
+        this.evtCellSignalStrengthChange = new ts_evt_1.Evt();
+        this.evtMessage = new ts_evt_1.Evt();
+        this.evtStatusReport = new ts_evt_1.Evt();
+        this.evtClose = new ts_evt_1.VoidEvt();
         /** post isSuccess */
-        this.evtInitializationCompleted = new ts_events_extended_1.SyncEvent();
+        this.evtInitializationCompleted = new ts_evt_1.Evt();
         /** resolve when instance ready to be used; reject if initialization fail */
         this.prInitialization = new Promise(function (resolve, reject) {
             var error = new Error("DongleController initialization error");

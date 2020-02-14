@@ -26,14 +26,14 @@ export declare class DongleController {
     private readonly evtInitializationCompleted;
     /** resolve when instance ready to be used; reject if initialization fail */
     readonly prInitialization: Promise<void>;
-    readonly isInitialized: boolean;
+    get isInitialized(): boolean;
     private readonly socket;
     constructor(host: string, port: number);
     destroy(): void;
     private sendApiRequest;
     private makeLocalApiHandlers;
-    readonly lockedDongles: Map<string, types.Dongle.Locked>;
-    readonly usableDongles: Map<string, types.Dongle.Usable>;
+    get lockedDongles(): Map<string, types.Dongle.Locked>;
+    get usableDongles(): Map<string, types.Dongle.Usable>;
     /**
      * assert target dongle is connected
      *
@@ -69,9 +69,7 @@ export declare class DongleController {
      *  (sip-library api client) SendRequestError
      *
      * */
-    getMessages(params: remoteApiDeclaration.getMessages.Params): Promise<(types.Message & {
-        imsi: string;
-    })[]>;
+    getMessages(params: remoteApiDeclaration.getMessages.Params): Promise<remoteApiDeclaration.getMessages.Response>;
     /**
      *
      *  throws that can be anticipated:
@@ -115,7 +113,7 @@ export declare class DongleController {
      * */
     deleteContact(imsi: string, index: number): Promise<void>;
     private static instance;
-    static readonly hasInstance: boolean;
+    static get hasInstance(): boolean;
     static getInstance(): DongleController;
     static getInstance(host: string, port: number): DongleController;
 }

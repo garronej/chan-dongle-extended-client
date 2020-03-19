@@ -1,6 +1,6 @@
 import { TrackableMap } from "trackable-map";
 import * as types from "./types";
-import { Evt, VoidEvt } from "ts-evt";
+import { Evt, VoidEvt } from "evt";
 import * as net from "net";
 import { 
     controller as localApiDeclaration, 

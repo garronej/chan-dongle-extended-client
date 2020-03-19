@@ -1,6 +1,6 @@
 import { TrackableMap } from "trackable-map";
 import * as types from "./types";
-import { Evt, VoidEvt } from "ts-evt";
+import { Evt, VoidEvt } from "evt";
 import { service as remoteApiDeclaration } from "./apiDeclaration";
 export declare class DongleController {
     readonly dongles: TrackableMap<string, types.Dongle>;

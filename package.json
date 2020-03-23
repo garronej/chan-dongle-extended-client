@@ -23,9 +23,9 @@
   "author": "Joseph Garrone",
   "license": "SEE LICENSE IN LICENSE",
   "dependencies": {
+    "evt": "^1.0.16",
     "md5": "^2.2.1",
     "trackable-map": "github:garronej/trackable-map",
-    "evt": "~1.0.0",
     "ts-sip": "github:garronej/ts-sip"
   },
   "devDependencies": {

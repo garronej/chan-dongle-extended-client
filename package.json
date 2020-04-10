@@ -23,7 +23,7 @@
   "author": "Joseph Garrone",
   "license": "SEE LICENSE IN LICENSE",
   "dependencies": {
-    "evt": "^1.4.2",
+    "evt": "^1.6.1",
     "md5": "^2.2.1",
     "trackable-map": "github:garronej/trackable-map",
     "ts-sip": "github:garronej/ts-sip"

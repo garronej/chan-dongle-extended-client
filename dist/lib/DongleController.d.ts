@@ -1,27 +1,26 @@
 import { TrackableMap } from "trackable-map";
 import * as types from "./types";
-import { Evt, VoidEvt } from "evt";
 import { service as remoteApiDeclaration } from "./apiDeclaration";
 export declare class DongleController {
     readonly dongles: TrackableMap<string, types.Dongle>;
-    readonly evtGsmConnectivityChange: Evt<{
+    readonly evtGsmConnectivityChange: import("evt/dist/lib/types").Evt<{
         dongle: types.Dongle.Usable;
     }>;
-    readonly evtCellSignalStrengthChange: Evt<{
+    readonly evtCellSignalStrengthChange: import("evt/dist/lib/types").Evt<{
         dongle: types.Dongle.Usable;
         previousCellSignalStrength: types.Dongle.Usable.CellSignalStrength;
     }>;
     staticModuleConfiguration: types.StaticModuleConfiguration;
-    readonly evtMessage: Evt<{
+    readonly evtMessage: import("evt/dist/lib/types").Evt<{
         dongle: types.Dongle.Usable;
         message: types.Message;
         submitShouldSave(prShouldSave: Promise<"SAVE MESSAGE" | "DO NOT SAVE MESSAGE">): void;
     }>;
-    readonly evtStatusReport: Evt<{
+    readonly evtStatusReport: import("evt/dist/lib/types").Evt<{
         dongle: types.Dongle.Usable;
         statusReport: types.StatusReport;
     }>;
-    readonly evtClose: VoidEvt;
+    readonly evtClose: import("evt").VoidEvt;
     /** post isSuccess */
     private readonly evtInitializationCompleted;
     /** resolve when instance ready to be used; reject if initialization fail */

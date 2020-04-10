@@ -1,6 +1,6 @@
 import { TrackableMap } from "trackable-map";
 import * as types from "./types";
-import { Evt, VoidEvt } from "evt";
+import { Evt } from "evt";
 import * as net from "net";
 import { 
     controller as localApiDeclaration, 
@@ -33,7 +33,7 @@ export class DongleController {
         statusReport: types.StatusReport;
     }>();
 
-    public readonly evtClose = new VoidEvt();
+    public readonly evtClose = Evt.create();
 
     /** post isSuccess */
     private readonly evtInitializationCompleted = new Evt<boolean>();

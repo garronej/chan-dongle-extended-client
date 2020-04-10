@@ -78,7 +78,7 @@ var DongleController = /** @class */ (function () {
         this.evtCellSignalStrengthChange = new evt_1.Evt();
         this.evtMessage = new evt_1.Evt();
         this.evtStatusReport = new evt_1.Evt();
-        this.evtClose = new evt_1.VoidEvt();
+        this.evtClose = evt_1.Evt.create();
         /** post isSuccess */
         this.evtInitializationCompleted = new evt_1.Evt();
         /** resolve when instance ready to be used; reject if initialization fail */

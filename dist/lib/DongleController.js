@@ -63,6 +63,7 @@ var __read = (this && this.__read) || function (o, n) {
     return ar;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.DongleController = void 0;
 var trackable_map_1 = require("trackable-map");
 var types = require("./types");
 var evt_1 = require("evt");
@@ -107,7 +108,7 @@ var DongleController = /** @class */ (function () {
         get: function () {
             return !!this.evtInitializationCompleted.postCount;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     DongleController.prototype.destroy = function () {
@@ -255,7 +256,7 @@ var DongleController = /** @class */ (function () {
             }
             return out;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(DongleController.prototype, "usableDongles", {
@@ -279,7 +280,7 @@ var DongleController = /** @class */ (function () {
             }
             return out;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     /**
@@ -518,7 +519,7 @@ var DongleController = /** @class */ (function () {
         get: function () {
             return !!this.instance;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     DongleController.getInstance = function (host, port) {

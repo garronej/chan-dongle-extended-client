@@ -3,20 +3,20 @@ import * as types from "./types";
 import { service as remoteApiDeclaration } from "./apiDeclaration";
 export declare class DongleController {
     readonly dongles: TrackableMap<string, types.Dongle>;
-    readonly evtGsmConnectivityChange: import("evt/dist/lib/types").Evt<{
+    readonly evtGsmConnectivityChange: import("evt/lib/types").Evt<{
         dongle: types.Dongle.Usable;
     }>;
-    readonly evtCellSignalStrengthChange: import("evt/dist/lib/types").Evt<{
+    readonly evtCellSignalStrengthChange: import("evt/lib/types").Evt<{
         dongle: types.Dongle.Usable;
         previousCellSignalStrength: types.Dongle.Usable.CellSignalStrength;
     }>;
     staticModuleConfiguration: types.StaticModuleConfiguration;
-    readonly evtMessage: import("evt/dist/lib/types").Evt<{
+    readonly evtMessage: import("evt/lib/types").Evt<{
         dongle: types.Dongle.Usable;
         message: types.Message;
         submitShouldSave(prShouldSave: Promise<"SAVE MESSAGE" | "DO NOT SAVE MESSAGE">): void;
     }>;
-    readonly evtStatusReport: import("evt/dist/lib/types").Evt<{
+    readonly evtStatusReport: import("evt/lib/types").Evt<{
         dongle: types.Dongle.Usable;
         statusReport: types.StatusReport;
     }>;

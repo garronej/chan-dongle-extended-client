@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.Dongle = void 0;
 var Dongle;
 (function (Dongle) {
     var Locked;

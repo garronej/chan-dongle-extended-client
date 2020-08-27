@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.service = exports.controller = void 0;
 var controller;
 (function (controller) {
     var notifyCurrentState;

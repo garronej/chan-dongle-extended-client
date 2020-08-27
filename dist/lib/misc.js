@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.updateStorageDigest = exports.computeSimStorageDigest = exports.getSimCountryAndSp = exports.port = void 0;
 var md5 = require("md5");
 var sanityChecks = require("./sanityChecks");
 var fs = require("fs");

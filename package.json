@@ -1,6 +1,6 @@
 {
   "name": "chan-dongle-extended-client",
-  "version": "0.16.2",
+  "version": "0.16.3",
   "description": "client for chan-dongle-extended",
   "main": "./dist/lib/index.js",
   "types": "./dist/lib/index.d.ts",
@@ -23,7 +23,7 @@
   "author": "Joseph Garrone",
   "license": "SEE LICENSE IN LICENSE",
   "dependencies": {
-    "evt": "^1.8.7",
+    "evt": "^1.8.8",
     "md5": "^2.2.1",
     "trackable-map": "github:garronej/trackable-map",
     "ts-sip": "github:garronej/ts-sip"

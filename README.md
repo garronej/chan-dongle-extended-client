@@ -70,5 +70,8 @@ prDongleControllerInitialized.then(()=> {
 });
 ```
 
-If you need more information you can try revers ingeneer the usage of `chan-dongle-extended-client` in [this project](https://github.com/garronej/semasim-gateway).  
+Chan dongle-extended-client is used to build the CLI that you use with chan-dongle-extended: [see code](https://github.com/garronej/chan-dongle-extended/blob/master/src/bin/cli.ts).  
+
+If you need more insight, you can try revers engineering the usage of `chan-dongle-extended-client` in [this project](https://github.com/garronej/semasim-gateway).  
+
 

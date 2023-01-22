@@ -21,7 +21,7 @@ import { DongleController as Dc } from "chan-dongle-extended-client";
 /** Once it resolve Dc.getInstance() can be used synchronously */
 const prDongleControllerInitialized = new Promise<void>(async resolve => {
 
-    // This is the port used by default if you didn't specified another explicitely.  
+    // This is the port used by default if you didn't specified another explicitely in the chan-dongle-extended config.  
     const { port } = await import("chan-dongle-extended-client/dist/lib/misc");
 
     await new Promise(resolve => setTimeout(resolve, 3000));
